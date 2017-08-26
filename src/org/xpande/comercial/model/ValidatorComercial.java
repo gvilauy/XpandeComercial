@@ -152,6 +152,17 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
 
+            // Instancio configurador comercial
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+
+            // Para comprobantes de compra y venta, valido ingreso manual de vencimientos cuando el termino de pago asi lo requiere.
+            if (model.get_ValueAsBoolean("VencimientoManual")){
+                message = comercialConfig.validateInvoiceVencimientoManual(model);
+                if (message != null){
+                    return message;
+                }
+            }
+
         }
 
         return null;
