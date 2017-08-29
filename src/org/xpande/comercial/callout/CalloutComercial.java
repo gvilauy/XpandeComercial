@@ -1,7 +1,12 @@
 package org.xpande.comercial.callout;
 
 import org.compiere.model.*;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -36,4 +41,39 @@ public class CalloutComercial extends CalloutEngine {
         return "";
     }
 
+
+    /***
+     * En una vencimiento de una invoice, al digitar fecha de vencimiento, setea monto vencimiento con lo pendiente a vencer de la invoice.
+     * Xpande. Created by Gabriel Vila on 8/28/17.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String dueAmtByInvoiceDueDate(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (value == null){
+            return "";
+        }
+
+        Timestamp dueDate = (Timestamp) value;
+
+        int cInvoiceID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
+        MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
+
+        // Total montos vencimientos de este comprobante
+        String sql = " select sum(dueamt) as totalvenc from c_invoicepayschedule where c_invoice_id =" + cInvoiceID;
+        BigDecimal totalVenc = DB.getSQLValueBDEx(null, sql);
+        if (totalVenc == null){
+            totalVenc = Env.ZERO;
+        }
+
+        BigDecimal montoVenc = invoice.getGrandTotal().subtract(totalVenc).setScale(2, RoundingMode.HALF_UP);
+        mTab.setValue(X_C_InvoicePaySchedule.COLUMNNAME_DueAmt, montoVenc);
+        mTab.setValue(X_C_InvoicePaySchedule.COLUMNNAME_IsValid, true);
+
+        return "";
+    }
 }

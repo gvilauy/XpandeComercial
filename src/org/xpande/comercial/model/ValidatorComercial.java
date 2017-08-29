@@ -153,7 +153,7 @@ public class ValidatorComercial implements ModelValidator {
             }
 
             // Instancio configurador comercial
-            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), model.get_TrxName());
 
             // Para comprobantes de compra y venta, valido ingreso manual de vencimientos cuando el termino de pago asi lo requiere.
             if (model.get_ValueAsBoolean("VencimientoManual")){
@@ -162,6 +162,8 @@ public class ValidatorComercial implements ModelValidator {
                     return message;
                 }
             }
+
+            model.setIsPayScheduleValid(true);
 
         }
 

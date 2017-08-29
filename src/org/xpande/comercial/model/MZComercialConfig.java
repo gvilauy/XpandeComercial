@@ -4,6 +4,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoicePaySchedule;
 import org.compiere.model.Query;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 
 import java.math.BigDecimal;
@@ -78,26 +79,19 @@ public class MZComercialConfig extends X_Z_ComercialConfig {
             }
 
             boolean validAmt = invoice.getGrandTotal().compareTo(total) == 0;
-            invoice.setIsPayScheduleValid(validAmt);
-            invoice.saveEx();
-
-            //	Schedule
-            for (int i = 0; i < schedule.length; i++)
-            {
-                if (schedule[i].isValid() != validAmt)
-                {
-                    schedule[i].setIsValid(validAmt);
-                    schedule[i].saveEx();
-                }
-            }
 
             if (!validAmt){
                 message = "La suma de importes de vencimientos no coincide con el Total del comprobante: \n" +
                         " Total Comprobante = " + invoice.getGrandTotal() + "\n" +
-                        " Total Vencimientos = " + total + "\n" +
-                        " Diferencia = " + invoice.getGrandTotal().subtract(total);
+                        " Total Vencimientos = " + total.setScale(2, BigDecimal.ROUND_HALF_UP) + "\n" +
+                        " Diferencia = " + invoice.getGrandTotal().subtract(total).setScale(2, BigDecimal.ROUND_HALF_UP);
                 return message;
             }
+
+            // Marco vencimientos como válidos
+            String action = " update c_invoicepayschedule set isvalid ='Y', processed='Y' where c_invoice_id =" + invoice.get_ID();
+            DB.executeUpdateEx(action, get_TrxName());
+
 
         }
         catch (Exception e){
