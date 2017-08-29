@@ -96,6 +96,30 @@ public class ValidatorComercial implements ModelValidator {
             }
         }
 
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+
+            if ((type == ModelValidator.TYPE_BEFORE_NEW) || (model.is_ValueChanged(X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID))){
+
+                MDocType docType = (MDocType) model.getC_DocTypeTarget();
+
+                // Me aseguro de dejar bien seteado el valor de DocBaseType en la Invoice
+                model.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
+
+                // Cuando se trata de notas de credito, el termino de pago es siempre AL DIA
+                // Este termino de pago AL DIA se toma de la configuracion comercial
+                if ((docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)) || (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit))){
+
+                    MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), model.get_TrxName());
+                    if (comercialConfig.getC_PaymentTerm_ID() <= 0){
+                        return "Falta configuracion comercial: no se indica Termino de Pago AL DIA";
+                    }
+                    model.setC_PaymentTerm_ID(comercialConfig.getC_PaymentTerm_ID());
+                    model.set_ValueOfColumn("VencimientoManual", false);
+                }
+            }
+        }
+
         return mensaje;
     }
 
