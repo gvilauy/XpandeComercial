@@ -191,6 +191,7 @@ public class ValidatorComercial implements ModelValidator {
 
         }
 
+
         return null;
     }
 
