@@ -70,6 +70,7 @@ public class MZInvoiceTaxManual extends X_Z_InvoiceTaxManual {
         catch (Exception e){
             throw new AdempiereException(e);
         }
+        
     }
 
 
