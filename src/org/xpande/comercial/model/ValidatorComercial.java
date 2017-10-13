@@ -4,6 +4,8 @@ import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 
+import java.util.List;
+
 /**
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 8/23/17.
@@ -190,7 +192,26 @@ public class ValidatorComercial implements ModelValidator {
             model.setIsPayScheduleValid(true);
 
         }
+        else if (timing == TIMING_AFTER_COMPLETE){
 
+            // Si tengo impuestos manuales ingresados en este documento, debo llevarlos a la tabla c_invoicetax para poder tener la suma de
+            // impuestos acorde con el trunk.
+            // Para ellos simplemente copio impuestos manuales en esta tabla.
+            List<MZInvoiceTaxManual> invoiceTaxManuals = MZInvoiceTaxManual.getManualTaxes(model.getCtx(), model.get_ID(), model.get_TrxName());
+            for (MZInvoiceTaxManual invoiceTaxManual: invoiceTaxManuals){
+                MInvoiceTax invoiceTax = new MInvoiceTax(model.getCtx(), 0, model.get_TrxName());
+                invoiceTax.setC_Invoice_ID(model.get_ID());
+                invoiceTax.setC_Tax_ID(invoiceTaxManual.getC_Tax_ID());
+                invoiceTax.setTaxAmt(invoiceTaxManual.getTaxAmt());
+                invoiceTax.set_ValueOfColumn("IsManual", true);
+                invoiceTax.saveEx();
+            }
+        }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+            // Cuando reactivo un documento, me aseguro de eliminar de la tabla c_invoicetax, aquellos impuestos manuales.
+            String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
+            DB.executeUpdateEx(action, model.get_TrxName());
+        }
 
         return null;
     }
