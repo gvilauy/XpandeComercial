@@ -32,6 +32,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZDocReference;
 
 /** Generated Model for Z_GeneraNCPago
  *  @author Adempiere (generated) 
@@ -245,14 +246,84 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 		// Obtengo socios de negocio a procesar
 		List<MZGeneraNCPagoSocio> ncPagoSocios = this.getNCPagoSocios();
 		for (MZGeneraNCPagoSocio ncPagoSocio: ncPagoSocios){
+
 			// Obtengo documentos, de este socio de negocio, seleccionados para procesar
 			List<MZGeneraNCPagoLin> ncPagoLinList = ncPagoSocio.getSelectedDocuments();
+
+			// Si tengo documentos seleccionados para este socio de negocio
 			if (ncPagoLinList.size() > 0){
+
 				// Genero cabezal de nota de crédito para este socio de negocio
 				MInvoice invoiceNC = new MInvoice(getCtx(), 0, get_TrxName());
+				invoiceNC.setC_DocTypeTarget_ID(this.getC_DocTypeTarget_ID());
+				invoiceNC.setC_DocType_ID(this.getC_DocTypeTarget_ID());
+				invoiceNC.set_ValueOfColumn("SubDocBaseType", "RET");
+				invoiceNC.set_ValueOfColumn("DocumentSerie", "A");
+				invoiceNC.setDocumentNo("NOREC-" + this.getDocumentNo());
+				invoiceNC.setC_BPartner_ID(ncPagoSocio.getC_BPartner_ID());
+				invoiceNC.setC_Currency_ID(this.getC_Currency_ID());
+				invoiceNC.setDateInvoiced(this.getDateDoc());
+				invoiceNC.setDateAcct(this.getDateDoc());
+				invoiceNC.setIsSOTrx(false);
+				invoiceNC.setIsTaxIncluded(true);
+				invoiceNC.saveEx();
+
+				// Recorro documentos (facturas)
 				for (MZGeneraNCPagoLin ncPagoLin: ncPagoLinList){
-					
+
+					// Nueva referencia a factura
+					MZInvoiceRef invoiceRef = new MZInvoiceRef(getCtx(), 0, get_TrxName());
+					invoiceRef.setC_Invoice_ID(invoiceNC.get_ID());
+					invoiceRef.setC_Invoice_To_ID(ncPagoLin.getC_Invoice_ID());
+					invoiceRef.setAmtAllocation(ncPagoLin.getAmtDtoNC());
+					invoiceRef.setAmtOpen(ncPagoLin.getAmtDocument());
+					invoiceRef.setTotalAmt(ncPagoLin.getAmtDocument());
+					invoiceRef.setC_Currency_ID(ncPagoLin.getC_Currency_ID());
+					invoiceRef.setC_DocType_ID(ncPagoLin.getC_DocType_ID());
+					invoiceRef.setDateDoc(ncPagoLin.getDateDoc());
+					invoiceRef.setDueDate(ncPagoLin.getDueDateDoc());
+					invoiceRef.setDocumentNoRef(ncPagoLin.getDocumentNoRef());
+					invoiceRef.saveEx();
+
+					// Obtengo y recorro productos de esta factura a considerar en la nota de crédito
+					List<MZGeneraNCPagoProd> ncPagoProdList = ncPagoLin.getProductos();
+					for (MZGeneraNCPagoProd ncPagoProd: ncPagoProdList){
+
+						MProduct product = (MProduct) ncPagoProd.getM_Product();
+
+						// Obtengo, si existe, linea de nota de crédito asociada a este producto.
+						// Si no existe, creo nueva linea en la nota de cŕedito para este producto.
+						MInvoiceLine invoiceLine = null;
+						String whereClause = X_C_InvoiceLine.COLUMNNAME_C_Invoice_ID + " =" + invoiceNC.get_ID() +
+								" AND " + X_C_InvoiceLine.COLUMNNAME_M_Product_ID + " =" + product.get_ID();
+						int[] invoiceLineIDs = MInvoiceLine.getAllIDs(I_C_InvoiceLine.Table_Name, whereClause, get_TrxName());
+						// No existe, creo linea para este producto
+						if (invoiceLineIDs.length <= 0){
+							invoiceLine = new MInvoiceLine(invoiceNC);
+							invoiceLine.setM_Product_ID(product.get_ID());
+							invoiceLine.setQtyEntered(Env.ONE);
+							invoiceLine.setQtyInvoiced(Env.ONE);
+							invoiceLine.setC_UOM_ID(product.getC_UOM_ID());
+							invoiceLine.setPriceEntered(ncPagoProd.getAmtDtoNC());
+							invoiceLine.setPriceActual(ncPagoProd.getAmtDtoNC());
+						}
+						else{
+							invoiceLine = new MInvoiceLine(getCtx(), invoiceLineIDs[0], get_TrxName());
+							invoiceLine.setPriceEntered(invoiceLine.getPriceEntered().add(ncPagoProd.getAmtDtoNC()));
+						}
+						invoiceLine.saveEx();
+					}
+
 				}
+				// Genero relación entre este documento y la nota de credito
+				MZDocReference docReference = new MZDocReference(getCtx(), 0, get_TrxName());
+				docReference.setAD_Table_ID(I_Z_GeneraNCPago.Table_ID);
+				docReference.setRecord_ID(this.get_ID());
+				docReference.setC_Invoice_ID(invoiceNC.get_ID());
+				docReference.setZ_GeneraNCPago_ID(this.get_ID());
+				docReference.setC_BPartner_ID(invoiceNC.getC_BPartner_ID());
+				docReference.setDocumentNoRef(invoiceNC.getDocumentNo());
+				docReference.saveEx();
 			}
 		}
 
@@ -300,7 +371,7 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 
 		try{
 			// Verifico que tengo al menos una factura seleccionada para procesar
-			sql = " select cont(*) from z_generancpagolin where z_generancpago_id =" + this.get_ID() +
+			sql = " select count(*) from z_generancpagolin where z_generancpago_id =" + this.get_ID() +
 					" and isselected ='Y' ";
 			int contador = DB.getSQLValueEx(get_TrxName(), sql);
 			if (contador <= 0){

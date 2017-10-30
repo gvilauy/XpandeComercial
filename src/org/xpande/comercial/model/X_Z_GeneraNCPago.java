@@ -31,7 +31,7 @@ public class X_Z_GeneraNCPago extends PO implements I_Z_GeneraNCPago, I_Persiste
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171025L;
+	private static final long serialVersionUID = 20171027L;
 
     /** Standard Constructor */
     public X_Z_GeneraNCPago (Properties ctx, int Z_GeneraNCPago_ID, String trxName)
@@ -42,6 +42,7 @@ public class X_Z_GeneraNCPago extends PO implements I_Z_GeneraNCPago, I_Persiste
 			setC_Currency_ID (0);
 // 142
 			setC_DocType_ID (0);
+			setC_DocTypeTarget_ID (0);
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
 			setDocAction (null);
@@ -168,6 +169,34 @@ public class X_Z_GeneraNCPago extends PO implements I_Z_GeneraNCPago, I_Persiste
 	public int getC_DocType_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocType_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_DocType getC_DocTypeTarget() throws RuntimeException
+    {
+		return (I_C_DocType)MTable.get(getCtx(), I_C_DocType.Table_Name)
+			.getPO(getC_DocTypeTarget_ID(), get_TrxName());	}
+
+	/** Set Target Document Type.
+		@param C_DocTypeTarget_ID 
+		Target document type for conversing documents
+	  */
+	public void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID)
+	{
+		if (C_DocTypeTarget_ID < 1) 
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DocTypeTarget_ID, Integer.valueOf(C_DocTypeTarget_ID));
+	}
+
+	/** Get Target Document Type.
+		@return Target document type for conversing documents
+	  */
+	public int getC_DocTypeTarget_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_DocTypeTarget_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
