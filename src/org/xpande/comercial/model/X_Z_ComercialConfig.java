@@ -17,9 +17,11 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.comercial.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_ComercialConfig
  *  @author Adempiere (generated) 
@@ -30,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20170829L;
+	private static final long serialVersionUID = 20171128L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -97,6 +99,26 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set MarginTolerance.
+		@param MarginTolerance 
+		Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance (BigDecimal MarginTolerance)
+	{
+		set_Value (COLUMNNAME_MarginTolerance, MarginTolerance);
+	}
+
+	/** Get MarginTolerance.
+		@return Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_MarginTolerance);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Search Key.

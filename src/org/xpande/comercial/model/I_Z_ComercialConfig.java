@@ -107,6 +107,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public boolean isActive();
 
+    /** Column name MarginTolerance */
+    public static final String COLUMNNAME_MarginTolerance = "MarginTolerance";
+
+	/** Set MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public void setMarginTolerance(BigDecimal MarginTolerance);
+
+	/** Get MarginTolerance.
+	  * Porcentaje de tolerancia para márgenes
+	  */
+	public BigDecimal getMarginTolerance();
+
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
 
