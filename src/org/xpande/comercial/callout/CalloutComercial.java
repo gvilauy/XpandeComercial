@@ -88,7 +88,7 @@ public class CalloutComercial extends CalloutEngine {
      */
     public String partnerByTaxID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
 
-        if ((value == null) || (((Integer) value).intValue() <= 0)){
+        if (value == null){
             mTab.setValue(X_C_BPartner.COLUMNNAME_C_BPartner_ID, null);
             return "";
         }

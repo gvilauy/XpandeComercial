@@ -3,7 +3,9 @@ package org.xpande.comercial.model;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -138,6 +140,13 @@ public class ValidatorComercial implements ModelValidator {
         String message = null, sql = "";
 
         if (timing == TIMING_BEFORE_COMPLETE){
+
+            // Valido fecha de comprobante menor o igual al día de hoy
+            Timestamp fechaHoy = TimeUtil.trunc(new Timestamp(System.currentTimeMillis()), TimeUtil.TRUNC_DAY);
+            if (model.getDateInvoiced().after(fechaHoy)){
+                message = "Fecha de comprobante incorrecta. Debe ser menor o igual a la fecha de hoy.";
+                return message;
+            }
 
             // Para comprobantes de venta, valido datos para CFE.
             if (model.isSOTrx()){
