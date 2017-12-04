@@ -76,4 +76,41 @@ public class CalloutComercial extends CalloutEngine {
 
         return "";
     }
+
+    /***
+     * Setea ID de socio de negocio, según número de identificación recibido (RUT, CI, etc)
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String partnerByTaxID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if ((value == null) || (((Integer) value).intValue() <= 0)){
+            mTab.setValue(X_C_BPartner.COLUMNNAME_C_BPartner_ID, null);
+            return "";
+        }
+
+        String taxID = ((String)value).trim();
+        if (taxID.equalsIgnoreCase( "")){
+            mTab.setValue(X_C_BPartner.COLUMNNAME_C_BPartner_ID, null);
+            return "";
+        }
+
+        String whereClause = X_C_BPartner.COLUMNNAME_TaxID + " ='" + taxID + "' ";
+        int[] partnerIDs = MBPartner.getAllIDs(I_C_BPartner.Table_Name, whereClause, null);
+
+        if (partnerIDs.length > 0){
+            MBPartner partner = new MBPartner(ctx, partnerIDs[0], null);
+            mTab.setValue(X_C_BPartner.COLUMNNAME_C_BPartner_ID, partner.get_ID());
+        }
+        else{
+            mTab.setValue(X_C_BPartner.COLUMNNAME_C_BPartner_ID, null);
+        }
+
+        return "";
+    }
+
 }
