@@ -94,6 +94,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name DefaultDocMMR_ID */
+    public static final String COLUMNNAME_DefaultDocMMR_ID = "DefaultDocMMR_ID";
+
+	/** Set DefaultDocMMR_ID.
+	  * Documento por defecto para Recepción de Productos de Proveedores
+	  */
+	public void setDefaultDocMMR_ID(int DefaultDocMMR_ID);
+
+	/** Get DefaultDocMMR_ID.
+	  * Documento por defecto para Recepción de Productos de Proveedores
+	  */
+	public int getDefaultDocMMR_ID();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
