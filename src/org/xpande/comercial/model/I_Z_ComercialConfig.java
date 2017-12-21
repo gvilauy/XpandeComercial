@@ -94,6 +94,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name DefaultDocAPI_ID */
+    public static final String COLUMNNAME_DefaultDocAPI_ID = "DefaultDocAPI_ID";
+
+	/** Set DefaultDocAPI_ID.
+	  * Documento por defecto para Factura de Proveedores
+	  */
+	public void setDefaultDocAPI_ID(int DefaultDocAPI_ID);
+
+	/** Get DefaultDocAPI_ID.
+	  * Documento por defecto para Factura de Proveedores
+	  */
+	public int getDefaultDocAPI_ID();
+
     /** Column name DefaultDocMMR_ID */
     public static final String COLUMNNAME_DefaultDocMMR_ID = "DefaultDocMMR_ID";
 

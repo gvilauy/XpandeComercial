@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171215L;
+	private static final long serialVersionUID = 20171221L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -96,6 +96,29 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getC_PaymentTerm_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocAPI_ID.
+		@param DefaultDocAPI_ID 
+		Documento por defecto para Factura de Proveedores
+	  */
+	public void setDefaultDocAPI_ID (int DefaultDocAPI_ID)
+	{
+		if (DefaultDocAPI_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocAPI_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocAPI_ID, Integer.valueOf(DefaultDocAPI_ID));
+	}
+
+	/** Get DefaultDocAPI_ID.
+		@return Documento por defecto para Factura de Proveedores
+	  */
+	public int getDefaultDocAPI_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPI_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
