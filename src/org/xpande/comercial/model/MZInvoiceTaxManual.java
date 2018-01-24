@@ -62,7 +62,7 @@ public class MZInvoiceTaxManual extends X_Z_InvoiceTaxManual {
                     " where c_invoice_id =" + this.getC_Invoice_ID();
 
             // Actualizo total de la invoice
-            action = " update c_invoice set grandtotal = totallines + (amtrounding) + (" + sql + ") " +
+            action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + (" + sql + ") " +
                     " where c_invoice_id =" + this.getC_Invoice_ID();
             DB.executeUpdateEx(action, get_TrxName());
 
