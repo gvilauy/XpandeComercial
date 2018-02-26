@@ -94,6 +94,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getCreatedBy();
 
+    /** Column name DefaultDocAPCDif_ID */
+    public static final String COLUMNNAME_DefaultDocAPCDif_ID = "DefaultDocAPCDif_ID";
+
+	/** Set DefaultDocAPCDif_ID.
+	  * Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
+	  */
+	public void setDefaultDocAPCDif_ID(int DefaultDocAPCDif_ID);
+
+	/** Get DefaultDocAPCDif_ID.
+	  * Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
+	  */
+	public int getDefaultDocAPCDif_ID();
+
     /** Column name DefaultDocAPI_ID */
     public static final String COLUMNNAME_DefaultDocAPI_ID = "DefaultDocAPI_ID";
 

@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20171221L;
+	private static final long serialVersionUID = 20180226L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -96,6 +96,29 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getC_PaymentTerm_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_PaymentTerm_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocAPCDif_ID.
+		@param DefaultDocAPCDif_ID 
+		Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
+	  */
+	public void setDefaultDocAPCDif_ID (int DefaultDocAPCDif_ID)
+	{
+		if (DefaultDocAPCDif_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocAPCDif_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocAPCDif_ID, Integer.valueOf(DefaultDocAPCDif_ID));
+	}
+
+	/** Get DefaultDocAPCDif_ID.
+		@return Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
+	  */
+	public int getDefaultDocAPCDif_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPCDif_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
