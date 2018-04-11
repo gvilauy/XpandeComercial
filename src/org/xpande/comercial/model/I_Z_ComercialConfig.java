@@ -146,6 +146,21 @@ public interface I_Z_ComercialConfig
 	  */
 	public boolean isActive();
 
+    /** Column name LiteralE_Tax_ID */
+    public static final String COLUMNNAME_LiteralE_Tax_ID = "LiteralE_Tax_ID";
+
+	/** Set LiteralE_Tax_ID.
+	  * ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
+	  */
+	public void setLiteralE_Tax_ID(int LiteralE_Tax_ID);
+
+	/** Get LiteralE_Tax_ID.
+	  * ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
+	  */
+	public int getLiteralE_Tax_ID();
+
+	public I_C_Tax getLiteralE_Tax() throws RuntimeException;
+
     /** Column name MarginTolerance */
     public static final String COLUMNNAME_MarginTolerance = "MarginTolerance";
 

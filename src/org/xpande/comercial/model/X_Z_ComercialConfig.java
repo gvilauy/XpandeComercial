@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180226L;
+	private static final long serialVersionUID = 20180411L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -165,6 +165,34 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getDefaultDocMMR_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocMMR_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Tax getLiteralE_Tax() throws RuntimeException
+    {
+		return (I_C_Tax)MTable.get(getCtx(), I_C_Tax.Table_Name)
+			.getPO(getLiteralE_Tax_ID(), get_TrxName());	}
+
+	/** Set LiteralE_Tax_ID.
+		@param LiteralE_Tax_ID 
+		ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
+	  */
+	public void setLiteralE_Tax_ID (int LiteralE_Tax_ID)
+	{
+		if (LiteralE_Tax_ID < 1) 
+			set_Value (COLUMNNAME_LiteralE_Tax_ID, null);
+		else 
+			set_Value (COLUMNNAME_LiteralE_Tax_ID, Integer.valueOf(LiteralE_Tax_ID));
+	}
+
+	/** Get LiteralE_Tax_ID.
+		@return ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
+	  */
+	public int getLiteralE_Tax_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_LiteralE_Tax_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
