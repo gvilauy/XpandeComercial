@@ -3,8 +3,10 @@ package org.xpande.comercial.model;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 
@@ -26,6 +28,7 @@ public class ValidatorComercial implements ModelValidator {
 
         // DB Validations
         engine.addModelChange(I_C_Invoice.Table_Name, this);
+        engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
 
         // Document Validations
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
@@ -98,6 +101,13 @@ public class ValidatorComercial implements ModelValidator {
                     }
                 }
             }
+            else{
+                // Al eliminar una invoice de venta me aseguro que las lineas inout asociadas a las lineas de esta invoice, queden marcadas
+                // como no facturadas.
+                action = " update m_inoutline set isinvoiced='N' where m_inoutline_id in " +
+                        " (select m_inoutline_id from c_invoiceline where c_invoice_id =" + model.get_ID() + ") ";
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
         }
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
@@ -139,6 +149,8 @@ public class ValidatorComercial implements ModelValidator {
 
         String message = null, sql = "";
 
+        MDocType docType = (MDocType) model.getC_DocTypeTarget();
+
         if (timing == TIMING_BEFORE_COMPLETE){
 
             // Valido fecha de comprobante menor o igual al día de hoy
@@ -175,7 +187,6 @@ public class ValidatorComercial implements ModelValidator {
                 }
 
                 // Para notas de credito, valido referencia de facturas (necesarias para CFE)
-                MDocType docType = (MDocType) model.getC_DocTypeTarget();
                 if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
                     // Es obligatorio referenciar al menos una factura
                     sql = " select count(*) from z_invoiceref where c_invoice_id =" + model.get_ID();
@@ -215,6 +226,7 @@ public class ValidatorComercial implements ModelValidator {
                 invoiceTax.set_ValueOfColumn("IsManual", true);
                 invoiceTax.saveEx();
             }
+
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
             // Cuando reactivo un documento, me aseguro de eliminar de la tabla c_invoicetax, aquellos impuestos manuales.
@@ -223,6 +235,35 @@ public class ValidatorComercial implements ModelValidator {
         }
 
         return null;
+    }
+
+    /***
+     * Validaciones para el modelo de Lineas de Invoices.
+     * Xpande. Created by Gabriel Vila on 6/30/17.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInvoiceLine model, int type) throws Exception {
+
+        String mensaje = null;
+
+        if (type == ModelValidator.TYPE_AFTER_DELETE){
+
+            // Al eliminar linea de factura, me aseguro que si hay linea de inout referenciando, la misma quede marcada como no facturada.
+            if (model.getM_InOutLine_ID() > 0){
+                MInOutLine inOutLine = (MInOutLine) model.getM_InOutLine();
+                if ((inOutLine != null) && (inOutLine.get_ID() > 0)){
+                    inOutLine.setIsInvoiced(false);
+                    inOutLine.saveEx();
+                }
+            }
+
+        }
+
+
+        return mensaje;
     }
 
 }
