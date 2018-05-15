@@ -195,6 +195,17 @@ public class ValidatorComercial implements ModelValidator {
                         message = "Es obligatorio indicar Facturas afectadas por este comprobante.";
                         return message;
                     }
+
+                    // No puedo seleccionar productos en esta Nota de Credito, que no pertenezcan a las facturas refereciadas por esta NC.
+                    sql = " select count(l.*) from c_invoiceline l " +
+                            " where l.c_invoice_id =" + model.get_ID() +
+                            " and l.m_product_id is not null " +
+                            " and l.m_product_id not in (select m_product_id from z_invoiceref where c_invoice_id =" + model.get_ID() + ") ";
+                    contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                    if (contador > 0){
+                        message = "Este comprobante tiene productos que no figuran en las Facturas afectadas.";
+                        return message;
+                    }
                 }
             }
 
