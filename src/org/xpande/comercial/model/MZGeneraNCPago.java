@@ -253,10 +253,13 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 			// Si tengo documentos seleccionados para este socio de negocio
 			if (ncPagoLinList.size() > 0){
 
+				MDocType docType = (MDocType) this.getC_DocTypeTarget();
+
 				// Genero cabezal de nota de crédito para este socio de negocio
 				MInvoice invoiceNC = new MInvoice(getCtx(), 0, get_TrxName());
 				invoiceNC.setC_DocTypeTarget_ID(this.getC_DocTypeTarget_ID());
 				invoiceNC.setC_DocType_ID(this.getC_DocTypeTarget_ID());
+				invoiceNC.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
 				invoiceNC.set_ValueOfColumn("SubDocBaseType", "RET");
 				invoiceNC.set_ValueOfColumn("DocumentSerie", "A");
 				invoiceNC.setDocumentNo("NOREC-" + this.getDocumentNo());
