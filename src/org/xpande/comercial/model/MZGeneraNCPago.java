@@ -316,8 +316,15 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 						}
 						invoiceLine.saveEx();
 					}
-
 				}
+
+				// Completo documento de nota de crédito al pago
+				if (!invoiceNC.processIt(DocAction.ACTION_Complete)){
+					m_processMsg = invoiceNC.getProcessMsg();
+					return DocAction.STATUS_Invalid;
+				}
+				invoiceNC.saveEx();
+
 				// Genero relación entre este documento y la nota de credito
 				MZDocReference docReference = new MZDocReference(getCtx(), 0, get_TrxName());
 				docReference.setAD_Table_ID(I_Z_GeneraNCPago.Table_ID);
