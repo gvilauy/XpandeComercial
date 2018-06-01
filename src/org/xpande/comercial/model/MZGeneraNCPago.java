@@ -243,6 +243,10 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
 
+		// Modelo para configuraciones comerciales y documento para notas de credito al pago
+		MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), null);
+		MDocType docType = new MDocType(getCtx(), comercialConfig.getDefaultDocAPCDtoPag_ID(), null);
+
 		// Obtengo socios de negocio a procesar
 		List<MZGeneraNCPagoSocio> ncPagoSocios = this.getNCPagoSocios();
 		for (MZGeneraNCPagoSocio ncPagoSocio: ncPagoSocios){
@@ -253,12 +257,10 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 			// Si tengo documentos seleccionados para este socio de negocio
 			if (ncPagoLinList.size() > 0){
 
-				MDocType docType = (MDocType) this.getC_DocTypeTarget();
-
-				// Genero cabezal de nota de crédito para este socio de negocio
+				// Genero cabezal de nota de crédito al pago para este socio de negocio
 				MInvoice invoiceNC = new MInvoice(getCtx(), 0, get_TrxName());
-				invoiceNC.setC_DocTypeTarget_ID(this.getC_DocTypeTarget_ID());
-				invoiceNC.setC_DocType_ID(this.getC_DocTypeTarget_ID());
+				invoiceNC.setC_DocTypeTarget_ID(docType.get_ID());
+				invoiceNC.setC_DocType_ID(docType.get_ID());
 				invoiceNC.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
 				invoiceNC.set_ValueOfColumn("SubDocBaseType", "RET");
 				invoiceNC.set_ValueOfColumn("DocumentSerie", "A");
@@ -325,7 +327,7 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 				}
 				invoiceNC.saveEx();
 
-				// Genero relación entre este documento y la nota de credito
+				// Genero relación entre este documento y la nota de credito al pago generada
 				MZDocReference docReference = new MZDocReference(getCtx(), 0, get_TrxName());
 				docReference.setAD_Table_ID(I_Z_GeneraNCPago.Table_ID);
 				docReference.setRecord_ID(this.get_ID());
@@ -333,10 +335,10 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 				docReference.setZ_GeneraNCPago_ID(this.get_ID());
 				docReference.setC_BPartner_ID(invoiceNC.getC_BPartner_ID());
 				docReference.setDocumentNoRef(invoiceNC.getDocumentNo());
+				docReference.setTotalAmt(invoiceNC.getGrandTotal());
 				docReference.saveEx();
 			}
 		}
-
 
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);

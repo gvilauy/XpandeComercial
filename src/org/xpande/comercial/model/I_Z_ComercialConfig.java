@@ -107,6 +107,32 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getDefaultDocAPCDif_ID();
 
+    /** Column name DefaultDocAPCDtoPag_ID */
+    public static final String COLUMNNAME_DefaultDocAPCDtoPag_ID = "DefaultDocAPCDtoPag_ID";
+
+	/** Set DefaultDocAPCDtoPag_ID.
+	  * Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
+	  */
+	public void setDefaultDocAPCDtoPag_ID(int DefaultDocAPCDtoPag_ID);
+
+	/** Get DefaultDocAPCDtoPag_ID.
+	  * Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
+	  */
+	public int getDefaultDocAPCDtoPag_ID();
+
+    /** Column name DefaultDocAPIBonif_ID */
+    public static final String COLUMNNAME_DefaultDocAPIBonif_ID = "DefaultDocAPIBonif_ID";
+
+	/** Set DefaultDocAPIBonif_ID.
+	  * Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
+	  */
+	public void setDefaultDocAPIBonif_ID(int DefaultDocAPIBonif_ID);
+
+	/** Get DefaultDocAPIBonif_ID.
+	  * Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
+	  */
+	public int getDefaultDocAPIBonif_ID();
+
     /** Column name DefaultDocAPI_ID */
     public static final String COLUMNNAME_DefaultDocAPI_ID = "DefaultDocAPI_ID";
 

@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180411L;
+	private static final long serialVersionUID = 20180601L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -119,6 +119,52 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getDefaultDocAPCDif_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPCDif_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocAPCDtoPag_ID.
+		@param DefaultDocAPCDtoPag_ID 
+		Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
+	  */
+	public void setDefaultDocAPCDtoPag_ID (int DefaultDocAPCDtoPag_ID)
+	{
+		if (DefaultDocAPCDtoPag_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocAPCDtoPag_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocAPCDtoPag_ID, Integer.valueOf(DefaultDocAPCDtoPag_ID));
+	}
+
+	/** Get DefaultDocAPCDtoPag_ID.
+		@return Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
+	  */
+	public int getDefaultDocAPCDtoPag_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPCDtoPag_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocAPIBonif_ID.
+		@param DefaultDocAPIBonif_ID 
+		Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
+	  */
+	public void setDefaultDocAPIBonif_ID (int DefaultDocAPIBonif_ID)
+	{
+		if (DefaultDocAPIBonif_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocAPIBonif_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocAPIBonif_ID, Integer.valueOf(DefaultDocAPIBonif_ID));
+	}
+
+	/** Get DefaultDocAPIBonif_ID.
+		@return Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
+	  */
+	public int getDefaultDocAPIBonif_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPIBonif_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
