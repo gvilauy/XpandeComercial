@@ -273,8 +273,13 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 				invoiceNC.setIsTaxIncluded(true);
 				invoiceNC.saveEx();
 
-				// Recorro documentos (facturas)
+				// Recorro documentos
+				// Sumo productos de facturas - producos de notas de credito.
+				// Solo recorro facturas y al tener
 				for (MZGeneraNCPagoLin ncPagoLin: ncPagoLinList){
+
+					MInvoice invoiceSource = (MInvoice) ncPagoLin.getC_Invoice();
+					MDocType docTypeSource = (MDocType) invoiceSource.getC_DocTypeTarget();
 
 					// Nueva referencia a factura
 					MZInvoiceRef invoiceRef = new MZInvoiceRef(getCtx(), 0, get_TrxName());
@@ -295,6 +300,12 @@ public class MZGeneraNCPago extends X_Z_GeneraNCPago implements DocAction, DocOp
 					for (MZGeneraNCPagoProd ncPagoProd: ncPagoProdList){
 
 						MProduct product = (MProduct) ncPagoProd.getM_Product();
+						BigDecimal amtDto = ncPagoProd.getAmtDtoNC();
+
+						// Si es nota de crédito doy vuelta el signo del importe del descuento para restar.
+						if (docTypeSource.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_APCredit)){
+							amtDto = amtDto.negate();
+						}
 
 						// Obtengo, si existe, linea de nota de crédito asociada a este producto.
 						// Si no existe, creo nueva linea en la nota de cŕedito para este producto.
