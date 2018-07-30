@@ -17,10 +17,12 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.comercial.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_OrdenDevolucion
  *  @author Adempiere (generated) 
@@ -31,7 +33,7 @@ public class X_Z_OrdenDevolucion extends PO implements I_Z_OrdenDevolucion, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180103L;
+	private static final long serialVersionUID = 20180728L;
 
     /** Standard Constructor */
     public X_Z_OrdenDevolucion (Properties ctx, int Z_OrdenDevolucion_ID, String trxName)
@@ -89,6 +91,26 @@ public class X_Z_OrdenDevolucion extends PO implements I_Z_OrdenDevolucion, I_Pe
       return sb.toString();
     }
 
+	/** Set AmtTotal.
+		@param AmtTotal 
+		Monto total
+	  */
+	public void setAmtTotal (BigDecimal AmtTotal)
+	{
+		set_Value (COLUMNNAME_AmtTotal, AmtTotal);
+	}
+
+	/** Get AmtTotal.
+		@return Monto total
+	  */
+	public BigDecimal getAmtTotal () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_AmtTotal);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	public I_C_BPartner getC_BPartner() throws RuntimeException
     {
 		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
@@ -112,6 +134,34 @@ public class X_Z_OrdenDevolucion extends PO implements I_Z_OrdenDevolucion, I_Pe
 	public int getC_BPartner_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -444,6 +494,23 @@ public class X_Z_OrdenDevolucion extends PO implements I_Z_OrdenDevolucion, I_Pe
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	/** Set Tax ID.
+		@param TaxID 
+		Tax Identification
+	  */
+	public void setTaxID (String TaxID)
+	{
+		set_Value (COLUMNNAME_TaxID, TaxID);
+	}
+
+	/** Get Tax ID.
+		@return Tax Identification
+	  */
+	public String getTaxID () 
+	{
+		return (String)get_Value(COLUMNNAME_TaxID);
 	}
 
 	/** Set Z_OrdenDevolucion ID.

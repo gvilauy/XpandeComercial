@@ -63,6 +63,21 @@ public interface I_Z_OrdenDevolucionLin
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -94,6 +109,19 @@ public interface I_Z_OrdenDevolucionLin
 
 	public I_C_UOM getC_UOM() throws RuntimeException;
 
+    /** Column name DateInvoiced */
+    public static final String COLUMNNAME_DateInvoiced = "DateInvoiced";
+
+	/** Set Date Invoiced.
+	  * Date printed on Invoice
+	  */
+	public void setDateInvoiced(Timestamp DateInvoiced);
+
+	/** Get Date Invoiced.
+	  * Date printed on Invoice
+	  */
+	public Timestamp getDateInvoiced();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -106,6 +134,19 @@ public interface I_Z_OrdenDevolucionLin
 	  * The record is active in the system
 	  */
 	public boolean isActive();
+
+    /** Column name LineTotalAmt */
+    public static final String COLUMNNAME_LineTotalAmt = "LineTotalAmt";
+
+	/** Set Line Total.
+	  * Total line amount incl. Tax
+	  */
+	public void setLineTotalAmt(BigDecimal LineTotalAmt);
+
+	/** Get Line Total.
+	  * Total line amount incl. Tax
+	  */
+	public BigDecimal getLineTotalAmt();
 
     /** Column name MovementQty */
     public static final String COLUMNNAME_MovementQty = "MovementQty";
@@ -134,6 +175,19 @@ public interface I_Z_OrdenDevolucionLin
 	public int getM_Product_ID();
 
 	public I_M_Product getM_Product() throws RuntimeException;
+
+    /** Column name PriceInvoiced */
+    public static final String COLUMNNAME_PriceInvoiced = "PriceInvoiced";
+
+	/** Set Price Invoiced.
+	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	  */
+	public void setPriceInvoiced(BigDecimal PriceInvoiced);
+
+	/** Get Price Invoiced.
+	  * The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	  */
+	public BigDecimal getPriceInvoiced();
 
     /** Column name UPC */
     public static final String COLUMNNAME_UPC = "UPC";
@@ -173,7 +227,7 @@ public interface I_Z_OrdenDevolucionLin
 	/** Get Z_OrdenDevolucion ID	  */
 	public int getZ_OrdenDevolucion_ID();
 
-	public org.xpande.comercial.model.I_Z_OrdenDevolucion getZ_OrdenDevolucion() throws RuntimeException;
+	public I_Z_OrdenDevolucion getZ_OrdenDevolucion() throws RuntimeException;
 
     /** Column name Z_OrdenDevolucionLin_ID */
     public static final String COLUMNNAME_Z_OrdenDevolucionLin_ID = "Z_OrdenDevolucionLin_ID";

@@ -63,6 +63,19 @@ public interface I_Z_OrdenDevolucion
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name AmtTotal */
+    public static final String COLUMNNAME_AmtTotal = "AmtTotal";
+
+	/** Set AmtTotal.
+	  * Monto total
+	  */
+	public void setAmtTotal(BigDecimal AmtTotal);
+
+	/** Get AmtTotal.
+	  * Monto total
+	  */
+	public BigDecimal getAmtTotal();
+
     /** Column name C_BPartner_ID */
     public static final String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
@@ -77,6 +90,21 @@ public interface I_Z_OrdenDevolucion
 	public int getC_BPartner_ID();
 
 	public I_C_BPartner getC_BPartner() throws RuntimeException;
+
+    /** Column name C_Currency_ID */
+    public static final String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
+
+	/** Set Currency.
+	  * The Currency for this record
+	  */
+	public void setC_Currency_ID(int C_Currency_ID);
+
+	/** Get Currency.
+	  * The Currency for this record
+	  */
+	public int getC_Currency_ID();
+
+	public I_C_Currency getC_Currency() throws RuntimeException;
 
     /** Column name C_DocType_ID */
     public static final String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
@@ -262,6 +290,19 @@ public interface I_Z_OrdenDevolucion
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
+
+    /** Column name TaxID */
+    public static final String COLUMNNAME_TaxID = "TaxID";
+
+	/** Set Tax ID.
+	  * Tax Identification
+	  */
+	public void setTaxID(String TaxID);
+
+	/** Get Tax ID.
+	  * Tax Identification
+	  */
+	public String getTaxID();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";

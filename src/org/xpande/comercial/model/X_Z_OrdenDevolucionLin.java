@@ -19,6 +19,7 @@ package org.xpande.comercial.model;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.util.Env;
@@ -32,7 +33,7 @@ public class X_Z_OrdenDevolucionLin extends PO implements I_Z_OrdenDevolucionLin
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180103L;
+	private static final long serialVersionUID = 20180728L;
 
     /** Standard Constructor */
     public X_Z_OrdenDevolucionLin (Properties ctx, int Z_OrdenDevolucionLin_ID, String trxName)
@@ -76,6 +77,34 @@ public class X_Z_OrdenDevolucionLin extends PO implements I_Z_OrdenDevolucionLin
       return sb.toString();
     }
 
+	public I_C_Currency getC_Currency() throws RuntimeException
+    {
+		return (I_C_Currency)MTable.get(getCtx(), I_C_Currency.Table_Name)
+			.getPO(getC_Currency_ID(), get_TrxName());	}
+
+	/** Set Currency.
+		@param C_Currency_ID 
+		The Currency for this record
+	  */
+	public void setC_Currency_ID (int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, Integer.valueOf(C_Currency_ID));
+	}
+
+	/** Get Currency.
+		@return The Currency for this record
+	  */
+	public int getC_Currency_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_Currency_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	public I_C_UOM getC_UOM() throws RuntimeException
     {
 		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
@@ -102,6 +131,43 @@ public class X_Z_OrdenDevolucionLin extends PO implements I_Z_OrdenDevolucionLin
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set Date Invoiced.
+		@param DateInvoiced 
+		Date printed on Invoice
+	  */
+	public void setDateInvoiced (Timestamp DateInvoiced)
+	{
+		set_Value (COLUMNNAME_DateInvoiced, DateInvoiced);
+	}
+
+	/** Get Date Invoiced.
+		@return Date printed on Invoice
+	  */
+	public Timestamp getDateInvoiced () 
+	{
+		return (Timestamp)get_Value(COLUMNNAME_DateInvoiced);
+	}
+
+	/** Set Line Total.
+		@param LineTotalAmt 
+		Total line amount incl. Tax
+	  */
+	public void setLineTotalAmt (BigDecimal LineTotalAmt)
+	{
+		set_Value (COLUMNNAME_LineTotalAmt, LineTotalAmt);
+	}
+
+	/** Get Line Total.
+		@return Total line amount incl. Tax
+	  */
+	public BigDecimal getLineTotalAmt () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_LineTotalAmt);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
 	}
 
 	/** Set Movement Quantity.
@@ -152,6 +218,26 @@ public class X_Z_OrdenDevolucionLin extends PO implements I_Z_OrdenDevolucionLin
 		return ii.intValue();
 	}
 
+	/** Set Price Invoiced.
+		@param PriceInvoiced 
+		The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	  */
+	public void setPriceInvoiced (BigDecimal PriceInvoiced)
+	{
+		set_Value (COLUMNNAME_PriceInvoiced, PriceInvoiced);
+	}
+
+	/** Get Price Invoiced.
+		@return The priced invoiced to the customer (in the currency of the customer's AR price list) - 0 for default price
+	  */
+	public BigDecimal getPriceInvoiced () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_PriceInvoiced);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set UPC/EAN.
 		@param UPC 
 		Bar Code (Universal Product Code or its superset European Article Number)
@@ -169,9 +255,9 @@ public class X_Z_OrdenDevolucionLin extends PO implements I_Z_OrdenDevolucionLin
 		return (String)get_Value(COLUMNNAME_UPC);
 	}
 
-	public org.xpande.comercial.model.I_Z_OrdenDevolucion getZ_OrdenDevolucion() throws RuntimeException
+	public I_Z_OrdenDevolucion getZ_OrdenDevolucion() throws RuntimeException
     {
-		return (org.xpande.comercial.model.I_Z_OrdenDevolucion)MTable.get(getCtx(), org.xpande.comercial.model.I_Z_OrdenDevolucion.Table_Name)
+		return (I_Z_OrdenDevolucion)MTable.get(getCtx(), I_Z_OrdenDevolucion.Table_Name)
 			.getPO(getZ_OrdenDevolucion_ID(), get_TrxName());	}
 
 	/** Set Z_OrdenDevolucion ID.
