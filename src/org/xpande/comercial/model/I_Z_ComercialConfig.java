@@ -159,6 +159,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getDefaultDocMMR_ID();
 
+    /** Column name DefaultDocMMS_ID */
+    public static final String COLUMNNAME_DefaultDocMMS_ID = "DefaultDocMMS_ID";
+
+	/** Set DefaultDocMMS_ID.
+	  * Documento por defecto para Devoluciones a Proveedores
+	  */
+	public void setDefaultDocMMS_ID(int DefaultDocMMS_ID);
+
+	/** Get DefaultDocMMS_ID.
+	  * Documento por defecto para Devoluciones a Proveedores
+	  */
+	public int getDefaultDocMMS_ID();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

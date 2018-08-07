@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180601L;
+	private static final long serialVersionUID = 20180806L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -211,6 +211,29 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getDefaultDocMMR_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocMMR_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocMMS_ID.
+		@param DefaultDocMMS_ID 
+		Documento por defecto para Devoluciones a Proveedores
+	  */
+	public void setDefaultDocMMS_ID (int DefaultDocMMS_ID)
+	{
+		if (DefaultDocMMS_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocMMS_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocMMS_ID, Integer.valueOf(DefaultDocMMS_ID));
+	}
+
+	/** Get DefaultDocMMS_ID.
+		@return Documento por defecto para Devoluciones a Proveedores
+	  */
+	public int getDefaultDocMMS_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocMMS_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
