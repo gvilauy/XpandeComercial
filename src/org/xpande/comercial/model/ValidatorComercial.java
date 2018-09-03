@@ -5,7 +5,7 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.xpande.acct.model.MZAcctConfig;
+import org.xpande.comercial.utils.AcctUtils;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -225,16 +225,14 @@ public class ValidatorComercial implements ModelValidator {
 
             // Contabilidad. Seteo cargo contable para el redondeo en caso de no tener ninguno asociado en este momento.
             if (model.getC_Charge_ID() <= 0){
-                MZAcctConfig acctConfig = MZAcctConfig.getDefault(model.getCtx(), null);
-                if ((acctConfig == null) || (acctConfig.get_ID() <= 0)){
-                    message = "No se encuentra Configuración Contable para obtener Cargo por concepto de Redondeo en comprobantes.";
-                    return message;
-                }
-                if (acctConfig.getCharge_Rounding_ID() <= 0){
+
+                int chargeRoundingID = AcctUtils.getIDCargoRedondeo(model.getCtx(), null);
+
+                if (chargeRoundingID <= 0){
                     message = "Falta parametrizar Cargo por Redondeo en Configuración Contable.";
                     return message;
                 }
-                model.setC_Charge_ID(acctConfig.getCharge_Rounding_ID());
+                model.setC_Charge_ID(chargeRoundingID);
             }
             // Contabilidad. Seteo monto de cargo contable de redondeo según monto digitado por este concepto.
             BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
