@@ -30,6 +30,7 @@ public class ValidatorComercial implements ModelValidator {
         // DB Validations
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
+        engine.addModelChange(I_M_InOut.Table_Name, this);
 
         // Document Validations
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
@@ -113,6 +114,11 @@ public class ValidatorComercial implements ModelValidator {
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
+            // Para cualquier comprobante de la tabla invoice, me aseguro de que se indique Organización distinta de *.
+            if (model.getAD_Org_ID() <= 0){
+                return "Debe indicar Organización para este Documento";
+            }
+
 
             if ((type == ModelValidator.TYPE_BEFORE_NEW) || (model.is_ValueChanged(X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID))){
 
@@ -133,6 +139,31 @@ public class ValidatorComercial implements ModelValidator {
                     model.set_ValueOfColumn("VencimientoManual", false);
                 }
             }
+        }
+
+        return mensaje;
+    }
+
+
+    /***
+     * Validaciones para el modelo de InOut en modulo comercial.
+     * Xpande. Created by Gabriel Vila on 9/29/18.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInOut model, int type) throws Exception {
+
+        String mensaje = null, action = "";
+
+        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+
+            // Para cualquier comprobante de la tabla inout, me aseguro de que se indique Organización distinta de *.
+            if (model.getAD_Org_ID() <= 0){
+                return "Debe indicar Organización para este Documento";
+            }
+
         }
 
         return mensaje;
