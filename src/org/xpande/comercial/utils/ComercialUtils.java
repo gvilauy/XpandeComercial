@@ -9,6 +9,8 @@ import org.compiere.util.DB;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -81,5 +83,56 @@ public final class ComercialUtils {
         return model;
     }
 
+
+    /***
+     * Metodo que obtiene invoices que esten asociadas a un determinado inout.
+     * Xpande. Created by Gabriel Vila on 10/9/18.
+     * @param ctx
+     * @param mInOutID
+     * @param onlyCompleted
+     * @param trxName
+     * @return
+     */
+    public static List<MInvoice> getInvoicesByInOut(Properties ctx, int mInOutID, boolean onlyCompleted, String trxName){
+
+        List<MInvoice> invoiceList = new ArrayList<>();
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+
+            String whereStatus = "";
+            if (onlyCompleted){
+                whereStatus = " and inv.docstatus in ('CO','CL')";
+            }
+
+            sql = " select distinct il.c_invoice_id " +
+                    "from c_invoiceline il " +
+                    "inner join c_invoice inv on il.c_invoice_id = inv.c_invoice_id " +
+                    "where c_invoiceline_id in  " +
+                    " (select c_invoiceline_id from m_matchinv where m_inoutline_id in  " +
+                    " (select m_inoutline_id from m_inoutline where m_inout_id =" + mInOutID + ")) " +
+                    whereStatus;
+
+        	pstmt = DB.prepareStatement(sql, trxName);
+        	rs = pstmt.executeQuery();
+
+        	while(rs.next()){
+                MInvoice invoice = new MInvoice(ctx, rs.getInt("c_invoice_id"), trxName);
+                invoiceList.add(invoice);
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return invoiceList;
+    }
 
 }
