@@ -34,6 +34,7 @@ public class ValidatorComercial implements ModelValidator {
 
         // Document Validations
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
+        engine.addDocValidate(I_M_InOut.Table_Name, this);
 
     }
 
@@ -296,6 +297,30 @@ public class ValidatorComercial implements ModelValidator {
         return null;
     }
 
+
+    /***
+     * Validaciones para acciones de documento de la tabla M_InOut.
+     * Xpande. Created by Gabriel Vila on 10/21/18.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MInOut model, int timing) {
+
+        String message = null, sql = "";
+
+        MDocType docType = (MDocType) model.getC_DocType();
+
+        if (timing == TIMING_BEFORE_REACTIVATE){
+
+
+
+        }
+
+        return null;
+    }
+
+
     /***
      * Validaciones para el modelo de Lineas de Invoices.
      * Xpande. Created by Gabriel Vila on 6/30/17.
@@ -320,7 +345,6 @@ public class ValidatorComercial implements ModelValidator {
             }
 
         }
-
 
         return mensaje;
     }
