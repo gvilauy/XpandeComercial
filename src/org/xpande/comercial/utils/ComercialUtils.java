@@ -7,6 +7,7 @@ import org.compiere.model.Query;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 
+import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -133,6 +134,52 @@ public final class ComercialUtils {
         }
 
         return invoiceList;
+    }
+
+
+    /***
+     * Obtiene precio de ultima factura de compra (API) para un determinado producto en una determinada organización.
+     * @param ctx
+     * @param mProductID
+     * @param adOrgID
+     * @param trxName
+     * @return
+     */
+    public static BigDecimal getProdOrgLastAPInvoicePrice(Properties ctx, int mProductID, int adOrgID, String trxName){
+
+        BigDecimal result = null;
+
+        String sql = "";
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        try{
+            sql = " select a.priceentered " +
+                    "from zv_historicocompras a " +
+                    "inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
+                    "inner join c_doctype doc on inv.c_doctypetarget_id = doc.c_doctype_id " +
+                    "where inv.docstatus ='CO' " +
+                    "and inv.ad_org_id =" + adOrgID +
+                    "and doc.docbasetype='API' " +
+                    "and a.m_product_id =" + mProductID +
+                    "order by inv.dateinvoiced desc, inv.created desc ";
+
+        	pstmt = DB.prepareStatement(sql, trxName);
+        	rs = pstmt.executeQuery();
+
+        	if (rs.next()){
+        	    result = rs.getBigDecimal("priceentered");
+        	}
+        }
+        catch (Exception e){
+            throw new AdempiereException(e);
+        }
+        finally {
+            DB.close(rs, pstmt);
+        	rs = null; pstmt = null;
+        }
+
+        return result;
     }
 
 }
