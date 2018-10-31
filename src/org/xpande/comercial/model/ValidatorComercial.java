@@ -54,6 +54,12 @@ public class ValidatorComercial implements ModelValidator {
         if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
             return modelChange((MInvoice) po, type);
         }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_InvoiceLine.Table_Name)){
+            return modelChange((MInvoiceLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
+            return modelChange((MInOut) po, type);
+        }
 
         return null;
     }
@@ -113,7 +119,7 @@ public class ValidatorComercial implements ModelValidator {
             }
         }
 
-        if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
+        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
             // Para cualquier comprobante de la tabla invoice, me aseguro de que se indique Organización distinta de *.
             if (model.getAD_Org_ID() <= 0){
@@ -141,6 +147,26 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
         }
+        else if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)){
+
+            // Debo considerar la posibilidad de que el usuario haya ingresado de manera manual un monto de Redondeo para el comprobante.
+            // Si es asi, debo reflejarlo en el total del comprobante.
+            if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
+                    || (model.is_ValueChanged("Grandtotal")))){
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
+
+                // Select para monto total de impuestos manuales
+                String sql = " select coalesce(sum(taxamt), 0) as total " +
+                        " from z_invoicetaxmanual " +
+                        " where c_invoice_id =" + model.get_ID();
+
+                action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") + (" + sql + ") " +
+                        " where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+        }
+
 
         return mensaje;
     }
@@ -333,14 +359,65 @@ public class ValidatorComercial implements ModelValidator {
 
         String mensaje = null;
 
-        if (type == ModelValidator.TYPE_AFTER_DELETE){
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
+                || (type == ModelValidator.TYPE_AFTER_DELETE)){
 
-            // Al eliminar linea de factura, me aseguro que si hay linea de inout referenciando, la misma quede marcada como no facturada.
-            if (model.getM_InOutLine_ID() > 0){
-                MInOutLine inOutLine = (MInOutLine) model.getM_InOutLine();
-                if ((inOutLine != null) && (inOutLine.get_ID() > 0)){
-                    inOutLine.setIsInvoiced(false);
-                    inOutLine.saveEx();
+            MInvoice invoice = (MInvoice)model.getC_Invoice();
+            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
+
+            // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
+            // para subtotal. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
+            // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
+            // En retail, se tiene mostrar subtotal = total - impuestos.
+            // Para ello no se modifico el comportamiento original de ADempiere y se mantuvo el campo: TotalLines.
+            // Pero se agrego campo nuevo para desplegarse con el calculo requerido.
+
+            BigDecimal grandTotal = invoice.getGrandTotal();
+            if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
+                invoice.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
+                invoice.saveEx();
+            }
+            else{
+                // Obtengo suma de impuestos para esta invoice
+                String sql = " select sum(coalesce(taxamt,0)) as taxamt from c_invoicetax where c_invoice_id =" + invoice.get_ID();
+                BigDecimal sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (sumImpuestos == null){
+                    sumImpuestos = Env.ZERO;
+                }
+                else{
+                    sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
+                invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
+                invoice.saveEx();
+            }
+
+            if (type == ModelValidator.TYPE_AFTER_DELETE){
+
+                // Al eliminar linea de factura, me aseguro que si hay linea de inout referenciando, la misma quede marcada como no facturada.
+                if (model.getM_InOutLine_ID() > 0){
+                    MInOutLine inOutLine = (MInOutLine) model.getM_InOutLine();
+                    if ((inOutLine != null) && (inOutLine.get_ID() > 0)){
+                        inOutLine.setIsInvoiced(false);
+                        inOutLine.saveEx();
+                    }
+                }
+
+            }
+
+        }
+        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
+                || (type == ModelValidator.TYPE_BEFORE_DELETE)){
+
+            // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
+            // Nuevo campo de subtotal, no se toca el original de ADempiere.
+            BigDecimal lineTotal = model.getLineTotalAmt();
+            if (lineTotal != null){
+                BigDecimal lineTaxAmt = model.getTaxAmt();
+                if (lineTaxAmt != null){
+                    model.set_ValueOfColumn("AmtSubtotal", lineTotal.subtract(lineTaxAmt));
+                }
+                else{
+                    model.set_ValueOfColumn("AmtSubtotal", lineTotal);
                 }
             }
 
