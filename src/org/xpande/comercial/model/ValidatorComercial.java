@@ -5,6 +5,7 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.comercial.utils.AcctUtils;
 
 import java.math.BigDecimal;
@@ -238,11 +239,16 @@ public class ValidatorComercial implements ModelValidator {
                     return message;
                 }
 
-                // Valido que el socio de negocio de este comprobante tenga número de identificación
+                // Valido que el socio de negocio de este comprobante tenga número de identificación según el Tipo de Identificación
                 MBPartner partner = (MBPartner) model.getC_BPartner();
-                if ((partner.getTaxID() == null) || (partner.getTaxID().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Número de Identificación en el Socio de Negocio.";
-                    return message;
+                X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
+                if (taxGroup.getValue() != null){
+                    if (!taxGroup.getValue().equalsIgnoreCase("OTRO")){
+                        if ((partner.getTaxID() == null) || (partner.getTaxID().trim().equalsIgnoreCase(""))){
+                            message = "Es obligatorio indicar Número de Identificación en el Socio de Negocio.";
+                            return message;
+                        }
+                    }
                 }
 
                 // Para notas de credito, valido referencia de facturas (necesarias para CFE)
@@ -282,20 +288,23 @@ public class ValidatorComercial implements ModelValidator {
             model.setIsPayScheduleValid(true);
 
             // Contabilidad. Seteo cargo contable para el redondeo en caso de no tener ninguno asociado en este momento.
-            if (model.getC_Charge_ID() <= 0){
+            MClient client = new MClient(model.getCtx(), model.getAD_Client_ID(), null);
+            if (client.isClientAccounting()){
+                if (model.getC_Charge_ID() <= 0){
 
-                int chargeRoundingID = AcctUtils.getIDCargoRedondeo(model.getCtx(), null);
+                    int chargeRoundingID = AcctUtils.getIDCargoRedondeo(model.getCtx(), null);
 
-                if (chargeRoundingID <= 0){
-                    message = "Falta parametrizar Cargo por Redondeo en Configuración Contable.";
-                    return message;
+                    if (chargeRoundingID <= 0){
+                        message = "Falta parametrizar Cargo por Redondeo en Configuración Contable.";
+                        return message;
+                    }
+                    model.setC_Charge_ID(chargeRoundingID);
                 }
-                model.setC_Charge_ID(chargeRoundingID);
+                // Contabilidad. Seteo monto de cargo contable de redondeo según monto digitado por este concepto.
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
+                model.setChargeAmt(amtRounding);
             }
-            // Contabilidad. Seteo monto de cargo contable de redondeo según monto digitado por este concepto.
-            BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
-            if (amtRounding == null) amtRounding = Env.ZERO;
-            model.setChargeAmt(amtRounding);
 
         }
         else if (timing == TIMING_AFTER_COMPLETE){

@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20180806L;
+	private static final long serialVersionUID = 20181102L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
       super (ctx, Z_ComercialConfig_ID, trxName);
       /** if (Z_ComercialConfig_ID == 0)
         {
+			setCompletaRecepcion (false);
+// N
 			setValue (null);
 			setZ_ComercialConfig_ID (0);
         } */
@@ -72,6 +74,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CompletaRecepcion.
+		@param CompletaRecepcion 
+		Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public void setCompletaRecepcion (boolean CompletaRecepcion)
+	{
+		set_Value (COLUMNNAME_CompletaRecepcion, Boolean.valueOf(CompletaRecepcion));
+	}
+
+	/** Get CompletaRecepcion.
+		@return Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public boolean isCompletaRecepcion () 
+	{
+		Object oo = get_Value(COLUMNNAME_CompletaRecepcion);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	public I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException
     {

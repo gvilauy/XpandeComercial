@@ -63,6 +63,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CompletaRecepcion */
+    public static final String COLUMNNAME_CompletaRecepcion = "CompletaRecepcion";
+
+	/** Set CompletaRecepcion.
+	  * Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public void setCompletaRecepcion(boolean CompletaRecepcion);
+
+	/** Get CompletaRecepcion.
+	  * Si completa o no recepcion de mercadería de manera automatica
+	  */
+	public boolean isCompletaRecepcion();
+
     /** Column name C_PaymentTerm_ID */
     public static final String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
 
