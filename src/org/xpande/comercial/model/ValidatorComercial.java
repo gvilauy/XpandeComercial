@@ -324,9 +324,14 @@ public class ValidatorComercial implements ModelValidator {
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
+
             // Cuando reactivo un documento, me aseguro de eliminar de la tabla c_invoicetax, aquellos impuestos manuales.
             String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
             DB.executeUpdateEx(action, model.get_TrxName());
+
+            // Elimino asientos contables.
+            org.xpande.core.utils.AcctUtils.deleteFact(model.get_Table_ID(), model.get_ID(), model.get_TrxName());
+
         }
 
         return null;
