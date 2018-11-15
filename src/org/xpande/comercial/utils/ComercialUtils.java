@@ -1,10 +1,7 @@
 package org.xpande.comercial.utils;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.MInvoice;
-import org.compiere.model.Query;
-import org.compiere.model.X_C_Invoice;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 
 import java.math.BigDecimal;
@@ -182,4 +179,20 @@ public final class ComercialUtils {
         return result;
     }
 
+
+    /***
+     * Obtiene y retorna
+     * @param ctx
+     * @param cOrderID
+     * @param trxName
+     * @return
+     */
+    public static MInOut getInOutByOrder(Properties ctx, int cOrderID, String trxName){
+
+        String whereClause = X_M_InOut.COLUMNNAME_C_Order_ID + " =" + cOrderID;
+
+        MInOut model = new Query(ctx, I_M_InOut.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
 }

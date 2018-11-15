@@ -7,6 +7,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.comercial.utils.AcctUtils;
+import org.xpande.comercial.utils.ComercialUtils;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -36,6 +37,7 @@ public class ValidatorComercial implements ModelValidator {
         // Document Validations
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
         engine.addDocValidate(I_M_InOut.Table_Name, this);
+        engine.addDocValidate(I_C_Order.Table_Name, this);
 
     }
 
@@ -70,6 +72,9 @@ public class ValidatorComercial implements ModelValidator {
 
         if (po.get_TableName().equalsIgnoreCase(I_C_Invoice.Table_Name)){
             return docValidate((MInvoice) po, timing);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Order.Table_Name)){
+            return docValidate((MOrder) po, timing);
         }
 
         return null;
@@ -352,9 +357,42 @@ public class ValidatorComercial implements ModelValidator {
         MDocType docType = (MDocType) model.getC_DocType();
 
         if (timing == TIMING_BEFORE_REACTIVATE){
+        }
+
+        return null;
+    }
 
 
+    /***
+     * Validaciones para acciones de documento de la tabla C_Order.
+     * Xpande. Created by Gabriel Vila on 11/15/18.
+     * @param model
+     * @param timing
+     * @return
+     */
+    private String docValidate(MOrder model, int timing) {
 
+        String message = null, sql = "";
+
+        if (timing == TIMING_AFTER_COMPLETE){
+
+            // Si es una orden de venta
+            if (model.isSOTrx()){
+                // Si tengo indicado un numero de remito manual
+                String nroRemitoManual = model.get_ValueAsString("NroRemito");
+                if ((nroRemitoManual != null) && (!nroRemitoManual.trim().equalsIgnoreCase(""))){
+                    // Si tengo una documento de Entrega de cliente asociado
+                    MInOut inOut = ComercialUtils.getInOutByOrder(model.getCtx(), model.get_ID(), model.get_TrxName());
+                    if ((inOut != null) && (inOut.get_ID() > 0)){
+                        // Si es una Entrega de cliente, le seteo numero de documento = numero de remito manual ingresado
+                        // por el usuario al momento de hacer la orden de venta.
+                        if (inOut.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_CustomerShipment)){
+                            inOut.setDocumentNo(nroRemitoManual);
+                            inOut.saveEx();
+                        }
+                    }
+                }
+            }
         }
 
         return null;
