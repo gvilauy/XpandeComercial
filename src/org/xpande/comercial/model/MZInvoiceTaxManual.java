@@ -3,6 +3,7 @@ package org.xpande.comercial.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.sql.ResultSet;
@@ -56,13 +57,30 @@ public class MZInvoiceTaxManual extends X_Z_InvoiceTaxManual {
         String action = "", sql = "";
 
         try{
-            // Select para monto total de impuestos manuales
-            sql = " select coalesce(sum(taxamt), 0) as total " +
-                    " from z_invoicetaxmanual " +
-                    " where c_invoice_id =" + this.getC_Invoice_ID();
+            // Obtengo suma de impuestos manuales con el comportamiento de SUMAR AL SUBTOTAL
+            sql = " select coalesce(sum(a.taxamt), 0) as total " +
+                    "from z_invoicetaxmanual a " +
+                    "inner join c_tax t on a.c_tax_id = t.c_tax_id " +
+                    "where c_invoice_id =" + this.getC_Invoice_ID() +
+                    "and ManualTaxAction = 'SUMAR' ";
+
+            BigDecimal sumar = DB.getSQLValueBDEx(get_TrxName(), sql);
+            if (sumar == null) sumar = Env.ZERO;
+
+            // Obtengo suma de impuestos manuales con el comportamiento de RESTAR AL SUBTOTAL
+            sql = " select coalesce(sum(a.taxamt), 0) as total " +
+                    "from z_invoicetaxmanual a " +
+                    "inner join c_tax t on a.c_tax_id = t.c_tax_id " +
+                    "where c_invoice_id =" + this.getC_Invoice_ID() +
+                    "and ManualTaxAction = 'RESTAR' ";
+
+            BigDecimal restar = DB.getSQLValueBDEx(get_TrxName(), sql);
+            if (restar == null) restar = Env.ZERO;
+
+            BigDecimal importeTaxManuales = sumar.subtract(restar);
 
             // Actualizo total de la invoice
-            action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + (" + sql + ") " +
+            action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
                     " where c_invoice_id =" + this.getC_Invoice_ID();
             DB.executeUpdateEx(action, get_TrxName());
 

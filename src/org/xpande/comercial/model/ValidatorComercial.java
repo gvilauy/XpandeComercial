@@ -162,12 +162,31 @@ public class ValidatorComercial implements ModelValidator {
                 BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
                 if (amtRounding == null) amtRounding = Env.ZERO;
 
-                // Select para monto total de impuestos manuales
-                String sql = " select coalesce(sum(taxamt), 0) as total " +
-                        " from z_invoicetaxmanual " +
-                        " where c_invoice_id =" + model.get_ID();
 
-                action = " update c_invoice set grandtotal = Totallines + (" + amtRounding + ") + (" + sql + ") " +
+                // Obtengo suma de impuestos manuales con el comportamiento de SUMAR AL SUBTOTAL
+                String sql = " select coalesce(sum(a.taxamt), 0) as total " +
+                        "from z_invoicetaxmanual a " +
+                        "inner join c_tax t on a.c_tax_id = t.c_tax_id " +
+                        "where c_invoice_id =" + model.get_ID() +
+                        "and ManualTaxAction = 'SUMAR' ";
+
+                BigDecimal sumar = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (sumar == null) sumar = Env.ZERO;
+
+                // Obtengo suma de impuestos manuales con el comportamiento de RESTAR AL SUBTOTAL
+                sql = " select coalesce(sum(a.taxamt), 0) as total " +
+                        "from z_invoicetaxmanual a " +
+                        "inner join c_tax t on a.c_tax_id = t.c_tax_id " +
+                        "where c_invoice_id =" + model.get_ID() +
+                        "and ManualTaxAction = 'RESTAR' ";
+
+                BigDecimal restar = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (restar == null) restar = Env.ZERO;
+
+                BigDecimal importeTaxManuales = sumar.subtract(restar);
+
+                // Actualizo total de la invoice
+                action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
                         " where c_invoice_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
@@ -321,6 +340,7 @@ public class ValidatorComercial implements ModelValidator {
             for (MZInvoiceTaxManual invoiceTaxManual: invoiceTaxManuals){
                 MInvoiceTax invoiceTax = new MInvoiceTax(model.getCtx(), 0, model.get_TrxName());
                 invoiceTax.setC_Invoice_ID(model.get_ID());
+                invoiceTax.setAD_Org_ID(model.getAD_Org_ID());
                 invoiceTax.setC_Tax_ID(invoiceTaxManual.getC_Tax_ID());
                 invoiceTax.setTaxAmt(invoiceTaxManual.getTaxAmt());
                 invoiceTax.set_ValueOfColumn("IsManual", true);
