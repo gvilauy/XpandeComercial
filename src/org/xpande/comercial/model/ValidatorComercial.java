@@ -334,9 +334,6 @@ public class ValidatorComercial implements ModelValidator {
             String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
             DB.executeUpdateEx(action, model.get_TrxName());
 
-            // Elimino asientos contables.
-            org.xpande.core.utils.AcctUtils.deleteFact(model.get_Table_ID(), model.get_ID(), model.get_TrxName());
-
         }
 
         return null;
@@ -410,6 +407,7 @@ public class ValidatorComercial implements ModelValidator {
     public String modelChange(MInvoiceLine model, int type) throws Exception {
 
         String mensaje = null;
+        String action = "";
 
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
                 || (type == ModelValidator.TYPE_AFTER_DELETE)){
@@ -471,6 +469,13 @@ public class ValidatorComercial implements ModelValidator {
                 else{
                     model.set_ValueOfColumn("AmtSubtotal", lineTotal);
                 }
+            }
+
+            if (type == ModelValidator.TYPE_BEFORE_DELETE){
+
+                // Me aseguro de eliminar referencias en tabla M_MatchInv
+                action = " delete from m_matchinv where c_invoiceline_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
             }
 
         }
