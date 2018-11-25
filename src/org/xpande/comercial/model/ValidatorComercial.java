@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 import java.util.List;
 
 /**
+ * Validador de modelos para el modulo Comercial.
  * Product: Adempiere ERP & CRM Smart Business Solution. Localization : Uruguay - Xpande
  * Xpande. Created by Gabriel Vila on 8/23/17.
  */
