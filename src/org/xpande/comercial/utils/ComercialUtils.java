@@ -3,8 +3,11 @@ package org.xpande.comercial.utils;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -136,13 +139,17 @@ public final class ComercialUtils {
 
     /***
      * Obtiene precio de ultima factura de compra (API) para un determinado producto en una determinada organización.
+     * Este precio lo expresa en la moneda recibida por parametro. Si es necesario traducción de moneda, se toma tasa
+     * de cambio del día del comprobante.
+     * Xpande. Created by Gabriel Vila on 12/7/18.
      * @param ctx
      * @param mProductID
      * @param adOrgID
+     * @param cCurrencyID
      * @param trxName
      * @return
      */
-    public static BigDecimal getProdOrgLastAPInvoicePrice(Properties ctx, int mProductID, int adOrgID, String trxName){
+    public static BigDecimal getProdOrgLastAPInvoicePrice(Properties ctx, int mProductID, int adOrgID, int cCurrencyID, String trxName){
 
         BigDecimal result = null;
 
@@ -151,7 +158,7 @@ public final class ComercialUtils {
         ResultSet rs = null;
 
         try{
-            sql = " select a.priceentered " +
+            sql = " select a.ad_client_id, a.priceentered, a.c_currency_id, a.dateinvoiced " +
                     "from zv_historicocompras a " +
                     "inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
                     "inner join c_doctype doc on inv.c_doctypetarget_id = doc.c_doctype_id " +
@@ -165,7 +172,23 @@ public final class ComercialUtils {
         	rs = pstmt.executeQuery();
 
         	if (rs.next()){
-        	    result = rs.getBigDecimal("priceentered");
+
+        	    BigDecimal precio = rs.getBigDecimal("priceentered");
+
+        	    if (rs.getInt("c_currency_id") == cCurrencyID){
+        	        result = precio;
+                }
+                else{
+                    // Moneda del comprobante es distinta a la moneda en la cual debo retornar el precio.
+                    // Aplico conversión a tasa de cambio del día del comprobante
+                    BigDecimal currencyRate = CurrencyUtils.getCurrencyRate(ctx, rs.getInt("ad_client_id"), 0, rs.getInt("c_currency_id"), cCurrencyID, 114, rs.getTimestamp("dateinvoiced"), null);
+                    if ((currencyRate == null) || (currencyRate.compareTo(Env.ZERO) == 0)){
+                        currencyRate = Env.ONE;
+                    }
+
+                    result = precio.multiply(currencyRate).setScale(2, RoundingMode.HALF_UP);
+                }
+
         	}
         }
         catch (Exception e){
