@@ -191,6 +191,14 @@ public class ValidatorComercial implements ModelValidator {
                         " where c_invoice_id =" + model.get_ID();
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
+
+            // Guardo RUT en el comprobante si esta en null
+            if (model.get_ValueAsString("TaxID") == null){
+                if (model.getC_BPartner_ID() > 0){
+                    MBPartner partner = (MBPartner) model.getC_BPartner();
+                    model.set_ValueOfColumn("TaxID", partner.getTaxID());
+                }
+            }
         }
 
 
