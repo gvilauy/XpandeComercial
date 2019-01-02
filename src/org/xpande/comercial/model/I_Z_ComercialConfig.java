@@ -159,6 +159,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getDefaultDocAPI_ID();
 
+    /** Column name DefaultDocInterno_ID */
+    public static final String COLUMNNAME_DefaultDocInterno_ID = "DefaultDocInterno_ID";
+
+	/** Set DefaultDocInterno_ID.
+	  * Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
+	  */
+	public void setDefaultDocInterno_ID(int DefaultDocInterno_ID);
+
+	/** Get DefaultDocInterno_ID.
+	  * Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
+	  */
+	public int getDefaultDocInterno_ID();
+
     /** Column name DefaultDocMMR_ID */
     public static final String COLUMNNAME_DefaultDocMMR_ID = "DefaultDocMMR_ID";
 

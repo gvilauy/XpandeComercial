@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20181102L;
+	private static final long serialVersionUID = 20190102L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -214,6 +214,29 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getDefaultDocAPI_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPI_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocInterno_ID.
+		@param DefaultDocInterno_ID 
+		Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
+	  */
+	public void setDefaultDocInterno_ID (int DefaultDocInterno_ID)
+	{
+		if (DefaultDocInterno_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocInterno_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocInterno_ID, Integer.valueOf(DefaultDocInterno_ID));
+	}
+
+	/** Get DefaultDocInterno_ID.
+		@return Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
+	  */
+	public int getDefaultDocInterno_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocInterno_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
