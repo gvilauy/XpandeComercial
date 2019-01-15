@@ -86,6 +86,29 @@ public final class ComercialUtils {
 
 
     /***
+     * Metodo que obtiene y retorna una invoice de Venta según tipo de document y número.
+     * Xpande. Created by Gabriel Vila on 8/8/18.
+     * @param ctx
+     * @param cDocTypeID
+     * @param documentNo
+     * @param cBPartnerID
+     * @param trxName
+     * @return
+     */
+    public static MInvoice getSalesInvoiceByDoc(Properties ctx, int cDocTypeID, String documentNo, String trxName){
+
+        String whereClause = X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
+                " AND " + X_C_Invoice.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
+                " AND " + X_C_Invoice.COLUMNNAME_IsSOTrx + " ='Y' ";
+
+        MInvoice model = new Query(ctx, I_C_Invoice.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+
+
+    /***
      * Metodo que obtiene invoices que esten asociadas a un determinado inout.
      * Xpande. Created by Gabriel Vila on 10/9/18.
      * @param ctx
