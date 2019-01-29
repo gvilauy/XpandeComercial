@@ -1,6 +1,9 @@
 package org.xpande.comercial.model;
 
+import org.compiere.model.Query;
+
 import java.sql.ResultSet;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -17,4 +20,23 @@ public class MZInvoiceRef extends X_Z_InvoiceRef {
     public MZInvoiceRef(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
+
+    /***
+     * Retorna lista de invoices referenciadas por una determinada invoice recibida.
+     * Xpande. Created by Gabriel Vila on 1/29/19.
+     * @param ctx
+     * @param cInvoiceID
+     * @param trxName
+     * @return
+     */
+    public static List<MZInvoiceRef> getByInvoice(Properties ctx, int cInvoiceID, String trxName){
+
+        String whereClause = X_Z_InvoiceRef.COLUMNNAME_C_Invoice_ID + " =" + cInvoiceID;
+
+        List<MZInvoiceRef> lines = new Query(ctx, I_Z_InvoiceRef.Table_Name, whereClause, trxName).list();
+
+        return lines;
+    }
+
 }
