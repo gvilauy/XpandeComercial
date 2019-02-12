@@ -186,9 +186,17 @@ public class ValidatorComercial implements ModelValidator {
 
                 BigDecimal importeTaxManuales = sumar.subtract(restar);
 
-                // Actualizo total de la invoice
-                action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
-                        " where c_invoice_id =" + model.get_ID();
+                // Actualizo total de la invoice para considerar impuestos manuales.
+                // Considero el caso de impuestos incluidos o no.
+                if (model.isTaxIncluded()){
+                    action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
+                            " where c_invoice_id =" + model.get_ID();
+                }
+                else{
+                    action = " update c_invoice set grandtotal = grandtotal + " + importeTaxManuales +
+                            " where c_invoice_id =" + model.get_ID();
+                }
+
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
 
