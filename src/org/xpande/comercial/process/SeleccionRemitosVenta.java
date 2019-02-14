@@ -76,7 +76,7 @@ public class SeleccionRemitosVenta extends SeleccionRemitosVentaAbstract
 					invoiceLine.setQtyEntered(qtyOpen);
 					invoiceLine.setQtyInvoiced(qtyOpen);
 					invoiceLine.setC_UOM_ID(inOutLine.getC_UOM_ID());
-					invoiceLine.set_ValueOfColumn("IsBySelection", true);
+					invoiceLine.set_ValueOfColumn("IsBySelection", "Y");
 					MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), inOutLine.getM_Product_ID(), null);
 					if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
 						invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
