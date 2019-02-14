@@ -182,14 +182,15 @@ public final class ComercialUtils {
 
         try{
             sql = " select a.ad_client_id, a.priceentered, a.c_currency_id, a.dateinvoiced " +
-                    "from zv_historicocompras a " +
-                    "inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
-                    "inner join c_doctype doc on inv.c_doctypetarget_id = doc.c_doctype_id " +
-                    "where inv.docstatus ='CO' " +
-                    "and inv.ad_org_id =" + adOrgID +
-                    "and doc.docbasetype='API' " +
-                    "and a.m_product_id =" + mProductID +
-                    "order by inv.dateinvoiced desc, inv.created desc ";
+                    " from zv_historicocompras a " +
+                    " inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
+                    " inner join c_doctype doc on inv.c_doctypetarget_id = doc.c_doctype_id " +
+                    " where inv.docstatus ='CO' " +
+                    " and inv.ad_org_id =" + adOrgID +
+                    " and doc.docbasetype='API' " +
+                    " and a.m_product_id =" + mProductID +
+                    " and a.priceentered <> 0 " +
+                    " order by inv.dateinvoiced desc, inv.created desc ";
 
         	pstmt = DB.prepareStatement(sql, trxName);
         	rs = pstmt.executeQuery();
