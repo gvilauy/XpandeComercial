@@ -300,22 +300,25 @@ public class ValidatorComercial implements ModelValidator {
                 // Para notas de credito, valido referencia de facturas (necesarias para CFE)
                 if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
                     // Es obligatorio referenciar al menos una factura
-                    sql = " select count(*) from z_invoiceref where c_invoice_id =" + model.get_ID();
-                    int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
-                    if (contador <= 0){
-                        message = "Es obligatorio indicar Facturas afectadas por este comprobante.";
-                        return message;
-                    }
+                    String referenciaCFE = model.get_ValueAsString("ReferenciaCFE");
+                    if ((referenciaCFE == null) || (referenciaCFE.trim().equalsIgnoreCase(""))){
+                        sql = " select count(*) from z_invoiceref where c_invoice_id =" + model.get_ID();
+                        int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                        if (contador <= 0){
+                            message = "Es obligatorio indicar Facturas afectadas por este comprobante.";
+                            return message;
+                        }
 
-                    // No puedo seleccionar productos en esta Nota de Credito, que no pertenezcan a las facturas refereciadas por esta NC.
-                    sql = " select count(l.*) from c_invoiceline l " +
-                            " where l.c_invoice_id =" + model.get_ID() +
-                            " and l.m_product_id is not null " +
-                            " and l.m_product_id not in (select m_product_id from z_invoiceref where c_invoice_id =" + model.get_ID() + ") ";
-                    contador = DB.getSQLValueEx(model.get_TrxName(), sql);
-                    if (contador > 0){
-                        message = "Este comprobante tiene productos que no figuran en las Facturas afectadas.";
-                        return message;
+                        // No puedo seleccionar productos en esta Nota de Credito, que no pertenezcan a las facturas refereciadas por esta NC.
+                        sql = " select count(l.*) from c_invoiceline l " +
+                                " where l.c_invoice_id =" + model.get_ID() +
+                                " and l.m_product_id is not null " +
+                                " and l.m_product_id not in (select m_product_id from z_invoiceref where c_invoice_id =" + model.get_ID() + ") ";
+                        contador = DB.getSQLValueEx(model.get_TrxName(), sql);
+                        if (contador > 0){
+                            message = "Este comprobante tiene productos que no figuran en las Facturas afectadas.";
+                            return message;
+                        }
                     }
                 }
             }
