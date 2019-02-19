@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -169,10 +170,11 @@ public final class ComercialUtils {
      * @param mProductID
      * @param adOrgID
      * @param cCurrencyID
+     * @param dateInvoiced
      * @param trxName
      * @return
      */
-    public static BigDecimal getProdOrgLastAPInvoicePrice(Properties ctx, int mProductID, int adOrgID, int cCurrencyID, String trxName){
+    public static BigDecimal getProdOrgLastAPInvoicePrice(Properties ctx, int mProductID, int adOrgID, int cCurrencyID, Timestamp dateInvoiced, String trxName){
 
         BigDecimal result = null;
 
@@ -181,6 +183,12 @@ public final class ComercialUtils {
         ResultSet rs = null;
 
         try{
+
+            String whereClause ="";
+            if (dateInvoiced != null){
+                whereClause = " and inv.dateinvoiced <='" + dateInvoiced + "' ";
+            }
+
             sql = " select a.ad_client_id, a.priceentered, a.c_currency_id, a.dateinvoiced " +
                     " from zv_historicocompras a " +
                     " inner join c_invoice inv on a.c_invoice_id = inv.c_invoice_id " +
@@ -189,7 +197,7 @@ public final class ComercialUtils {
                     " and inv.ad_org_id =" + adOrgID +
                     " and doc.docbasetype='API' " +
                     " and a.m_product_id =" + mProductID +
-                    " and a.priceentered <> 0 " +
+                    " and a.priceentered <> 0 " + whereClause +
                     " order by inv.dateinvoiced desc, inv.created desc ";
 
         	pstmt = DB.prepareStatement(sql, trxName);
