@@ -20,6 +20,8 @@ package org.xpande.comercial.process;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.MDocType;
 import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
+import org.compiere.model.PO;
 import org.compiere.util.DB;
 import org.xpande.comercial.model.MZInvoiceRef;
 
@@ -54,9 +56,10 @@ public class SeleccionCompVtasNC extends SeleccionCompVtasNCAbstract
 
 			recordIds.stream().forEach( key -> {
 
-				MInvoice invoiceTo = new MInvoice(getCtx(), key.intValue(), get_TrxName());
+				MInvoice invoiceFrom = new MInvoice(getCtx(), key.intValue(), get_TrxName());
 				MDocType doc = (MDocType) invoice.getC_DocTypeTarget();
 
+				/*
 				// Nueva referencia a factura
 				MZInvoiceRef invoiceRef = new MZInvoiceRef(getCtx(), 0, get_TrxName());
 				invoiceRef.setC_Invoice_ID(this.invoice.get_ID());
@@ -70,6 +73,25 @@ public class SeleccionCompVtasNC extends SeleccionCompVtasNCAbstract
 				invoiceRef.setDueDate(invoiceTo.getDateInvoiced());
 				invoiceRef.setDocumentNoRef(invoiceTo.getDocumentNo());
 				invoiceRef.saveEx();
+				*/
+
+				// Onbtengo lineas del documento origen y las recorro.
+				MInvoiceLine[] lines = invoiceFrom.getLines(true);
+				for (int i = 0; i < lines.length; i++){
+
+					MInvoiceLine invoiceLineFrom = lines[i];
+					MInvoiceLine invoiceLineTo = new MInvoiceLine(this.invoice);
+					PO.copyValues (invoiceLineFrom, invoiceLineTo);
+					invoiceLineTo.set_ValueOfColumn("AD_Client_ID", invoiceLineTo.getAD_Client_ID());
+					invoiceLineTo.setAD_Org_ID(invoiceLineTo.getAD_Org_ID());
+					invoiceLineTo.setC_Invoice_ID(this.invoice.get_ID());
+					invoiceLineTo.setInvoice(this.invoice);
+					if (this.invoice.isSOTrx()){
+						invoiceLineTo.setRef_InvoiceLine_ID(invoiceLineFrom.get_ID());
+					}
+					invoiceLineTo.setProcessed(false);
+					invoiceLineTo.saveEx();
+				}
 
 			});
 
