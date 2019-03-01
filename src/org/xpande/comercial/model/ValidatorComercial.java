@@ -302,13 +302,15 @@ public class ValidatorComercial implements ModelValidator {
                     // Es obligatorio referenciar al menos una factura
                     String referenciaCFE = model.get_ValueAsString("ReferenciaCFE");
                     if ((referenciaCFE == null) || (referenciaCFE.trim().equalsIgnoreCase(""))){
-                        sql = " select count(*) from z_invoiceref where c_invoice_id =" + model.get_ID();
+                        sql = " select count(*) from c_invoiceline where c_invoice_id =" + model.get_ID() +
+                                " AND Ref_InvoiceLine_ID > 0 ";
                         int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
                         if (contador <= 0){
                             message = "Es obligatorio indicar Facturas afectadas por este comprobante.";
                             return message;
                         }
 
+                        /*
                         // No puedo seleccionar productos en esta Nota de Credito, que no pertenezcan a las facturas refereciadas por esta NC.
                         sql = " select count(l.*) from c_invoiceline l " +
                                 " where l.c_invoice_id =" + model.get_ID() +
@@ -319,6 +321,7 @@ public class ValidatorComercial implements ModelValidator {
                             message = "Este comprobante tiene productos que no figuran en las Facturas afectadas.";
                             return message;
                         }
+                        */
                     }
                 }
             }

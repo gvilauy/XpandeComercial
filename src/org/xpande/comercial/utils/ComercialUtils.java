@@ -250,4 +250,23 @@ public final class ComercialUtils {
 
         return model;
     }
+
+
+    /***
+     * Obtiene y retorno modelo de socio de negocio según número de indentificación recibido.
+     * Xpande. Created by Gabriel Vila on 2/28/19.
+     * @param ctx
+     * @param taxID
+     * @param trxName
+     * @return
+     */
+    public static MBPartner getPartnerByTaxID(Properties ctx, String taxID, String trxName){
+
+        String whereClause = X_C_BPartner.COLUMNNAME_TaxID + " ='" + taxID + "'";
+
+        MBPartner model = new Query(ctx, I_C_BPartner.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
 }
