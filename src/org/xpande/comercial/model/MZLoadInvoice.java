@@ -39,6 +39,7 @@ import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.DateUtils;
 import org.xpande.core.utils.PriceListUtils;
+import org.xpande.core.utils.TaxUtils;
 
 /** Generated Model for Z_LoadInvoice
  *  @author Adempiere (generated) 
@@ -254,6 +255,8 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			return DocAction.STATUS_Invalid;
 		}
 
+		MProduct product = (MProduct) this.getM_Product();
+
 		for (MZLoadInvoiceFile loadInvoiceFile: loadInvoiceFileList){
 
 			MPriceList pl = null;
@@ -264,35 +267,46 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
 
 					MZSocioListaPrecio bpl = MZSocioListaPrecio.getByPartnerCurrency(getCtx(), loadInvoiceFile.getC_BPartner_ID(),
-							loadInvoiceFile.getC_Currency_ID(), null);
+							loadInvoiceFile.getC_Currency_ID(), get_TrxName());
 
 					if ((bpl == null) || (bpl.get_ID() <= 0)){
 
 						MBPartner partner = (MBPartner) loadInvoiceFile.getC_BPartner();
 						MCurrency currency = (MCurrency) loadInvoiceFile.getC_Currency();
 
-						// Creo nueva lista de compra para socio de negocio - moneda.
-						pl = new MPriceList(getCtx(), 0, get_TrxName());
-						pl.setName("LISTA " + partner.getName().toUpperCase() + " " + currency.getISO_Code());
-						pl.setC_Currency_ID(currency.get_ID());
-						pl.setIsSOPriceList(false);
-						pl.setIsTaxIncluded(true);
-						pl.setIsNetPrice(false);
-						pl.setPricePrecision(currency.getStdPrecision());
-						pl.setAD_Org_ID(0);
-						pl.saveEx();
+						String nombreLista = "LISTA " + partner.getName().toUpperCase() + " " + currency.getISO_Code();
 
-						MPriceListVersion plv = new MPriceListVersion(pl);
-						plv.setName("VIGENTE " + partner.getName().toUpperCase() + " " + currency.getISO_Code());
-						plv.setM_DiscountSchema_ID(1000000);
-						plv.saveEx();
+						// Me aseguro por las dudas que no existe una lista con este nombre
+						String sql = " select m_pricelist_id from m_pricelist where upper(name) ='" + nombreLista.toUpperCase().trim() + "'";
+						int pricelistIDAux = DB.getSQLValueEx(get_TrxName(), sql);
+						if (pricelistIDAux <= 0){
 
-						bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
-						bpl.setC_BPartner_ID(partner.get_ID());
-						bpl.setC_Currency_ID(currency.get_ID());
-						bpl.setM_PriceList_ID(pl.get_ID());
-						bpl.saveEx();
+							// Creo nueva lista de compra para socio de negocio - moneda.
+							pl = new MPriceList(getCtx(), 0, get_TrxName());
+							pl.setName(nombreLista);
+							pl.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
+							pl.setIsSOPriceList(false);
+							pl.setIsTaxIncluded(true);
+							pl.setIsNetPrice(false);
+							pl.setPricePrecision(currency.getStdPrecision());
+							pl.setAD_Org_ID(0);
+							pl.saveEx();
 
+							MPriceListVersion plv = new MPriceListVersion(pl);
+							plv.setName("VIGENTE " + partner.getName().toUpperCase() + " " + currency.getISO_Code());
+							plv.setM_DiscountSchema_ID(1000000);
+							plv.saveEx();
+
+							bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
+							bpl.setC_BPartner_ID(loadInvoiceFile.getC_BPartner_ID());
+							bpl.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
+							bpl.setM_PriceList_ID(pl.get_ID());
+							bpl.saveEx();
+
+						}
+						else{
+							pl = new MPriceList(getCtx(), pricelistIDAux, get_TrxName());
+						}
 					}
 					else{
 						pl = (MPriceList) bpl.getM_PriceList();
@@ -311,6 +325,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
 				}
 
+				invoice.set_ValueOfColumn("TaxID", loadInvoiceFile.getTaxID());
 				invoice.set_ValueOfColumn("DocumentSerie", loadInvoiceFile.getDocumentSerie());
 				invoice.setDocumentNo(loadInvoiceFile.getDocumentNoRef());
 				invoice.setC_BPartner_ID(loadInvoiceFile.getC_BPartner_ID());
@@ -325,6 +340,10 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				invoice.setGrandTotal(loadInvoiceFile.getGrandTotal());
 
 				if ((pl != null) && (pl.get_ID() > 0)){
+					if (pl.getC_Currency_ID() <= 0){
+						pl.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
+						pl.saveEx();
+					}
 					invoice.setM_PriceList_ID(pl.get_ID());
 				}
 
@@ -355,7 +374,14 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoiceLine.setPriceLimit(loadInvoiceFile.getGrandTotal());
 					invoiceLine.setPriceList(loadInvoiceFile.getGrandTotal());
 
-					invoiceLine.setTax();
+					MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					if ((tax != null) && (tax.get_ID() > 0)){
+						invoiceLine.setC_Tax_ID(tax.get_ID());
+					}
+					else{
+						invoiceLine.setTax();
+					}
+
 					invoiceLine.setTaxAmt();
 					invoiceLine.set_ValueOfColumn("AmtSubtotal", loadInvoiceFile.getGrandTotal());
 					invoiceLine.setLineNetAmt(loadInvoiceFile.getGrandTotal());
@@ -370,6 +396,150 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				loadInvoiceFile.setC_Invoice_ID(invoice.get_ID());
 				loadInvoiceFile.saveEx();
 			}
+		}
+
+		// Obtengo y recorro lineas cargadas manualmente
+		List<MZLoadInvoiceMan> invoiceManList = this.getLinesManual();
+		for (MZLoadInvoiceMan invoiceMan: invoiceManList){
+
+			MBPartner partner = (MBPartner) invoiceMan.getC_BPartner();
+			MCurrency currency = (MCurrency) invoiceMan.getC_Currency();
+
+			MPriceList pl = null;
+
+			if (!this.isSOTrx()){
+				// Si el comprobante es de PROVEEDORES debo asegurarme que hay lista de precios de compra para este socio - moneda.
+				// Si no hay debo crearla.
+				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
+
+					MZSocioListaPrecio bpl = MZSocioListaPrecio.getByPartnerCurrency(getCtx(), invoiceMan.getC_BPartner_ID(),
+							invoiceMan.getC_Currency_ID(), get_TrxName());
+
+					if ((bpl == null) || (bpl.get_ID() <= 0)){
+
+						String nombreLista = "LISTA " + partner.getName().toUpperCase() + " " + currency.getISO_Code();
+
+						// Me aseguro por las dudas que no existe una lista con este nombre
+						String sql = " select m_pricelist_id from m_pricelist where upper(name) ='" + nombreLista.toUpperCase().trim() + "'";
+						int pricelistIDAux = DB.getSQLValueEx(get_TrxName(), sql);
+						if (pricelistIDAux > 0){
+
+							// Creo nueva lista de compra para socio de negocio - moneda.
+							pl = new MPriceList(getCtx(), 0, get_TrxName());
+							pl.setName(nombreLista);
+							pl.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+							pl.setIsSOPriceList(false);
+							pl.setIsTaxIncluded(true);
+							pl.setIsNetPrice(false);
+							pl.setPricePrecision(currency.getStdPrecision());
+							pl.setAD_Org_ID(0);
+							pl.saveEx();
+
+							MPriceListVersion plv = new MPriceListVersion(pl);
+							plv.setName("VIGENTE " + partner.getName().toUpperCase() + " " + currency.getISO_Code());
+							plv.setM_DiscountSchema_ID(1000000);
+							plv.saveEx();
+
+							bpl =  new MZSocioListaPrecio(getCtx(), 0, get_TrxName());
+							bpl.setC_BPartner_ID(invoiceMan.getC_BPartner_ID());
+							bpl.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+							bpl.setM_PriceList_ID(pl.get_ID());
+							bpl.saveEx();
+
+						}
+						else{
+							pl = new MPriceList(getCtx(), pricelistIDAux, get_TrxName());
+						}
+					}
+					else{
+						pl = (MPriceList) bpl.getM_PriceList();
+					}
+				}
+
+				// Generao cabezal de invoice
+				MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
+				MDocType docType = (MDocType) invoiceMan.getC_DocType();
+				invoice.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
+				invoice.setC_DocTypeTarget_ID(docType.get_ID());
+				invoice.setC_DocType_ID(docType.get_ID());
+				invoice.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
+
+				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
+					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
+				}
+
+				invoice.set_ValueOfColumn("TaxID", partner.getTaxID());
+				invoice.set_ValueOfColumn("DocumentSerie", invoiceMan.getDocumentSerie());
+				invoice.setDocumentNo(invoiceMan.getDocumentNoRef());
+				invoice.setC_BPartner_ID(invoiceMan.getC_BPartner_ID());
+				invoice.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+				invoice.setDateInvoiced(invoiceMan.getDateInvoiced());
+				invoice.setDateAcct(invoiceMan.getDateInvoiced());
+				invoice.setIsSOTrx(false);
+				invoice.setIsTaxIncluded(true);
+				invoice.setDescription(invoiceMan.getDescription());
+				invoice.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
+				invoice.setTotalLines(invoiceMan.getGrandTotal());
+				invoice.setGrandTotal(invoiceMan.getGrandTotal());
+
+				if ((pl != null) && (pl.get_ID() > 0)){
+					if (pl.getC_Currency_ID() <= 0){
+						pl.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+						pl.saveEx();
+					}
+					invoice.setM_PriceList_ID(pl.get_ID());
+				}
+
+				// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
+				if (!this.isContabilizar()){
+					invoice.setDocStatus(DocAction.STATUS_Completed);
+					invoice.setDocAction(DocAction.ACTION_None);
+					invoice.setProcessed(true);
+					invoice.setPosted(true);
+				}
+
+				invoice.saveEx();
+
+				// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
+				if (this.isContabilizar()){
+					MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
+					invoiceLine.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
+					invoiceLine.setM_Product_ID(this.getM_Product_ID());
+
+					invoiceLine.setQtyEntered(Env.ONE);
+					invoiceLine.setQtyInvoiced(Env.ONE);
+					invoiceLine.setC_UOM_ID(100);
+
+					invoiceLine.set_ValueOfColumn("PricePO", invoiceMan.getGrandTotal());
+					invoiceLine.set_ValueOfColumn("PricePONoDto", invoiceMan.getGrandTotal());
+					invoiceLine.setPriceEntered(invoiceMan.getGrandTotal());
+					invoiceLine.setPriceActual(invoiceMan.getGrandTotal());
+					invoiceLine.setPriceLimit(invoiceMan.getGrandTotal());
+					invoiceLine.setPriceList(invoiceMan.getGrandTotal());
+
+					MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					if ((tax != null) && (tax.get_ID() > 0)){
+						invoiceLine.setC_Tax_ID(tax.get_ID());
+					}
+					else{
+						invoiceLine.setTax();
+					}
+
+					invoiceLine.setTaxAmt();
+					invoiceLine.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
+					invoiceLine.setLineNetAmt(invoiceMan.getGrandTotal());
+					invoiceLine.saveEx();
+
+					if (!invoice.processIt(DocAction.ACTION_Complete)){
+						m_processMsg = invoice.getProcessMsg();
+						return DocAction.STATUS_Invalid;
+					}
+				}
+
+				invoiceMan.setC_Invoice_ID(invoice.get_ID());
+				invoiceMan.saveEx();
+			}
+
 		}
 
 		//	User Validation
@@ -585,6 +755,20 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 		return lines;
 	}
 
+
+	/***
+	 * Obtiene y retorna lista de comprobantes cargados manualmente.
+	 * Xpande. Created by Gabriel Vila on 3/4/19.
+	 * @return
+	 */
+	public List<MZLoadInvoiceMan> getLinesManual(){
+
+		String whereClause = X_Z_LoadInvoiceMan.COLUMNNAME_Z_LoadInvoice_ID + " =" + this.get_ID();
+
+		List<MZLoadInvoiceMan> lines = new Query(getCtx(), I_Z_LoadInvoiceMan.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 
 	/***
 	 * Valida lineas leídas desde archivo y carga información asociada.
