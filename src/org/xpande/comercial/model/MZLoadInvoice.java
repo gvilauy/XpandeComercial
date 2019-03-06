@@ -246,17 +246,24 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 		//
 
 
-		// Obtengo y Recorro lineas procesadas desde el archivo
+		// Obtengo lineas procesadas desde el archivo
 		List<MZLoadInvoiceFile> loadInvoiceFileList = this.getLinesConfirmed();
+
+		// Obtengo lineas cargadas manualmente
+		List<MZLoadInvoiceMan> invoiceManList = this.getLinesManual();
+
 
 		// Si no tengo lineas aviso y salgo.
 		if (loadInvoiceFileList.size() <= 0){
-			m_processMsg = "El documento no tiene lineas para procesar";
-			return DocAction.STATUS_Invalid;
+			if (invoiceManList.size() <= 0){
+				m_processMsg = "El documento no tiene lineas para procesar";
+				return DocAction.STATUS_Invalid;
+			}
 		}
 
 		MProduct product = (MProduct) this.getM_Product();
 
+		// Recorro y proceso lineas leídas desde archivo
 		for (MZLoadInvoiceFile loadInvoiceFile: loadInvoiceFileList){
 
 			MPriceList pl = null;
@@ -398,8 +405,8 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			}
 		}
 
-		// Obtengo y recorro lineas cargadas manualmente
-		List<MZLoadInvoiceMan> invoiceManList = this.getLinesManual();
+
+		// Recorro y proceso lineas cargadas manualmente.
 		for (MZLoadInvoiceMan invoiceMan: invoiceManList){
 
 			MBPartner partner = (MBPartner) invoiceMan.getC_BPartner();
