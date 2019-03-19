@@ -6,6 +6,8 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.X_C_TaxGroup;
+import org.xpande.cfe.model.MZCFEConfig;
+import org.xpande.cfe.model.MZCFEConfigDocSend;
 import org.xpande.comercial.utils.AcctUtils;
 import org.xpande.comercial.utils.ComercialUtils;
 
@@ -377,6 +379,21 @@ public class ValidatorComercial implements ModelValidator {
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // Si estoy reactivando un comprobante de venta, me aseguro que el documento no este configurado para CFE.
+            if (model.isSOTrx()){
+
+                // Obtengo configuracion de envío de CFE para documento referenciado, si tengo aviso que no se puede reactivar..
+                MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), null);
+                if ((cfeConfig == null) || (cfeConfig.get_ID() <= 0)){
+                    MZCFEConfigDocSend configDocRefSend = cfeConfig.getConfigDocumentoCFE(model.getAD_Org_ID(), model.getC_DocTypeTarget_ID());
+                    if ((configDocRefSend != null) && (configDocRefSend.get_ID() > 0)){
+                        if (configDocRefSend.isActive()){
+                            return "No es posible Reactivar este Documento ya que fue enviado electrónicamente a la DGI.";
+                        }
+                    }
+                }
+            }
 
             // Cuando reactivo un documento, me aseguro de eliminar de la tabla c_invoicetax, aquellos impuestos manuales.
             String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
