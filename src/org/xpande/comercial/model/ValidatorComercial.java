@@ -523,6 +523,11 @@ public class ValidatorComercial implements ModelValidator {
         else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
                 || (type == ModelValidator.TYPE_BEFORE_DELETE)){
 
+            // Me aseguro que esta linea tenga producto o cargo
+            if ((model.getM_Product_ID() <= 0) && (model.getC_Charge_ID() <= 0)){
+                return "Debe indicar producto o cargo para esta linea.";
+            }
+
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
             BigDecimal lineTotal = model.getLineTotalAmt();
