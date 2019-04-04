@@ -320,7 +320,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					}
 				}
 
-				// Generao cabezal de invoice
+				// Genero cabezal de invoice
 				MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
 				MDocType docType = (MDocType) loadInvoiceFile.getC_DocType();
 				invoice.setAD_Org_ID(loadInvoiceFile.getAD_OrgTrx_ID());
@@ -776,6 +776,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 		return lines;
 	}
+
 
 	/***
 	 * Valida lineas leídas desde archivo y carga información asociada.
