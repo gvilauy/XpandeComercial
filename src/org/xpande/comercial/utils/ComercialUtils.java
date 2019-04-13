@@ -269,4 +269,23 @@ public final class ComercialUtils {
         return model;
     }
 
+
+    /***
+     * Obtiene y retorna modelo de producto según código recibido.
+     * Xpande. Created by Gabriel Vila on 4/13/19.
+     * @param ctx
+     * @param value
+     * @param trxName
+     * @return
+     */
+    public static MProduct getProductByValue(Properties ctx, String value, String trxName){
+
+        String whereClause = X_M_Product.COLUMNNAME_Value + " ='" + value + "'";
+
+        MProduct model = new Query(ctx, I_M_Product.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+
 }
