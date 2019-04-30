@@ -381,7 +381,8 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoiceLine.setPriceLimit(loadInvoiceFile.getGrandTotal());
 					invoiceLine.setPriceList(loadInvoiceFile.getGrandTotal());
 
-					MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
 					if ((tax != null) && (tax.get_ID() > 0)){
 						invoiceLine.setC_Tax_ID(tax.get_ID());
 					}
@@ -524,7 +525,8 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoiceLine.setPriceLimit(invoiceMan.getGrandTotal());
 					invoiceLine.setPriceList(invoiceMan.getGrandTotal());
 
-					MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+					MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
 					if ((tax != null) && (tax.get_ID() > 0)){
 						invoiceLine.setC_Tax_ID(tax.get_ID());
 					}

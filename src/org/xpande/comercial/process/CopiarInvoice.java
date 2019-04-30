@@ -76,6 +76,7 @@ public class CopiarInvoice extends SvrProcess {
                 invoiceLineTo.setAD_Org_ID(invoiceLineTo.getAD_Org_ID());
                 invoiceLineTo.setC_Invoice_ID(this.invoiceTo.get_ID());
                 invoiceLineTo.setInvoice(this.invoiceTo);
+                invoiceLineTo.setProcessed(false);
                 invoiceLineTo.saveEx();
             }
 
