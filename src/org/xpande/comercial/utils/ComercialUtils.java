@@ -244,7 +244,8 @@ public final class ComercialUtils {
      */
     public static MInOut getInOutByOrder(Properties ctx, int cOrderID, String trxName){
 
-        String whereClause = X_M_InOut.COLUMNNAME_C_Order_ID + " =" + cOrderID;
+        String whereClause = X_M_InOut.COLUMNNAME_C_Order_ID + " =" + cOrderID +
+                " AND " + X_M_InOut.COLUMNNAME_DocStatus + " !='VO' ";
 
         MInOut model = new Query(ctx, I_M_InOut.Table_Name, whereClause, trxName).first();
 
