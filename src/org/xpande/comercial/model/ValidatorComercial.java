@@ -523,6 +523,33 @@ public class ValidatorComercial implements ModelValidator {
         else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
                 || (type == ModelValidator.TYPE_BEFORE_DELETE)){
 
+            MInvoice invoice = (MInvoice)model.getC_Invoice();
+            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
+
+            // Para comprobantes de compra
+            if (!invoice.isSOTrx()){
+
+                if (type != ModelValidator.TYPE_BEFORE_DELETE){
+                    // Obtengo configuracion comercial
+                    MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+                    if ((comercialConfig == null) || (comercialConfig.get_ID() <= 0)){
+                        return "No se pudo obtener información de Configuración Comercial";
+                    }
+                    // Si esta linea pertenece a un documento interno
+                    if (comercialConfig.getDefaultDocInterno_ID() == docType.get_ID()){
+                        // Valido que la tasa de impuesto sea CERO, no se permite otra tasa
+                        if (model.getC_Tax_ID() > 0){
+                            MTax tax = (MTax) model.getC_Tax();
+                            if (tax.getRate() != null){
+                                if (tax.getRate().compareTo(Env.ZERO) != 0){
+                                    return "No es posible ingresar lineas que muevan impuestos en comprobantes del tipo DOCUMENTO INTERNO";
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Me aseguro que esta linea tenga producto o cargo
             if ((model.getM_Product_ID() <= 0) && (model.getC_Charge_ID() <= 0)){
                 return "Debe indicar producto o cargo para esta linea.";
