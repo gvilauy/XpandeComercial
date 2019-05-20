@@ -331,6 +331,10 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
 					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
 				}
+				else{
+					invoice.set_ValueOfColumn("SubDocBaseType", null);
+				}
+
 
 				invoice.set_ValueOfColumn("TaxID", loadInvoiceFile.getTaxID());
 				invoice.set_ValueOfColumn("DocumentSerie", loadInvoiceFile.getDocumentSerie());
@@ -474,6 +478,9 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
 					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
+				}
+				else{
+					invoice.set_ValueOfColumn("SubDocBaseType", null);
 				}
 
 				invoice.set_ValueOfColumn("TaxID", partner.getTaxID());
