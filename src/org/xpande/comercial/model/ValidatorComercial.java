@@ -98,6 +98,11 @@ public class ValidatorComercial implements ModelValidator {
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE) {
 
+            // Me aseguro eliminar CHATS asociados a esta invoice
+            action = " delete from cm_chat where ad_table_id =" + X_C_Invoice.Table_ID +
+                    " and record_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
             // Orignalmente adempiere no permite borrar cabezales en estado BORRADOR.
             // Lo que hace es permitir anular un borrador o en progreso.
             // Esto genera mucho dato basura y por lo tanto es deseable poder eliminar cabezales.
