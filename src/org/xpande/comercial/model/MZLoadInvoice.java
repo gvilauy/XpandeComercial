@@ -35,6 +35,7 @@ import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZSocioListaPrecio;
 import org.xpande.core.utils.DateUtils;
@@ -268,7 +269,9 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 			MPriceList pl = null;
 
+			// Lista de precios segun compra/venta
 			if (!this.isSOTrx()){
+
 				// Si el comprobante es de PROVEEDORES debo asegurarme que hay lista de precios de compra para este socio - moneda.
 				// Si no hay debo crearla.
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
@@ -319,97 +322,108 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 						pl = (MPriceList) bpl.getM_PriceList();
 					}
 				}
+			}
+			else{
+				pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), loadInvoiceFile.getAD_OrgTrx_ID(), loadInvoiceFile.getC_Currency_ID(), true, get_TrxName());
+				if ((pl == null) || (pl.get_ID() <= 0)){
+					m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + loadInvoiceFile.getC_Currency_ID() +
+									" y Organización (ID: " + loadInvoiceFile.getAD_OrgTrx_ID() + ")";
+					return DocAction.STATUS_Invalid;
+				}
+			}
 
-				// Genero cabezal de invoice
-				MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
-				MDocType docType = (MDocType) loadInvoiceFile.getC_DocType();
-				invoice.setAD_Org_ID(loadInvoiceFile.getAD_OrgTrx_ID());
-				invoice.setC_DocTypeTarget_ID(docType.get_ID());
-				invoice.setC_DocType_ID(docType.get_ID());
-				invoice.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
+			// Genero cabezal de invoice
+			MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
+			MDocType docType = (MDocType) loadInvoiceFile.getC_DocType();
+			invoice.setAD_Org_ID(loadInvoiceFile.getAD_OrgTrx_ID());
+			invoice.setC_DocTypeTarget_ID(docType.get_ID());
+			invoice.setC_DocType_ID(docType.get_ID());
+			invoice.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
 
+			if (!this.isSOTrx()){
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
 					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
 				}
 				else{
 					invoice.set_ValueOfColumn("SubDocBaseType", null);
 				}
+			}
 
+			invoice.set_ValueOfColumn("TaxID", loadInvoiceFile.getTaxID());
+			invoice.set_ValueOfColumn("DocumentSerie", loadInvoiceFile.getDocumentSerie());
+			invoice.setDocumentNo(loadInvoiceFile.getDocumentNoRef());
+			invoice.setC_BPartner_ID(loadInvoiceFile.getC_BPartner_ID());
+			invoice.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
+			invoice.setDateInvoiced(loadInvoiceFile.getDateInvoiced());
+			invoice.setDateAcct(loadInvoiceFile.getDateInvoiced());
+			invoice.setIsSOTrx(this.isSOTrx());
+			invoice.setIsTaxIncluded(true);
+			invoice.setDescription(loadInvoiceFile.getDescription());
+			invoice.set_ValueOfColumn("AmtSubtotal", loadInvoiceFile.getGrandTotal());
+			invoice.setTotalLines(loadInvoiceFile.getGrandTotal());
+			invoice.setGrandTotal(loadInvoiceFile.getGrandTotal());
 
-				invoice.set_ValueOfColumn("TaxID", loadInvoiceFile.getTaxID());
-				invoice.set_ValueOfColumn("DocumentSerie", loadInvoiceFile.getDocumentSerie());
-				invoice.setDocumentNo(loadInvoiceFile.getDocumentNoRef());
-				invoice.setC_BPartner_ID(loadInvoiceFile.getC_BPartner_ID());
-				invoice.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
-				invoice.setDateInvoiced(loadInvoiceFile.getDateInvoiced());
-				invoice.setDateAcct(loadInvoiceFile.getDateInvoiced());
-				invoice.setIsSOTrx(false);
-				invoice.setIsTaxIncluded(true);
-				invoice.setDescription(loadInvoiceFile.getDescription());
-				invoice.set_ValueOfColumn("AmtSubtotal", loadInvoiceFile.getGrandTotal());
-				invoice.setTotalLines(loadInvoiceFile.getGrandTotal());
-				invoice.setGrandTotal(loadInvoiceFile.getGrandTotal());
-
-				if ((pl != null) && (pl.get_ID() > 0)){
-					if (pl.getC_Currency_ID() <= 0){
-						pl.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
-						pl.saveEx();
-					}
-					invoice.setM_PriceList_ID(pl.get_ID());
+			if ((pl != null) && (pl.get_ID() > 0)){
+				if (pl.getC_Currency_ID() <= 0){
+					pl.setC_Currency_ID(loadInvoiceFile.getC_Currency_ID());
+					pl.saveEx();
 				}
+				invoice.setM_PriceList_ID(pl.get_ID());
+			}
 
-				// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
-				if (!this.isContabilizar()){
-					invoice.setDocStatus(DocAction.STATUS_Completed);
-					invoice.setDocAction(DocAction.ACTION_None);
-					invoice.setProcessed(true);
-					invoice.setPosted(true);
-				}
+			// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
+			if (!this.isContabilizar()){
+				invoice.setDocStatus(DocAction.STATUS_Completed);
+				invoice.setDocAction(DocAction.ACTION_None);
+				invoice.setProcessed(true);
+				invoice.setPosted(true);
+			}
 
-				invoice.saveEx();
+			invoice.saveEx();
 
-				// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
-				if (this.isContabilizar()){
-					MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
-					invoiceLine.setAD_Org_ID(loadInvoiceFile.getAD_OrgTrx_ID());
-					invoiceLine.setM_Product_ID(this.getM_Product_ID());
+			// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
+			if (this.isContabilizar()){
+				MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
+				invoiceLine.setAD_Org_ID(loadInvoiceFile.getAD_OrgTrx_ID());
+				invoiceLine.setM_Product_ID(this.getM_Product_ID());
 
-					invoiceLine.setQtyEntered(Env.ONE);
-					invoiceLine.setQtyInvoiced(Env.ONE);
-					invoiceLine.setC_UOM_ID(100);
+				invoiceLine.setQtyEntered(Env.ONE);
+				invoiceLine.setQtyInvoiced(Env.ONE);
+				invoiceLine.setC_UOM_ID(100);
 
+				if (!this.isSOTrx()){
 					invoiceLine.set_ValueOfColumn("PricePO", loadInvoiceFile.getGrandTotal());
 					invoiceLine.set_ValueOfColumn("PricePONoDto", loadInvoiceFile.getGrandTotal());
-					invoiceLine.setPriceEntered(loadInvoiceFile.getGrandTotal());
-					invoiceLine.setPriceActual(loadInvoiceFile.getGrandTotal());
-					invoiceLine.setPriceLimit(loadInvoiceFile.getGrandTotal());
-					invoiceLine.setPriceList(loadInvoiceFile.getGrandTotal());
+				}
+				invoiceLine.setPriceEntered(loadInvoiceFile.getGrandTotal());
+				invoiceLine.setPriceActual(loadInvoiceFile.getGrandTotal());
+				invoiceLine.setPriceLimit(loadInvoiceFile.getGrandTotal());
+				invoiceLine.setPriceList(loadInvoiceFile.getGrandTotal());
 
-					//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
-					MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
-					if ((tax != null) && (tax.get_ID() > 0)){
-						invoiceLine.setC_Tax_ID(tax.get_ID());
-					}
-					else{
-						invoiceLine.setTax();
-					}
-
-					invoiceLine.setTaxAmt();
-					invoiceLine.set_ValueOfColumn("AmtSubtotal", loadInvoiceFile.getGrandTotal());
-					invoiceLine.setLineNetAmt(loadInvoiceFile.getGrandTotal());
-					invoiceLine.saveEx();
-
-					if (!invoice.processIt(DocAction.ACTION_Complete)){
-						m_processMsg = invoice.getProcessMsg();
-						return DocAction.STATUS_Invalid;
-					}
+				//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+				MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+				if ((tax != null) && (tax.get_ID() > 0)){
+					invoiceLine.setC_Tax_ID(tax.get_ID());
+				}
+				else{
+					invoiceLine.setTax();
 				}
 
-				loadInvoiceFile.setC_Invoice_ID(invoice.get_ID());
-				loadInvoiceFile.saveEx();
-			}
-		}
+				invoiceLine.setTaxAmt();
+				invoiceLine.set_ValueOfColumn("AmtSubtotal", loadInvoiceFile.getGrandTotal());
+				invoiceLine.setLineNetAmt(loadInvoiceFile.getGrandTotal());
+				invoiceLine.saveEx();
 
+				if (!invoice.processIt(DocAction.ACTION_Complete)){
+					m_processMsg = invoice.getProcessMsg();
+					return DocAction.STATUS_Invalid;
+				}
+			}
+
+			loadInvoiceFile.setC_Invoice_ID(invoice.get_ID());
+			loadInvoiceFile.saveEx();
+
+		}
 
 		// Contador de lineas manuales
 		int contadorLinMan = 0;
@@ -470,97 +484,109 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 						pl = (MPriceList) bpl.getM_PriceList();
 					}
 				}
+			}
+			else{
+				pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), invoiceMan.getAD_OrgTrx_ID(), invoiceMan.getC_Currency_ID(), true, get_TrxName());
+				if ((pl == null) || (pl.get_ID() <= 0)){
+					m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + invoiceMan.getC_Currency_ID() +
+							" y Organización (ID: " + invoiceMan.getAD_OrgTrx_ID() + ")";
+					return DocAction.STATUS_Invalid;
+				}
+			}
 
-				// Generao cabezal de invoice
-				MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
-				MDocType docType = (MDocType) invoiceMan.getC_DocType();
-				invoice.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
-				invoice.setC_DocTypeTarget_ID(docType.get_ID());
-				invoice.setC_DocType_ID(docType.get_ID());
-				invoice.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
+			// Genero cabezal de invoice
+			MInvoice invoice = new MInvoice(getCtx(), 0, get_TrxName());
+			MDocType docType = (MDocType) invoiceMan.getC_DocType();
+			invoice.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
+			invoice.setC_DocTypeTarget_ID(docType.get_ID());
+			invoice.setC_DocType_ID(docType.get_ID());
+			invoice.set_ValueOfColumn("DocBaseType", docType.getDocBaseType());
 
+			if (!this.isSOTrx()){
 				if (this.getTipoCargaInvoicePO().equalsIgnoreCase(X_Z_LoadInvoice.TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES)){
 					invoice.set_ValueOfColumn("SubDocBaseType", "RET");
 				}
 				else{
 					invoice.set_ValueOfColumn("SubDocBaseType", null);
 				}
-
-				invoice.set_ValueOfColumn("TaxID", partner.getTaxID());
-				invoice.set_ValueOfColumn("DocumentSerie", invoiceMan.getDocumentSerie());
-				invoice.setDocumentNo(invoiceMan.getDocumentNoRef());
-				invoice.setC_BPartner_ID(invoiceMan.getC_BPartner_ID());
-				invoice.setC_Currency_ID(invoiceMan.getC_Currency_ID());
-				invoice.setDateInvoiced(invoiceMan.getDateInvoiced());
-				invoice.setDateAcct(invoiceMan.getDateInvoiced());
-				invoice.setIsSOTrx(false);
-				invoice.setIsTaxIncluded(true);
-				invoice.setDescription(invoiceMan.getDescription());
-				invoice.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
-				invoice.setTotalLines(invoiceMan.getGrandTotal());
-				invoice.setGrandTotal(invoiceMan.getGrandTotal());
-
-				if ((pl != null) && (pl.get_ID() > 0)){
-					if (pl.getC_Currency_ID() <= 0){
-						pl.setC_Currency_ID(invoiceMan.getC_Currency_ID());
-						pl.saveEx();
-					}
-					invoice.setM_PriceList_ID(pl.get_ID());
-				}
-
-				// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
-				if (!this.isContabilizar()){
-					invoice.setDocStatus(DocAction.STATUS_Completed);
-					invoice.setDocAction(DocAction.ACTION_None);
-					invoice.setProcessed(true);
-					invoice.setPosted(true);
-				}
-
-				invoice.saveEx();
-
-				// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
-				if (this.isContabilizar()){
-					MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
-					invoiceLine.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
-					invoiceLine.setM_Product_ID(this.getM_Product_ID());
-
-					invoiceLine.setQtyEntered(Env.ONE);
-					invoiceLine.setQtyInvoiced(Env.ONE);
-					invoiceLine.setC_UOM_ID(100);
-
-					invoiceLine.set_ValueOfColumn("PricePO", invoiceMan.getGrandTotal());
-					invoiceLine.set_ValueOfColumn("PricePONoDto", invoiceMan.getGrandTotal());
-					invoiceLine.setPriceEntered(invoiceMan.getGrandTotal());
-					invoiceLine.setPriceActual(invoiceMan.getGrandTotal());
-					invoiceLine.setPriceLimit(invoiceMan.getGrandTotal());
-					invoiceLine.setPriceList(invoiceMan.getGrandTotal());
-
-					//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
-					MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
-					if ((tax != null) && (tax.get_ID() > 0)){
-						invoiceLine.setC_Tax_ID(tax.get_ID());
-					}
-					else{
-						invoiceLine.setTax();
-					}
-
-					invoiceLine.setTaxAmt();
-					invoiceLine.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
-					invoiceLine.setLineNetAmt(invoiceMan.getGrandTotal());
-					invoiceLine.saveEx();
-
-					if (!invoice.processIt(DocAction.ACTION_Complete)){
-						m_processMsg = invoice.getProcessMsg();
-						return DocAction.STATUS_Invalid;
-					}
-				}
-
-				invoiceMan.setC_Invoice_ID(invoice.get_ID());
-				invoiceMan.saveEx();
-
-				contadorLinMan++;
 			}
 
+			invoice.set_ValueOfColumn("TaxID", partner.getTaxID());
+			invoice.set_ValueOfColumn("DocumentSerie", invoiceMan.getDocumentSerie());
+			invoice.setDocumentNo(invoiceMan.getDocumentNoRef());
+			invoice.setC_BPartner_ID(invoiceMan.getC_BPartner_ID());
+			invoice.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+			invoice.setDateInvoiced(invoiceMan.getDateInvoiced());
+			invoice.setDateAcct(invoiceMan.getDateInvoiced());
+			invoice.setIsSOTrx(this.isSOTrx());
+			invoice.setIsTaxIncluded(true);
+			invoice.setDescription(invoiceMan.getDescription());
+			invoice.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
+			invoice.setTotalLines(invoiceMan.getGrandTotal());
+			invoice.setGrandTotal(invoiceMan.getGrandTotal());
+
+			if ((pl != null) && (pl.get_ID() > 0)){
+				if (pl.getC_Currency_ID() <= 0){
+					pl.setC_Currency_ID(invoiceMan.getC_Currency_ID());
+					pl.saveEx();
+				}
+				invoice.setM_PriceList_ID(pl.get_ID());
+			}
+
+			// Si no tengo que contabilizar las invoices generadas, la dejo como completa y posteada.
+			if (!this.isContabilizar()){
+				invoice.setDocStatus(DocAction.STATUS_Completed);
+				invoice.setDocAction(DocAction.ACTION_None);
+				invoice.setProcessed(true);
+				invoice.setPosted(true);
+			}
+
+			invoice.saveEx();
+
+			// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
+			if (this.isContabilizar()){
+				MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
+				invoiceLine.setAD_Org_ID(invoiceMan.getAD_OrgTrx_ID());
+				invoiceLine.setM_Product_ID(this.getM_Product_ID());
+
+				invoiceLine.setQtyEntered(Env.ONE);
+				invoiceLine.setQtyInvoiced(Env.ONE);
+				invoiceLine.setC_UOM_ID(100);
+
+				if (!this.isSOTrx()){
+					invoiceLine.set_ValueOfColumn("PricePO", invoiceMan.getGrandTotal());
+					invoiceLine.set_ValueOfColumn("PricePONoDto", invoiceMan.getGrandTotal());
+				}
+
+				invoiceLine.setPriceEntered(invoiceMan.getGrandTotal());
+				invoiceLine.setPriceActual(invoiceMan.getGrandTotal());
+				invoiceLine.setPriceLimit(invoiceMan.getGrandTotal());
+				invoiceLine.setPriceList(invoiceMan.getGrandTotal());
+
+				//MTax tax = TaxUtils.getLastTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+				MTax tax = TaxUtils.getDefaultTaxByCategory(getCtx(), product.getC_TaxCategory_ID(), null);
+				if ((tax != null) && (tax.get_ID() > 0)){
+					invoiceLine.setC_Tax_ID(tax.get_ID());
+				}
+				else{
+					invoiceLine.setTax();
+				}
+
+				invoiceLine.setTaxAmt();
+				invoiceLine.set_ValueOfColumn("AmtSubtotal", invoiceMan.getGrandTotal());
+				invoiceLine.setLineNetAmt(invoiceMan.getGrandTotal());
+				invoiceLine.saveEx();
+
+				if (!invoice.processIt(DocAction.ACTION_Complete)){
+					m_processMsg = invoice.getProcessMsg();
+					return DocAction.STATUS_Invalid;
+				}
+			}
+
+			invoiceMan.setC_Invoice_ID(invoice.get_ID());
+			invoiceMan.saveEx();
+
+			contadorLinMan++;
 		}
 
 		// Actualizo contadores generales con cantidad de lineas manuales procesadas.
@@ -806,6 +832,13 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 		try{
 
+			MZCFEConfig cfeConfig = MZCFEConfig.getDefault(getCtx(), null);
+			if (this.isSOTrx()){
+				if ((cfeConfig == null) || (cfeConfig.get_ID() <= 0)){
+					throw new AdempiereException("Falta parametrización en el sistema para conceptos de CFE");
+				}
+			}
+
 			int contadorOK = 0;
 			int contadorError = 0;
 
@@ -855,6 +888,17 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					if ((docType == null) || (docType.get_ID() <= 0)){
 						loadInvoiceFile.setIsConfirmed(false);
 						loadInvoiceFile.setErrorMsg("No existe Tipo de Documento definido en el sistema con ese Número : " + loadInvoiceFile.getC_DocType_ID());
+					}
+					if ((this.isSOTrx() && !docType.isSOTrx()) || (!this.isSOTrx() && docType.isSOTrx())){
+						loadInvoiceFile.setIsConfirmed(false);
+						loadInvoiceFile.setErrorMsg("El Tipo de Documento ingresado no es igual a la opción Compra/Venta de este Documento: " + loadInvoiceFile.getC_DocType_ID());
+					}
+					// Si estoy procesano comprobantes de venta, me aseguro que el documento recibido no EMITA CFE !!.
+					if (this.isSOTrx()){
+						if (cfeConfig.isDocSendCFE(loadInvoiceFile.getAD_OrgTrx_ID(), docType.get_ID())){
+							loadInvoiceFile.setIsConfirmed(false);
+							loadInvoiceFile.setErrorMsg("El Tipo de Documento ingresado NO debe emitir Facturación Electrónica (CFE): " + loadInvoiceFile.getC_DocType_ID());
+						}
 					}
 				}
 
