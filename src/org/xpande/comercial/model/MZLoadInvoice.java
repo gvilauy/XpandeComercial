@@ -411,6 +411,9 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 		}
 
 
+		// Contador de lineas manuales
+		int contadorLinMan = 0;
+
 		// Recorro y proceso lineas cargadas manualmente.
 		for (MZLoadInvoiceMan invoiceMan: invoiceManList){
 
@@ -554,8 +557,16 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 				invoiceMan.setC_Invoice_ID(invoice.get_ID());
 				invoiceMan.saveEx();
+
+				contadorLinMan++;
 			}
 
+		}
+
+		// Actualizo contadores generales con cantidad de lineas manuales procesadas.
+		if (contadorLinMan > 0){
+			this.setQty(this.getQty() + contadorLinMan);
+			this.setQtyCount(this.getQtyCount() + contadorLinMan);
 		}
 
 		//	User Validation
