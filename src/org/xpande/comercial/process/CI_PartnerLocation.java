@@ -38,7 +38,11 @@ public class CI_PartnerLocation extends SvrProcess {
 
         	    MLocation location = new MLocation(getCtx(), rs.getInt("c_country_id"), rs.getInt("c_region_id"),
                         rs.getString("city"), get_TrxName());
-        	    location.setC_City_ID(rs.getInt("c_city_id"));
+
+        	    if (rs.getInt("c_city_id") > 0){
+                    location.setC_City_ID(rs.getInt("c_city_id"));
+                }
+
         	    location.setAddress1(rs.getString("address1"));
         	    location.setRegionName(rs.getString("regionname"));
         	    location.saveEx();
