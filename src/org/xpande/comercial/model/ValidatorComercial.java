@@ -390,7 +390,7 @@ public class ValidatorComercial implements ModelValidator {
 
                 // Obtengo configuracion de envío de CFE para documento referenciado, si tengo aviso que no se puede reactivar..
                 MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), null);
-                if ((cfeConfig == null) || (cfeConfig.get_ID() <= 0)){
+                if ((cfeConfig != null) && (cfeConfig.get_ID() > 0)){
                     MZCFEConfigDocSend configDocRefSend = cfeConfig.getConfigDocumentoCFE(model.getAD_Org_ID(), model.getC_DocTypeTarget_ID());
                     if ((configDocRefSend != null) && (configDocRefSend.get_ID() > 0)){
                         if (configDocRefSend.isActive()){
