@@ -132,6 +132,9 @@ public final class ComercialUtils {
             if (onlyCompleted){
                 whereStatus = " and inv.docstatus in ('CO','CL')";
             }
+            else{
+                whereStatus = " and inv.docstatus not in ('CO','CL','VO')";
+            }
 
             sql = " select distinct il.c_invoice_id " +
                     "from c_invoiceline il " +
