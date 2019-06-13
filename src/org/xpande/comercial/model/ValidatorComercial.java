@@ -35,6 +35,7 @@ public class ValidatorComercial implements ModelValidator {
         // DB Validations
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
+        engine.addModelChange(I_M_InOutLine.Table_Name, this);
         engine.addModelChange(I_M_InOut.Table_Name, this);
 
         // Document Validations
@@ -62,6 +63,9 @@ public class ValidatorComercial implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_InvoiceLine.Table_Name)){
             return modelChange((MInvoiceLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_InOutLine.Table_Name)){
+            return modelChange((MInOutLine) po, type);
         }
         else if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
             return modelChange((MInOut) po, type);
@@ -581,6 +585,31 @@ public class ValidatorComercial implements ModelValidator {
             }
 
         }
+
+        return mensaje;
+    }
+
+
+    /***
+     * Validaciones para el modelo de Lineas de InOut.
+     * Xpande. Created by Gabriel Vila on 6/13/19.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MInOutLine model, int type) throws Exception {
+
+        String mensaje = null;
+        String action = "";
+
+        if (type == ModelValidator.TYPE_BEFORE_DELETE){
+
+            // Me aseguro de eliminar referencias en tabla M_CostDetails
+            action = " delete from m_costdetail where m_inoutline_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+        }
+
 
         return mensaje;
     }
