@@ -605,6 +605,11 @@ public class ValidatorComercial implements ModelValidator {
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE){
 
+            // Valido que no se pueda eliminar una linea marcada como facturada
+            if (model.isInvoiced()){
+                return "No es posible eliminar esta linea ya que esta asociada a un comprobante comercial.";
+            }
+
             // Me aseguro de eliminar referencias en tabla M_CostDetails
             action = " delete from m_costdetail where m_inoutline_id =" + model.get_ID();
             DB.executeUpdateEx(action, model.get_TrxName());
