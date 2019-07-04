@@ -226,7 +226,7 @@ public class ValidatorComercial implements ModelValidator {
             }
 
             // Me aseguro que si el medio de pago no es efectivo, el campo caja destino quede en blanco
-            if ((model.getPaymentRule() != null) && (model.getPaymentRule().equalsIgnoreCase(X_C_Invoice.PAYMENTRULE_Cash))){
+            if ((model.getPaymentRule() != null) && (!model.getPaymentRule().equalsIgnoreCase(X_C_Invoice.PAYMENTRULE_Cash))){
                 if (model.get_ValueAsInt("C_CashBook_ID") > 0){
                     action = " update c_invoice set C_CashBook_ID = null " +
                             " where c_invoice_id =" + model.get_ID();
@@ -235,7 +235,7 @@ public class ValidatorComercial implements ModelValidator {
             }
 
             // Me aseguro que si no esta marcada la opcion de Transferencia de Saldo, el campo de socio de negocio relacionado quede en blanco
-            if (model.get_ValueAsBoolean("TransferSaldo")){
+            if (!model.get_ValueAsBoolean("TransferSaldo")){
                 if (model.get_ValueAsInt("C_BPartnerRelation_ID") > 0){
                     action = " update c_invoice set C_BPartnerRelation_ID = null " +
                             " where c_invoice_id =" + model.get_ID();
