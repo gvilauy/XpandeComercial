@@ -10,6 +10,7 @@ import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.cfe.model.MZCFEConfigDocSend;
 import org.xpande.comercial.utils.AcctUtils;
 import org.xpande.comercial.utils.ComercialUtils;
+import org.xpande.core.model.MZProductoUPC;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -443,11 +444,71 @@ public class ValidatorComercial implements ModelValidator {
      */
     private String docValidate(MInOut model, int timing) {
 
-        String message = null, sql = "";
+        String message = null;
+        String action = "";
 
-        MDocType docType = (MDocType) model.getC_DocType();
+        if (timing == TIMING_BEFORE_COMPLETE){
 
-        if (timing == TIMING_BEFORE_REACTIVATE){
+            // En recepciones de productos
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+
+                // Obtengo y recorro lineas
+                MInOutLine[] mInOutLines = model.getLines();
+                for (int i = 0; i < mInOutLines.length; i++){
+                    MInOutLine mInOutLine = mInOutLines[i];
+
+                    // Asocio posibles nuevos códigos de barra a los productos del socio de negocio
+                    if (mInOutLine.get_Value("UPC") != null){
+                        String upc = mInOutLine.get_ValueAsString("UPC").toString().trim();
+                        if (!upc.equalsIgnoreCase("")){
+                            MZProductoUPC pupc = MZProductoUPC.getByUPC(model.getCtx(), upc, model.get_TrxName());
+                            if ((pupc == null) || (pupc.get_ID() <= 0)){
+                                // Asocio nuevo UPC a este producto
+                                pupc = new MZProductoUPC(model.getCtx(), 0, model.get_TrxName());
+                                pupc.setUPC(upc);
+                                pupc.setM_Product_ID(mInOutLine.getM_Product_ID());
+                                pupc.saveEx();
+                            }
+                            else{
+                                if (pupc.getM_Product_ID() != mInOutLine.getM_Product_ID()){
+                                    MProduct prod = (MProduct)pupc.getM_Product();
+                                    return "El Código de Barras ingresado (" + upc + ") esta asociado a otro Producto : " + prod.getValue() + " - " + prod.getName();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // En recepciones de productos
+            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
+
+                // Valido que esta recepcion no tenga facturas asociadas que NO esten completas o cerradas.
+                // Obtengo lista de facturas que pueden estar asociadas
+                List<MInvoice> invoiceList = ComercialUtils.getInvoicesByInOut(model.getCtx(), model.get_ID(), false, model.get_TrxName());
+                if (invoiceList.size() > 0){
+
+                    message = "No se puede reactivar este documento ya que tiene las siguientes facturas NO COMPLETAS y asociadas : ";
+                    for (MInvoice invoice: invoiceList){
+                        message += invoice.getDocumentNo() + ", ";
+                    }
+                    message += " debe eliminarlas para poder continuar.";
+                    return message;
+                }
+
+                // Refreso estado de marca de invoiced en lineas de esta recepcion, esto es para no permitir editar lineas que estan facturadas
+                action = " update m_inoutline set isinvoiced ='N', processed='N' where m_inout_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                action = " update m_inoutline set isinvoiced ='Y' where m_inout_id =" + model.get_ID() +
+                        " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id in " +
+                        " (select a.c_invoice_id from z_recepcionprodfact a " +
+                        " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
+                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
         }
 
         return null;
