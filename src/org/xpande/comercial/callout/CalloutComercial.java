@@ -113,4 +113,34 @@ public class CalloutComercial extends CalloutEngine {
         return "";
     }
 
+
+    /***
+     * Setea ID localización de socio de negocio, según ID de socio de negocio recibido.
+     * Xpande. Created by Gabriel Vila on 7/25/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String partnerLocationByPartnerID(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        Integer C_BPartner_ID = (Integer)value;
+        if (C_BPartner_ID == null || C_BPartner_ID.intValue() == 0){
+            return "";
+        }
+
+        MBPartnerLocation[] arrayLocations = MBPartnerLocation.getForBPartner(ctx, C_BPartner_ID, null);
+        if (arrayLocations.length > 0){
+            mTab.setValue(X_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, arrayLocations[0].get_ID());
+        }
+        else {
+            mTab.setValue(X_C_Invoice.COLUMNNAME_C_BPartner_Location_ID, null);
+        }
+
+        return "";
+    }
+
+
 }
