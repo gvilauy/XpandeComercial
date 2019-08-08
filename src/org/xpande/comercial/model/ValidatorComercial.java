@@ -302,28 +302,33 @@ public class ValidatorComercial implements ModelValidator {
             if (model.isSOTrx()){
 
                 // Valido que la localización de este comprobante de venta tenga departamento, ciudad y dirección.
+                MBPartner partner = (MBPartner) model.getC_BPartner();
                 MBPartnerLocation partnerLocation = (MBPartnerLocation) model.getC_BPartner_Location();
                 MLocation location = (MLocation) partnerLocation.getC_Location();
                 if ((location.getAddress1() == null) || (location.getAddress1().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Dirección en la Localización del Socio de Negocio de este Comprobante.";
+                    message = "Es obligatorio indicar Dirección en la Localización del Socio de Negocio de este Comprobante " +
+                            "(código : " + partner.getValue() + ")";
                     return message;
                 }
                 if ((location.getRegionName() == null) || (location.getRegionName().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Departamento en la Localización del Socio de Negocio de este Comprobante.";
+                    message = "Es obligatorio indicar Departamento en la Localización del Socio de Negocio de este Comprobante " +
+                            "(código : " + partner.getValue() + ")";
                     return message;
                 }
                 if ((location.getCity() == null) || (location.getCity().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Ciudad en la Localización del Socio de Negocio de este Comprobante.";
+                    message = "Es obligatorio indicar Ciudad en la Localización del Socio de Negocio de este Comprobante " +
+                            "(código : " + partner.getValue() + ")";
                     return message;
                 }
 
                 // Valido que el socio de negocio de este comprobante tenga número de identificación según el Tipo de Identificación
-                MBPartner partner = (MBPartner) model.getC_BPartner();
+
                 X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
                 if (taxGroup.getValue() != null){
                     if (!taxGroup.getValue().equalsIgnoreCase("OTRO")){
                         if ((partner.getTaxID() == null) || (partner.getTaxID().trim().equalsIgnoreCase(""))){
-                            message = "Es obligatorio indicar Número de Identificación en el Socio de Negocio.";
+                            message = "Es obligatorio indicar Número de Identificación en el Socio de Negocio " +
+                                    "(código : " + partner.getValue() + ")";
                             return message;
                         }
                     }
