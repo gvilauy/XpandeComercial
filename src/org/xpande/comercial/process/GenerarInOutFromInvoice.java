@@ -47,7 +47,7 @@ public class GenerarInOutFromInvoice extends SvrProcess {
             }
         }
 
-        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, this.documentNo, this.cBPartnerID, get_TrxName());
+        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, null, this.documentNo, this.cBPartnerID, get_TrxName());
     }
 
     @Override

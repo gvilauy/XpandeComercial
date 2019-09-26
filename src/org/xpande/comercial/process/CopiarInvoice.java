@@ -51,7 +51,7 @@ public class CopiarInvoice extends SvrProcess {
             }
         }
 
-        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, this.documentNo, this.cBPartnerID, get_TrxName());
+        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, this.documentSerie, this.documentNo, this.cBPartnerID, get_TrxName());
         this.invoiceTo = new MInvoice(this.getCtx(), this.getRecord_ID(), this.get_TrxName());
 
     }

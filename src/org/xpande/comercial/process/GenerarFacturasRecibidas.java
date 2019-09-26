@@ -64,11 +64,15 @@ public class GenerarFacturasRecibidas extends SvrProcess {
         	while(rs.next()){
 
         	    String manualDocumentNo = rs.getString("ManualDocumentNo").trim();
+        	    String serie = rs.getString("DocumentSerie");
+
+        	    if (serie != null) serie = serie.trim();
+
         	    int cCurrencyID = rs.getInt("C_Currency_ID");
 
-                // Verifico si no existe un comprobante con el mismo: numero, tipo de documento y socio de negocio.
+                // Verifico si no existe un comprobante con la misma: serie, numero, tipo de documento y socio de negocio.
                 // En caso de existir, no genero de nuevo este comprobante.
-                MInvoice invoiceAux = ComercialUtils.getInvoiceByDocPartner(getCtx(), docType.get_ID(), manualDocumentNo, mInOut.getC_BPartner_ID(), get_TrxName());
+                MInvoice invoiceAux = ComercialUtils.getInvoiceByDocPartner(getCtx(), docType.get_ID(), serie, manualDocumentNo, mInOut.getC_BPartner_ID(), get_TrxName());
                 if ((invoiceAux != null) && (invoiceAux.get_ID() > 0)){
                     continue;
                 }

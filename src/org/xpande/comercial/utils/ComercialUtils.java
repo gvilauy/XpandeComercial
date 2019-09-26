@@ -69,14 +69,22 @@ public final class ComercialUtils {
      * Xpande. Created by Gabriel Vila on 8/8/18.
      * @param ctx
      * @param cDocTypeID
+     * @param serie
      * @param documentNo
      * @param cBPartnerID
      * @param trxName
      * @return
      */
-    public static MInvoice getInvoiceByDocPartner(Properties ctx, int cDocTypeID, String documentNo, int cBPartnerID, String trxName){
+    public static MInvoice getInvoiceByDocPartner(Properties ctx, int cDocTypeID, String serie, String documentNo,
+                                                  int cBPartnerID, String trxName){
+
+        String whereSerie = "";
+        if ((serie != null) && (!serie.trim().equalsIgnoreCase(""))){
+            whereSerie = " AND DocumentSerie ='" + serie + "' ";
+        }
 
         String whereClause = X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
+                whereSerie +
                 " AND " + X_C_Invoice.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
                 " AND " + X_C_Invoice.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
 
