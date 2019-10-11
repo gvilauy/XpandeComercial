@@ -6,6 +6,7 @@ import org.compiere.model.*;
 import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.compiere.util.Trx;
 import org.xpande.core.utils.CurrencyUtils;
 
 import java.math.BigDecimal;
@@ -323,12 +324,18 @@ public final class ComercialUtils {
             pi.setPrintPreview(true);
 
             MPInstancePara para = new MPInstancePara(instance, 10);
-            para.setParameter("C_Invoice_ID", new BigDecimal(processID));
+            para.setParameter("C_Invoice_ID", new BigDecimal(cInvoiceID));
             para.saveEx();
 
-            pi.setRecord_ID(cInvoiceID);
+            MPInstancePara para1 = new MPInstancePara(instance, 20);
+            para1.setParameter("Record_ID", cInvoiceID);
+            para1.saveEx();
 
-            ProcessCtl worker = new ProcessCtl(null, 0, pi, null);
+
+            pi.setRecord_ID(cInvoiceID);
+            pi.setPrintPreview(false);
+
+            ProcessCtl worker = new ProcessCtl(null, 0, pi, Trx.get(trxName, false));
             worker.start();
 
         }

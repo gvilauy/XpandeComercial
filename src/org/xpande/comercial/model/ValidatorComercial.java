@@ -424,17 +424,6 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
 
-            // Si es comprobante de venta
-            if (model.isSOTrx()){
-                // Si tengo flag de imprimir comprobante automáticamente al completarlo
-                if (comercialConfig.isImprimirAuto()){
-                    // Imprimo comprobante
-                    Trx trxModel = Trx.get(model.get_TrxName(), false);
-                    trxModel.commit();
-                    ComercialUtils.imprimirComprobanteVenta(model.getCtx(), model.get_ID(), model.get_TrxName());
-                }
-            }
-
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
