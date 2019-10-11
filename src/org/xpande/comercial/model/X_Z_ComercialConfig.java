@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190102L;
+	private static final long serialVersionUID = 20191011L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -41,6 +41,8 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
       /** if (Z_ComercialConfig_ID == 0)
         {
 			setCompletaRecepcion (false);
+// N
+			setImprimirAuto (false);
 // N
 			setValue (null);
 			setZ_ComercialConfig_ID (0);
@@ -286,6 +288,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set ImprimirAuto.
+		@param ImprimirAuto 
+		Si se imprime automáticamente o no un determinado documento
+	  */
+	public void setImprimirAuto (boolean ImprimirAuto)
+	{
+		set_Value (COLUMNNAME_ImprimirAuto, Boolean.valueOf(ImprimirAuto));
+	}
+
+	/** Get ImprimirAuto.
+		@return Si se imprime automáticamente o no un determinado documento
+	  */
+	public boolean isImprimirAuto () 
+	{
+		Object oo = get_Value(COLUMNNAME_ImprimirAuto);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	public I_C_Tax getLiteralE_Tax() throws RuntimeException

@@ -198,6 +198,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getDefaultDocMMS_ID();
 
+    /** Column name ImprimirAuto */
+    public static final String COLUMNNAME_ImprimirAuto = "ImprimirAuto";
+
+	/** Set ImprimirAuto.
+	  * Si se imprime automáticamente o no un determinado documento
+	  */
+	public void setImprimirAuto(boolean ImprimirAuto);
+
+	/** Get ImprimirAuto.
+	  * Si se imprime automáticamente o no un determinado documento
+	  */
+	public boolean isImprimirAuto();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 

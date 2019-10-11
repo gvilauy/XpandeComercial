@@ -1,7 +1,9 @@
 package org.xpande.comercial.utils;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.apps.ProcessCtl;
 import org.compiere.model.*;
+import org.compiere.process.ProcessInfo;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.utils.CurrencyUtils;
@@ -299,5 +301,40 @@ public final class ComercialUtils {
         return model;
     }
 
+    /***
+     * Imprimie comprobante de venta.
+     * Xpande. Created by Gabriel Vila on 10/11/19.
+     * @param ctx
+     * @param cInvoiceID
+     * @param trxName
+     */
+    public static  void imprimirComprobanteVenta(Properties ctx, int cInvoiceID, String trxName){
+
+        try{
+
+            int processID = MProcess.getProcess_ID("Z_RP_FacturaTermica", trxName);
+
+            // Mando vista previa del reporte asociado al formato de etiqueta
+            MPInstance instance = new MPInstance(Env.getCtx(), processID, 0);
+            instance.saveEx();
+
+            ProcessInfo pi = new ProcessInfo ("Impresion Comprobante", processID);
+            pi.setAD_PInstance_ID (instance.getAD_PInstance_ID());
+            pi.setPrintPreview(true);
+
+            MPInstancePara para = new MPInstancePara(instance, 10);
+            para.setParameter("C_Invoice_ID", new BigDecimal(processID));
+            para.saveEx();
+
+            pi.setRecord_ID(cInvoiceID);
+
+            ProcessCtl worker = new ProcessCtl(null, 0, pi, null);
+            worker.start();
+
+        }
+        catch (Exception e){
+            System.out.println(e.getMessage());
+        }
+    }
 
 }

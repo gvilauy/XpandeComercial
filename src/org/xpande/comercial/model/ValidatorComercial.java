@@ -6,6 +6,7 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.compiere.util.Trx;
 import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.cfe.model.MZCFEConfigDocSend;
@@ -291,6 +292,7 @@ public class ValidatorComercial implements ModelValidator {
         String message = null, sql = "";
 
         MDocType docType = (MDocType) model.getC_DocTypeTarget();
+        MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), model.get_TrxName());
 
         if (timing == TIMING_BEFORE_COMPLETE){
 
@@ -366,8 +368,6 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
 
-            // Instancio configurador comercial
-            MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), model.get_TrxName());
 
             // Para comprobantes de compra y venta, valido ingreso manual de vencimientos cuando el termino de pago asi lo requiere.
             if (model.get_ValueAsBoolean("VencimientoManual")){
@@ -421,6 +421,17 @@ public class ValidatorComercial implements ModelValidator {
                 message = this.setInvoiceTaxAsientoManual(model);
                 if (message != null){
                     return message;
+                }
+            }
+
+            // Si es comprobante de venta
+            if (model.isSOTrx()){
+                // Si tengo flag de imprimir comprobante automáticamente al completarlo
+                if (comercialConfig.isImprimirAuto()){
+                    // Imprimo comprobante
+                    Trx trxModel = Trx.get(model.get_TrxName(), false);
+                    trxModel.commit();
+                    ComercialUtils.imprimirComprobanteVenta(model.getCtx(), model.get_ID(), model.get_TrxName());
                 }
             }
 
