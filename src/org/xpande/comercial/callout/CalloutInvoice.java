@@ -1,12 +1,13 @@
 package org.xpande.comercial.callout;
 
-import org.compiere.model.CalloutEngine;
-import org.compiere.model.GridField;
-import org.compiere.model.GridTab;
-import org.compiere.model.MProduct;
+import org.compiere.model.*;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
+import org.xpande.core.utils.AcctUtils;
+import org.xpande.core.utils.CurrencyUtils;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.Properties;
 
 /**
@@ -59,6 +60,61 @@ public class CalloutInvoice extends CalloutEngine {
             else{
                 mTab.setValue("UPC", null);
             }
+        }
+
+        return "";
+    }
+
+    /***
+     * Setea tasa de cambio al modificar la moneda en un comprobante de venta.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setCurrencyRate(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        // Por ahora solo para comprobante de venta.
+        String isSOTrx = Env.getContext(ctx, WindowNo, "IsSOTrx");
+        if (isSOTrx != null){
+            if (isSOTrx.equalsIgnoreCase("N")){
+                return "";
+            }
+        }
+
+        if (value == null){
+            mTab.setValue("CurrencyRate", Env.ZERO);
+            return "";
+        }
+
+        int adClientID = Env.getContextAsInt(ctx, WindowNo, "AD_Client_ID");
+        MAcctSchema schema = MClient.get(ctx, adClientID).getAcctSchema();
+        int  currencyID = Env.getContextAsInt(ctx, WindowNo, "C_Currency_ID");
+        Timestamp dateRate = Env.getContextAsDate(ctx, WindowNo, "DateInvoiced");
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("C_Currency_ID")){
+            currencyID = (Integer) value;
+        }
+        else if (column.equalsIgnoreCase("DateInvoiced")){
+            dateRate = (Timestamp) value;
+        }
+
+        if (currencyID == schema.getC_Currency_ID()){
+            mTab.setValue("CurrencyRate", Env.ONE);
+            return "";
+        }
+
+        BigDecimal curencyRate = CurrencyUtils.getCurrencyRate(ctx, adClientID, 0, schema.getC_Currency_ID(), currencyID, 114, dateRate, null);
+
+        if (curencyRate == null){
+            curencyRate = Env.ZERO;
+        }
+        else {
+            mTab.setValue("CurrencyRate", curencyRate);
         }
 
         return "";
