@@ -41,6 +41,7 @@ public class ValidatorComercial implements ModelValidator {
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
         engine.addModelChange(I_M_InOutLine.Table_Name, this);
+        engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_M_InOut.Table_Name, this);
 
         // Document Validations
@@ -72,6 +73,9 @@ public class ValidatorComercial implements ModelValidator {
         else if (po.get_TableName().equalsIgnoreCase(I_M_InOutLine.Table_Name)){
             return modelChange((MInOutLine) po, type);
         }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_OrderLine.Table_Name)){
+            return modelChange((MOrderLine) po, type);
+        }
         else if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
             return modelChange((MInOut) po, type);
         }
@@ -94,7 +98,7 @@ public class ValidatorComercial implements ModelValidator {
 
 
     /***
-     * Validaciones para el modelo de Invoices en compras.
+     * Validaciones para el modelo de Invoices.
      * Xpande. Created by Gabriel Vila on 8/8/17.
      * @param model
      * @param type
@@ -107,17 +111,16 @@ public class ValidatorComercial implements ModelValidator {
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE) {
 
-            // Me aseguro eliminar CHATS asociados a esta invoice
-            action = " delete from cm_chat where ad_table_id =" + X_C_Invoice.Table_ID +
-                    " and record_id =" + model.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-
             // Orignalmente adempiere no permite borrar cabezales en estado BORRADOR.
             // Lo que hace es permitir anular un borrador o en progreso.
             // Esto genera mucho dato basura y por lo tanto es deseable poder eliminar cabezales.
             // En este validator de invoice se copia funcionlidad que se hace al anular una invoice.
             if (!model.isSOTrx())
             {
+                // Me aseguro eliminar lineas en cashline asociados a esta invoice
+                action = " delete from c_cashline where c_invoice_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+
                 MMatchInv[] mInv = MMatchInv.getInvoice(model.getCtx(), model.get_ID(), model.get_TrxName());
                 for (int i = 0; i < mInv.length; i++)
                     mInv[i].delete(true);
@@ -253,7 +256,6 @@ public class ValidatorComercial implements ModelValidator {
 
         return mensaje;
     }
-
 
     /***
      * Validaciones para el modelo de InOut en modulo comercial.
@@ -687,6 +689,63 @@ public class ValidatorComercial implements ModelValidator {
         return mensaje;
     }
 
+    /***
+     * Validaciones para el modelo de Lineas de Orders.
+     * Xpande. Created by Gabriel Vila on 10/17/19.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MOrderLine model, int type) throws Exception {
+
+        String mensaje = null;
+        String action = "";
+
+        if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
+                || (type == ModelValidator.TYPE_AFTER_DELETE)){
+
+            MOrder order = (MOrder)model.getC_Order();
+
+            // Cuando modifico linea de orden, me aseguro que se calcule bien el campo del cabezal
+            // para subtotal. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
+            // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
+            // Se tiene mostrar subtotal = total - impuestos.
+            // Para ello no se modifico el comportamiento original de ADempiere y se mantuvo el campo: TotalLines.
+            // Pero se agrego campo nuevo para desplegarse con el calculo requerido.
+
+            BigDecimal grandTotal = order.getGrandTotal();
+            if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
+                order.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
+                order.saveEx();
+            }
+            else{
+                // Obtengo suma de impuestos para esta order
+                String sql = " select sum(coalesce(taxamt,0)) as taxamt from c_ordertax where c_order_id =" + order.get_ID();
+                BigDecimal sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (sumImpuestos == null){
+                    sumImpuestos = Env.ZERO;
+                }
+                else{
+                    sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
+                }
+                order.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
+                order.saveEx();
+            }
+
+        }
+        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
+                || (type == ModelValidator.TYPE_BEFORE_DELETE)){
+
+            // Me aseguro que esta linea tenga producto o cargo
+            if ((model.getM_Product_ID() <= 0) && (model.getC_Charge_ID() <= 0)){
+                return "Debe indicar producto o cargo para esta linea.";
+            }
+
+        }
+
+        return mensaje;
+    }
 
     /***
      * Validaciones para el modelo de Lineas de InOut.

@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191011L;
+	private static final long serialVersionUID = 20191017L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -40,6 +40,8 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
       super (ctx, Z_ComercialConfig_ID, trxName);
       /** if (Z_ComercialConfig_ID == 0)
         {
+			setCheckPriceInList (false);
+// N
 			setCompletaRecepcion (false);
 // N
 			setImprimirAuto (false);
@@ -76,6 +78,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set CheckPriceInList.
+		@param CheckPriceInList 
+		Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
+	  */
+	public void setCheckPriceInList (boolean CheckPriceInList)
+	{
+		set_Value (COLUMNNAME_CheckPriceInList, Boolean.valueOf(CheckPriceInList));
+	}
+
+	/** Get CheckPriceInList.
+		@return Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
+	  */
+	public boolean isCheckPriceInList () 
+	{
+		Object oo = get_Value(COLUMNNAME_CheckPriceInList);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	/** Set CompletaRecepcion.
 		@param CompletaRecepcion 

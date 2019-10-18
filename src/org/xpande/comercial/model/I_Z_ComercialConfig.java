@@ -63,6 +63,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getAD_Org_ID();
 
+    /** Column name CheckPriceInList */
+    public static final String COLUMNNAME_CheckPriceInList = "CheckPriceInList";
+
+	/** Set CheckPriceInList.
+	  * Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
+	  */
+	public void setCheckPriceInList(boolean CheckPriceInList);
+
+	/** Get CheckPriceInList.
+	  * Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
+	  */
+	public boolean isCheckPriceInList();
+
     /** Column name CompletaRecepcion */
     public static final String COLUMNNAME_CompletaRecepcion = "CompletaRecepcion";
 
