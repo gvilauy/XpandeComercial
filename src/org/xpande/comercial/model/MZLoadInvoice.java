@@ -28,6 +28,7 @@ import java.util.logging.Level;
 
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.DateUtil;
+import org.compiere.acct.Doc;
 import org.compiere.impexp.ImpFormat;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
@@ -346,6 +347,12 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				}
 				else{
 					invoice.set_ValueOfColumn("SubDocBaseType", null);
+				}
+			}
+			else{
+				if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
+					// Si es documento de venta y tipo nota de crédito, tengo que pnerle una referencia
+					invoice.set_ValueOfColumn("ReferenciaCFE", "NC POS");
 				}
 			}
 
