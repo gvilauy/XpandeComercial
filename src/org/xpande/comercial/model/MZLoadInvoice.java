@@ -517,6 +517,12 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoice.set_ValueOfColumn("SubDocBaseType", null);
 				}
 			}
+			else{
+				if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
+					// Si es documento de venta y tipo nota de crédito, tengo que pnerle una referencia
+					invoice.set_ValueOfColumn("ReferenciaCFE", "NC POS");
+				}
+			}
 
 			invoice.set_ValueOfColumn("TaxID", partner.getTaxID());
 			invoice.set_ValueOfColumn("DocumentSerie", invoiceMan.getDocumentSerie());
