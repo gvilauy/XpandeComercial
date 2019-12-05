@@ -18,16 +18,19 @@ package org.xpande.comercial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_GeneraEntrega
  *  @author Adempiere (generated) 
@@ -392,12 +395,34 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
       return sb.toString();
     }
 
-
+	/***
+	 * Obtiene lineas de ordenes de venta para procesar según filtros.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @param tipoAccion
+	 * @return
+	 */
 	public String getDocumentos(String tipoAccion) {
 
 		String message = null;
 
 		try{
+
+			boolean getDocumentosNuevos = true;
+
+			if (!tipoAccion.equalsIgnoreCase("NUEVOS")){
+				getDocumentosNuevos = false;
+			}
+
+			// Elimino generacion anterior en caso de que el usuario asi lo indique
+			if (!getDocumentosNuevos){
+				this.deleteDocuments();
+			}
+
+			// Obtengo ordenes de venta a considerar y genero lineas
+			message = this.getOrders();
+			if (message != null){
+				return message;
+			}
 
 		}
 		catch (Exception e){
@@ -405,6 +430,269 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		}
 
 		return message;
+	}
+
+	/***
+	 * Elimina documentos existentes.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 */
+	private void deleteDocuments() {
+
+		String action = "";
+
+		try{
+
+			action = " delete from z_generaentregabp cascade where z_generaentrega_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+	}
+
+	/***
+	 * Obtiene lineas de ordenes de venta a considerar y genera lineas por cada una de ellas.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @return
+	 */
+	private String getOrders(){
+
+		String message = null;
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = "";
+
+			// Filtros de fechas
+			if (this.getDateOrderedFrom() != null){
+				whereClause = " AND hdr.DateOrdered >='" + this.getDateOrderedFrom() + "' ";
+			}
+			if (this.getDateOrderedTo() != null){
+				whereClause += " AND hdr.DateOrdered <='" + this.getDateOrderedTo() + "' ";
+			}
+			if (this.getDatePromisedFrom() != null){
+				whereClause += " AND hdr.DatePromised >='" + this.getDatePromisedFrom() + "' ";
+			}
+			if (this.getDatePromisedTo() != null){
+				whereClause += " AND hdr.DatePromised <='" + this.getDatePromisedTo() + "' ";
+			}
+
+			// Filtro de monedas
+			if (this.getC_Currency_ID() > 0){
+				whereClause += " AND hdr.c_currency_id =" + this.getC_Currency_ID();
+			}
+
+			// Filtro de socios de negocio
+			String filtroSocios = this.getFiltroSocios();
+			if (filtroSocios != null){
+				whereClause += " AND " + filtroSocios;
+			}
+
+			// Filtro de Regiones de Venta
+			String filtroRegiones = this.getFiltroRegiones();
+			if (filtroSocios != null){
+				whereClause += " AND " + filtroRegiones;
+			}
+
+			// Filtro de productos
+			String filtroProductos = this.getFiltroProductos();
+			if (filtroSocios != null){
+				whereClause += " AND " + filtroProductos;
+			}
+
+			// Query
+			sql = " select hdr.* " +
+					" from zv_comercial_openso hdr " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.c_orderline_id not in (select c_orderline_id from z_generaentregalin " +
+					" where z_generaentrega_id =" + this.get_ID() + ") " +
+					whereClause +
+					" order by hdr.c_bpartner_id, hdr.dateordered ";
+
+			int cBPartnerIDAux = 0;
+			MZGeneraEntregaBP entregaBP = null;
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Corte por socio de negocio
+				if (rs.getInt("c_bpartner_id") != cBPartnerIDAux){
+
+					cBPartnerIDAux = rs.getInt("c_bpartner_id");
+
+					// Obtengo modelo de socio a considerar en esta generación, si ya existe
+					// Si no existe lo creo ahora
+					entregaBP = this.getEntregaBP(cBPartnerIDAux);
+					if ((entregaBP == null) || (entregaBP.get_ID() <= 0)){
+						MBPartner partner = new MBPartner(getCtx(), cBPartnerIDAux, null);
+						entregaBP = new MZGeneraEntregaBP(getCtx(), 0, get_TrxName());
+						entregaBP.setZ_GeneraEntrega_ID(this.get_ID());
+						entregaBP.setC_BPartner_ID(cBPartnerIDAux);
+						entregaBP.setTaxID(partner.getTaxID());
+
+						if (partner.get_ValueAsInt("Z_CanalVenta_ID") > 0){
+							entregaBP.setZ_CanalVenta_ID(partner.get_ValueAsInt("Z_CanalVenta_ID"));
+						}
+
+						entregaBP.saveEx();
+					}
+				}
+
+				MZGeneraEntregaLin entregaLin = new MZGeneraEntregaLin(getCtx(), 0, get_TrxName());
+				entregaLin.setZ_GeneraEntrega_ID(this.get_ID());
+				entregaLin.setZ_GeneraEntregaBP_ID(entregaBP.get_ID());
+				entregaLin.setAD_Org_ID(this.getAD_Org_ID());
+				entregaLin.setC_Order_ID(rs.getInt("c_order_id"));
+				entregaLin.setC_OrderLine_ID(rs.getInt("c_orderline_id"));
+				entregaLin.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+				entregaLin.setC_BPartner_Location_ID(rs.getInt("c_bpartner_location_id"));
+				entregaLin.setSalesRep_ID(rs.getInt("salesrep_id"));
+				entregaLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				entregaLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+				entregaLin.setC_SalesRegion_ID(rs.getInt("c_salesregion_id"));
+				entregaLin.setDateOrdered(rs.getTimestamp("dateordered"));
+				entregaLin.setDatePromised(rs.getTimestamp("datepromised"));
+				entregaLin.setPOReference(rs.getString("poreference"));
+				entregaLin.setM_Warehouse_ID(rs.getInt("m_warehouse_id"));
+				entregaLin.setM_Product_ID(rs.getInt("m_product_id"));
+				entregaLin.setC_UOM_ID(rs.getInt("c_uom_id"));
+				entregaLin.setQtyEntered(rs.getBigDecimal("qtyentered"));
+				entregaLin.setQtyOrdered(rs.getBigDecimal("qtyordered"));
+				entregaLin.setQtyReserved(rs.getBigDecimal("qtyreserved"));
+				entregaLin.setQtyDelivered(rs.getBigDecimal("qtydelivered"));
+				entregaLin.setQtyOpen(rs.getBigDecimal("qtyopen"));
+				entregaLin.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
+				entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
+				entregaLin.setLineNetAmt(rs.getBigDecimal("linenetamt"));
+				entregaLin.setAmtOpen(rs.getBigDecimal("amtopen"));
+				entregaLin.setIsSelected(false);
+
+				entregaLin.saveEx();
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return message;
+	}
+
+	/***
+	 * Obtiene y retorna modelo de entrega de socio de negocio según id de socio de negocio recibido.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @param cBPartnerID
+	 * @return
+	 */
+	private MZGeneraEntregaBP getEntregaBP(int cBPartnerID) {
+
+		String whereClause = X_Z_GeneraEntregaBP.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID() +
+				" AND " + X_Z_GeneraEntregaBP.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
+
+		MZGeneraEntregaBP model = new Query(getCtx(), I_Z_GeneraEntregaBP.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+	/***
+	 * Obtiene filtro de socios de negocio a aplicar para obtener documentos.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @return
+	 */
+	private String getFiltroSocios() {
+
+		String whereClause = null;
+
+		try{
+
+			// Verifico si tengo socios de negocio para filtrar
+			String sql = " select count(*) from z_generaentfiltbp where z_generaentrega_id =" + this.get_ID();
+			int contador = DB.getSQLValue(get_TrxName(), sql);
+
+			// Si no tengo, no hago nada
+			if (contador <= 0){
+				return whereClause;
+			}
+
+			// Tengo socios de negocio para filtrar
+			whereClause = " hdr.c_bpartner_id IN (select c_bpartner_id from z_generaentfiltbp where z_generaentrega_id =" + this.get_ID() + ") ";
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return whereClause;
+	}
+
+	/***
+	 * Obtiene filtro de regiones de venta a aplicar para obtener documentos.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @return
+	 */
+	private String getFiltroRegiones() {
+
+		String whereClause = null;
+
+		try{
+
+			// Verifico si tengo socios de negocio para filtrar
+			String sql = " select count(*) from z_generaentfiltregion where z_generaentrega_id =" + this.get_ID();
+			int contador = DB.getSQLValue(get_TrxName(), sql);
+
+			// Si no tengo, no hago nada
+			if (contador <= 0){
+				return whereClause;
+			}
+
+			// Tengo socios de negocio para filtrar
+			whereClause = " hdr.c_salesregion_id IN (select c_salesregion_id from z_generaentfiltregion where z_generaentrega_id =" + this.get_ID() + ") ";
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return whereClause;
+	}
+
+	/***
+	 * Obtiene filtro de productos a aplicar para obtener documentos.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @return
+	 */
+	private String getFiltroProductos() {
+
+		String whereClause = null;
+
+		try{
+
+			// Verifico si tengo socios de negocio para filtrar
+			String sql = " select count(*) from z_generaentfiltprod where z_generaentrega_id =" + this.get_ID();
+			int contador = DB.getSQLValue(get_TrxName(), sql);
+
+			// Si no tengo, no hago nada
+			if (contador <= 0){
+				return whereClause;
+			}
+
+			// Tengo socios de negocio para filtrar
+			whereClause = " hdr.m_product_id IN (select m_product_id from z_generaentfiltprod where z_generaentrega_id =" + this.get_ID() + ") ";
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return whereClause;
 	}
 
 }
