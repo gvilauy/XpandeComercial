@@ -69,7 +69,6 @@ public class SeleccionRemitosVenta extends SeleccionRemitosVentaAbstract
 				// Si tengo cantidad disponible en esta linea de remito de venta para facturar
 				if (qtyOpen.compareTo(Env.ZERO) > 0){
 
-					// Genera nueva linea de nota de credito asociada a esta linea del remito por diferencia
 					MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
 					invoiceLine.setM_InOutLine_ID(inOutLine.get_ID());
 					invoiceLine.setM_Product_ID(inOutLine.getM_Product_ID());

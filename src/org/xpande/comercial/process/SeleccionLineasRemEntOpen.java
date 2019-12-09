@@ -18,25 +18,30 @@
 package org.xpande.comercial.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.*;
+import org.compiere.model.MInOutLine;
+import org.compiere.model.MInvoice;
+import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.core.model.MZProductoUPC;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-/** Generated Process for (Z_SeleccionOrdenVentaEntrega)
+/** Generated Process for (Z_SeleccionLineasRemEntOpen)
+ * Proceso asociado a SmartBrowser para selección de lineas de remitos de venta al momento de generar una factura de venta.
+ * Xpande. Created by Gabriel Vila on 12/9/19.
  *  @author ADempiere (generated) 
  *  @version Release 3.9.0
  */
-public class SeleccionOrdenVentaEntrega extends SeleccionOrdenVentaEntregaAbstract
+public class SeleccionLineasRemEntOpen extends SeleccionLineasRemEntOpenAbstract
 {
-	private MInOut inOut = null;
+	private MInvoice invoice = null;
 
 	@Override
 	protected void prepare()
 	{
-		this.inOut = new MInOut(getCtx(), this.getRecord_ID(), get_TrxName());
+		this.invoice = new MInvoice(getCtx(), this.getRecord_ID(), get_TrxName());
 		super.prepare();
 	}
 
@@ -45,36 +50,34 @@ public class SeleccionOrdenVentaEntrega extends SeleccionOrdenVentaEntregaAbstra
 	{
 		try {
 
-			MWarehouse warehouse = (MWarehouse) this.inOut.getM_Warehouse();
-			MLocator locator = MLocator.getDefault(warehouse);
-
 			List<Integer> recordIds = getSelectionKeys();
 
-			//	Recorro filas de selección de ordenes de venta
+			//	Recorro filas de selección de productos que fueron seleccionadas por el usuario
 			recordIds.stream().forEach(key -> {
 
-				MOrderLine orderLine = new MOrderLine(getCtx(), key.intValue(), get_TrxName());
+				MInOutLine inOutLine = new MInOutLine(getCtx(), key.intValue(), get_TrxName());
 
-				String sql = " select qtyopen from zv_comercial_openso where c_orderline_id =" + orderLine.get_ID();
+				String sql = " select qtyopen from ZV_Comercial_OpenRem where m_inoutline_id =" + inOutLine.get_ID();
 				BigDecimal qtyOpen = DB.getSQLValueBDEx(null, sql);
 				if (qtyOpen == null) qtyOpen = Env.ZERO;
 
 				// Si tengo cantidad disponible en esta linea de remito de venta para facturar
 				if (qtyOpen.compareTo(Env.ZERO) > 0){
-					MProduct product = (MProduct) orderLine.getM_Product();
 
-					MInOutLine inOutLine = new MInOutLine(this.inOut);
-					inOutLine.setC_OrderLine_ID(orderLine.get_ID());
-					inOutLine.setM_Warehouse_ID(warehouse.get_ID());
-					inOutLine.setM_Locator_ID(locator.get_ID());
-					inOutLine.setM_Product_ID(product.get_ID());
-					inOutLine.setC_UOM_ID(product.getC_UOM_ID());
-
-					inOutLine.setMovementQty(qtyOpen);
-					inOutLine.setQtyEntered(qtyOpen);
-
-					inOutLine.saveEx();
+					MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
+					invoiceLine.setM_InOutLine_ID(inOutLine.get_ID());
+					invoiceLine.setM_Product_ID(inOutLine.getM_Product_ID());
+					invoiceLine.setQtyEntered(qtyOpen);
+					invoiceLine.setQtyInvoiced(qtyOpen);
+					invoiceLine.setC_UOM_ID(inOutLine.getC_UOM_ID());
+					invoiceLine.set_ValueOfColumn("IsBySelection", "Y");
+					MZProductoUPC productoUPC = MZProductoUPC.getByProduct(getCtx(), inOutLine.getM_Product_ID(), null);
+					if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
+						invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
+					}
+					invoiceLine.saveEx();
 				}
+
 			});
 
 		}
@@ -83,6 +86,6 @@ public class SeleccionOrdenVentaEntrega extends SeleccionOrdenVentaEntregaAbstra
 		}
 
 		return "OK";
-
 	}
+
 }
