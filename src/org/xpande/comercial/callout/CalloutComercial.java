@@ -142,5 +142,41 @@ public class CalloutComercial extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Al ingresar organización se setea un almacen asociado a dicha organizacion.
+     * Xpande. Created by Gabriel Vila on 10/17/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setWarehouseByOrg(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if (value == null){
+            mTab.setValue("M_Warehouse_ID", null);
+            return "";
+        }
+
+        int adOrgID = (Integer) value;
+        if (adOrgID <= 0){
+            mTab.setValue("M_Warehouse_ID", null);
+            return "";
+        }
+
+        // Busco almacen asociada a la organización ingresada
+        MWarehouse[] warehouseList = MWarehouse.getForOrg(ctx, adOrgID);
+        if (warehouseList.length > 0){
+            mTab.setValue("M_Warehouse_ID", warehouseList[0].get_ID());
+        }
+        else {
+            mTab.setValue("M_Warehouse_ID", null);
+        }
+
+        return "";
+    }
 
 }
