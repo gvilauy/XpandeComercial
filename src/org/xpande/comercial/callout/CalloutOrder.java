@@ -170,7 +170,7 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("PriceEntered", ppi.getPriceFinal());
             mTab.setValue("FlatDiscount", ppi.getFlatDiscount());
             mTab.setValue("DiscountPauta", ppi.getTotalPautaDiscounts());
-            mTab.setValue("Discount", ppi.getTotalDiscounts());
+            //mTab.setValue("Discount", ppi.getTotalDiscounts());
         }
         // Fin Xpande.
 
@@ -552,6 +552,7 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("PriceEntered", PriceEntered);
             Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
 
+            /*
             // Xpande. Gabriel Vila. 02/01/2010.
             // Calculo descuentos para esta fecha documento - socio de negocio - producto.
             ProductPricesInfo ppi = DiscountUtils.setDiscountPrices(ctx, order.getDateOrdered(), order.getAD_Client_ID(), order.getAD_Org_ID(), C_BPartner_ID, M_Product_ID,
@@ -572,6 +573,7 @@ public class CalloutOrder extends CalloutEngine {
 
             mTab.setValue("PriceEntered", PriceEntered);
             // Fin Xpande.
+             */
 
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
@@ -634,7 +636,7 @@ public class CalloutOrder extends CalloutEngine {
         }
         // Xpande. Gabriel Vila. 02/01/2020.
         // Aplico descuento manual.
-        if (mField.getColumnName().equalsIgnoreCase("DiscountMan")){
+        else if (mField.getColumnName().equalsIgnoreCase("DiscountMan")){
 
             BigDecimal manualDiscount = (BigDecimal) value;
             if (manualDiscount == null) manualDiscount = Env.ZERO;
@@ -647,7 +649,7 @@ public class CalloutOrder extends CalloutEngine {
                 mTab.setValue("PriceActual", ppi.getPriceFinal());
                 mTab.setValue("FlatDiscount", ppi.getFlatDiscount());
                 mTab.setValue("DiscountPauta", ppi.getTotalPautaDiscounts());
-                mTab.setValue("Discount", ppi.getTotalDiscounts());
+                //mTab.setValue("Discount", ppi.getTotalDiscounts());
             }
 
             PriceEntered = MUOMConversion.convertProductFrom (ctx, M_Product_ID,

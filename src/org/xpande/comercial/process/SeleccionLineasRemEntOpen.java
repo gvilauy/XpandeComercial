@@ -18,9 +18,7 @@
 package org.xpande.comercial.process;
 
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MInOutLine;
-import org.compiere.model.MInvoice;
-import org.compiere.model.MInvoiceLine;
+import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.xpande.core.model.MZProductoUPC;
@@ -75,6 +73,21 @@ public class SeleccionLineasRemEntOpen extends SeleccionLineasRemEntOpenAbstract
 					if ((productoUPC != null) && (productoUPC.get_ID() > 0)){
 						invoiceLine.set_ValueOfColumn("UPC", productoUPC.getUPC());
 					}
+
+					// Seteos precios segun orden de venta en caso de tener una
+					if (inOutLine.getC_OrderLine_ID() > 0){
+						MOrderLine orderLine = (MOrderLine) inOutLine.getC_OrderLine();
+						if ((orderLine != null) && (orderLine.get_ID() > 0)){
+
+							invoiceLine.setC_Tax_ID(orderLine.getC_Tax_ID());
+							invoiceLine.setPriceList(orderLine.getPriceList());
+							invoiceLine.setPriceEntered(orderLine.getPriceEntered());
+							invoiceLine.setPriceActual(orderLine.getPriceActual());
+							invoiceLine.setPriceLimit(orderLine.getPriceLimit());
+							invoiceLine.setLineNetAmt();
+						}
+					}
+
 					invoiceLine.saveEx();
 				}
 
