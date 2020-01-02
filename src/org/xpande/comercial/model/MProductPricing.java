@@ -24,6 +24,9 @@ import org.compiere.util.CLogger;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trace;
+import org.xpande.comercial.utils.DiscountUtils;
+import org.xpande.comercial.utils.ProductPricesInfo;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -747,11 +750,7 @@ public class MProductPricing
 			statement = null;
 		}
 
-
 		// Xpande. Gabriel Vila.
-		// Modifico manera de calcular descuentos.
-		// En retail se utilizan las pautas comerciales en vez de los Esquemas de Descuentos de Adempiere.
-
 		if (discountSchemaId > 0){
 			MDiscountSchema discountSchema = new MDiscountSchema(Env.getCtx(), discountSchemaId , trxName);	//	not correct
 			if (discountSchema.get_ID() == 0)
@@ -761,9 +760,9 @@ public class MProductPricing
 			priceStd = discountSchema.calculatePrice(quantity, priceStd, productId, productCategoryId, flatDiscount);
 		}
 		// Xpande.
+
 	}
 
-	
 	/**************************************************************************
 	 * 	Calculate Discount Percentage based on Standard/List Price
 	 * 	@return Discount

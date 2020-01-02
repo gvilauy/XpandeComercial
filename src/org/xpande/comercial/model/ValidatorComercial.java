@@ -48,7 +48,6 @@ public class ValidatorComercial implements ModelValidator {
         engine.addDocValidate(I_C_Invoice.Table_Name, this);
         engine.addDocValidate(I_M_InOut.Table_Name, this);
         engine.addDocValidate(I_C_Order.Table_Name, this);
-
     }
 
     @Override

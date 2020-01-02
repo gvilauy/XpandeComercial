@@ -18,9 +18,14 @@ package org.xpande.comercial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
+
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
@@ -403,4 +408,99 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Obtiene y retorna lista de descuentos en factura para un determinada fecha - socio de negocio - producto.
+	 * Xpande. Created by Gabriel Vila on 1/2/20.
+	 * @param ctx
+	 * @param fechaDoc
+	 * @param adClientID
+	 * @param adOrgID
+	 * @param cBpartnerID
+	 * @param mProductID
+	 * @param trxName
+	 * @return
+	 */
+	public static List<MZPautaComVtaDtos> getInvoiceDiscounts(Properties ctx, Timestamp fechaDoc, int adClientID, int adOrgID, int cBpartnerID, int mProductID, String trxName) {
+
+		List<MZPautaComVtaDtos> dtosList = new ArrayList<MZPautaComVtaDtos>();
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			// Modelo del producto
+			MProduct product = new MProduct(ctx, mProductID, null);
+			int zProductoSeccionID = product.get_ValueAsInt("Z_ProductoSeccion_ID");
+			int zProductoRubroID = product.get_ValueAsInt("Z_ProductoRubro_ID");
+
+
+			// Descuentos que aplican para la jerarquia de este producto
+		    sql = " select pdto.z_pautacomvtadtos_id " +
+					" from z_pautacomvtadtos pdto " +
+					" inner join z_pautacomvtaseg pseg on pdto.z_pautacomvtaseg_id = pseg.z_pautacomvtaseg_id " +
+					" inner join z_pautacomvta pvta on pseg.z_pautacomvta_id = pvta.z_pautacomvta_id " +
+					" where pvta.ad_client_id =" + adClientID +
+					" and pvta.ad_org_id =" + adOrgID +
+					" and pvta.docstatus='CO' " +
+					" and coalesce(pseg.startdate, '" + fechaDoc + "') <= '" + fechaDoc + "'" +
+					" and coalesce(pseg.enddate, '" + fechaDoc + "') >= '" + fechaDoc + "'" +
+					" and pseg.isgeneral='Y' " +
+					" and case when pseg.z_productoseccion_id > 0 then " +
+					" coalesce(pseg.z_productoseccion_id, " + zProductoSeccionID + ") =" + zProductoSeccionID + " else 1=1 end " +
+					" and case when pseg.z_productorubro_id > 0 then " +
+					" coalesce(pseg.z_productorubro_id, " + zProductoRubroID + ") =" + zProductoRubroID + " else 1=1 end " +
+					" and pdto.discounttype in ('" + X_Z_PautaComVtaDtos.DISCOUNTTYPE_OPERATIVOENFACTURA + "','" +
+					X_Z_PautaComVtaDtos.DISCOUNTTYPE_FINANCIEROENFACTURA + "')";
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				MZPautaComVtaDtos pautaComVtaDtos = new MZPautaComVtaDtos(ctx, rs.getInt("z_pautacomvtadtos_id"), trxName);
+				dtosList.add(pautaComVtaDtos);
+			}
+
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+
+			// Descuentos que aplican directo para este producto
+			sql = " select pdto.z_pautacomvtadtos_id " +
+					" from z_pautacomvtadtos pdto " +
+					" inner join z_pautacomvtaseg pseg on pdto.z_pautacomvtaseg_id = pseg.z_pautacomvtaseg_id " +
+					" inner join z_pautacomvtaprod pprod on pprod.z_pautacomvtaseg_id = pseg.z_pautacomvtaseg_id " +
+					 "inner join z_pautacomvta pvta on pseg.z_pautacomvta_id = pvta.z_pautacomvta_id " +
+					" where pvta.ad_client_id =" + adClientID +
+					" and pvta.ad_org_id =" + adOrgID +
+					" and pvta.docstatus='CO' " +
+					" and coalesce(pseg.startdate, '" + fechaDoc + "') <= '" + fechaDoc + "'" +
+					" and coalesce(pseg.enddate, '" + fechaDoc + "') >= '" + fechaDoc + "'" +
+					" and pseg.isgeneral='N' " +
+					" and pprod.m_product_id =" + mProductID +
+					" and pdto.discounttype in ('" + X_Z_PautaComVtaDtos.DISCOUNTTYPE_OPERATIVOENFACTURA + "','" +
+					X_Z_PautaComVtaDtos.DISCOUNTTYPE_FINANCIEROENFACTURA + "')";
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				MZPautaComVtaDtos pautaComVtaDtos = new MZPautaComVtaDtos(ctx, rs.getInt("z_pautacomvtadtos_id"), trxName);
+				dtosList.add(pautaComVtaDtos);
+			}
+
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return dtosList;
+	}
+
 }
