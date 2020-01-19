@@ -552,29 +552,6 @@ public class CalloutOrder extends CalloutEngine {
             mTab.setValue("PriceEntered", PriceEntered);
             Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
 
-            /*
-            // Xpande. Gabriel Vila. 02/01/2010.
-            // Calculo descuentos para esta fecha documento - socio de negocio - producto.
-            ProductPricesInfo ppi = DiscountUtils.setDiscountPrices(ctx, order.getDateOrdered(), order.getAD_Client_ID(), order.getAD_Org_ID(), C_BPartner_ID, M_Product_ID,
-                    manualDiscount, (BigDecimal) mTab.getValue("PriceList"), (BigDecimal) mTab.getValue("PriceList"), StdPrecision, null);
-
-            if (ppi != null){
-                mTab.setValue("PriceActual", ppi.getPriceFinal());
-                //mTab.setValue("PriceEntered", ppi.getPriceFinal());
-                mTab.setValue("FlatDiscount", ppi.getFlatDiscount());
-                mTab.setValue("DiscountPauta", ppi.getTotalPautaDiscounts());
-                mTab.setValue("Discount", ppi.getTotalDiscounts());
-            }
-
-            PriceEntered = MUOMConversion.convertProductFrom (ctx, M_Product_ID,
-                    C_UOM_To_ID, ppi.getPriceFinal());
-            if (PriceEntered == null)
-                PriceEntered = ppi.getPriceFinal();
-
-            mTab.setValue("PriceEntered", PriceEntered);
-            // Fin Xpande.
-             */
-
             if ((order != null) && (!order.isSOTrx())){
                 if ((multiplyRate != null) && (multiplyRate.compareTo(Env.ZERO) != 0)){
                     if (!mTab.getValueAsBoolean("IsConverted")){
@@ -650,6 +627,9 @@ public class CalloutOrder extends CalloutEngine {
                 mTab.setValue("FlatDiscount", ppi.getFlatDiscount());
                 mTab.setValue("DiscountPauta", ppi.getTotalPautaDiscounts());
                 //mTab.setValue("Discount", ppi.getTotalDiscounts());
+
+                PriceEntered = ppi.getPriceFinal();
+                PriceActual = ppi.getPriceFinal();
             }
 
             PriceEntered = MUOMConversion.convertProductFrom (ctx, M_Product_ID,
