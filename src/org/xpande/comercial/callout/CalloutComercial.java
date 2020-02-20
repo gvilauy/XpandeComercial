@@ -1,8 +1,10 @@
 package org.xpande.comercial.callout;
 
+import org.compiere.acct.Doc;
 import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.xpande.comercial.model.MZComercialConfig;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
