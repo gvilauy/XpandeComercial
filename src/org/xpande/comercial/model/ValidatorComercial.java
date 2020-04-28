@@ -367,8 +367,15 @@ public class ValidatorComercial implements ModelValidator {
                         */
                     }
                 }
-            }
 
+                // Para comprobantes de venta del tipo ARI, seteo monto total de descuentos (en caso que hubiera).
+                if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARInvoice)){
+                    sql = " select round(sum(pricelist * qtyentered) - sum(priceentered * qtyentered),2) as discountamt from c_invoiceline where c_invoice_id =" + model.get_ID();
+                    BigDecimal discountAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                    if (discountAmt == null) discountAmt = Env.ZERO;
+                    model.set_ValueOfColumn("DiscountAmt", discountAmt);
+                }
+            }
 
             // Para comprobantes de compra y venta, valido ingreso manual de vencimientos cuando el termino de pago asi lo requiere.
             if (model.get_ValueAsBoolean("VencimientoManual")){
@@ -424,6 +431,7 @@ public class ValidatorComercial implements ModelValidator {
                     return message;
                 }
             }
+
 
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
