@@ -59,7 +59,7 @@ public class GenerarInOutFromInvoice extends SvrProcess {
                 return "@Error@ " + "No existe Comprobante para ese Socio de Negocio con el Número :" + this.documentNo;
             }
 
-            String message = this.invoiceFrom.generateInOutFromInvoice(true, true);
+            String message = this.invoiceFrom.generateInOutFromInvoice(false, true);
 
             if (message != null){
                 return "@Error@ " + message;

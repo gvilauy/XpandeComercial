@@ -56,7 +56,7 @@ public interface I_Z_ComercialConfig
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_ComercialConfig
 	/** Set CheckPriceInList.
 	  * Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
 	  */
-	public void setCheckPriceInList(boolean CheckPriceInList);
+	public void setCheckPriceInList (boolean CheckPriceInList);
 
 	/** Get CheckPriceInList.
 	  * Si se debe chequear o no que el precio de un determinado producto este o no en la lista de precios seleccionada
@@ -82,7 +82,7 @@ public interface I_Z_ComercialConfig
 	/** Set CompletaRecepcion.
 	  * Si completa o no recepcion de mercadería de manera automatica
 	  */
-	public void setCompletaRecepcion(boolean CompletaRecepcion);
+	public void setCompletaRecepcion (boolean CompletaRecepcion);
 
 	/** Get CompletaRecepcion.
 	  * Si completa o no recepcion de mercadería de manera automatica
@@ -95,7 +95,7 @@ public interface I_Z_ComercialConfig
 	/** Set Payment Term.
 	  * The terms of Payment (timing, discount)
 	  */
-	public void setC_PaymentTerm_ID(int C_PaymentTerm_ID);
+	public void setC_PaymentTerm_ID (int C_PaymentTerm_ID);
 
 	/** Get Payment Term.
 	  * The terms of Payment (timing, discount)
@@ -126,7 +126,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocAPCDif_ID.
 	  * Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
 	  */
-	public void setDefaultDocAPCDif_ID(int DefaultDocAPCDif_ID);
+	public void setDefaultDocAPCDif_ID (int DefaultDocAPCDif_ID);
 
 	/** Get DefaultDocAPCDif_ID.
 	  * Documento por defecto para Notas de Crédito por Diferencias en Facturación de Proveedores
@@ -139,7 +139,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocAPCDtoPag_ID.
 	  * Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
 	  */
-	public void setDefaultDocAPCDtoPag_ID(int DefaultDocAPCDtoPag_ID);
+	public void setDefaultDocAPCDtoPag_ID (int DefaultDocAPCDtoPag_ID);
 
 	/** Get DefaultDocAPCDtoPag_ID.
 	  * Documento por defecto para Notas de Crédito por descuentos al Pago de Proveedores
@@ -152,7 +152,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocAPIBonif_ID.
 	  * Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
 	  */
-	public void setDefaultDocAPIBonif_ID(int DefaultDocAPIBonif_ID);
+	public void setDefaultDocAPIBonif_ID (int DefaultDocAPIBonif_ID);
 
 	/** Get DefaultDocAPIBonif_ID.
 	  * Documento por defecto para Factura de Proveedores que vienen solo con Bonificaciones en unidades (sin precio)
@@ -165,7 +165,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocAPI_ID.
 	  * Documento por defecto para Factura de Proveedores
 	  */
-	public void setDefaultDocAPI_ID(int DefaultDocAPI_ID);
+	public void setDefaultDocAPI_ID (int DefaultDocAPI_ID);
 
 	/** Get DefaultDocAPI_ID.
 	  * Documento por defecto para Factura de Proveedores
@@ -178,7 +178,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocInterno_ID.
 	  * Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
 	  */
-	public void setDefaultDocInterno_ID(int DefaultDocInterno_ID);
+	public void setDefaultDocInterno_ID (int DefaultDocInterno_ID);
 
 	/** Get DefaultDocInterno_ID.
 	  * Documento por defecto para comprobantes internos que solo afectan finanzas y contabilidad.
@@ -191,7 +191,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocMMR_ID.
 	  * Documento por defecto para Recepción de Productos de Proveedores
 	  */
-	public void setDefaultDocMMR_ID(int DefaultDocMMR_ID);
+	public void setDefaultDocMMR_ID (int DefaultDocMMR_ID);
 
 	/** Get DefaultDocMMR_ID.
 	  * Documento por defecto para Recepción de Productos de Proveedores
@@ -204,7 +204,7 @@ public interface I_Z_ComercialConfig
 	/** Set DefaultDocMMS_ID.
 	  * Documento por defecto para Devoluciones a Proveedores
 	  */
-	public void setDefaultDocMMS_ID(int DefaultDocMMS_ID);
+	public void setDefaultDocMMS_ID (int DefaultDocMMS_ID);
 
 	/** Get DefaultDocMMS_ID.
 	  * Documento por defecto para Devoluciones a Proveedores
@@ -217,7 +217,7 @@ public interface I_Z_ComercialConfig
 	/** Set ImprimirAuto.
 	  * Si se imprime automáticamente o no un determinado documento
 	  */
-	public void setImprimirAuto(boolean ImprimirAuto);
+	public void setImprimirAuto (boolean ImprimirAuto);
 
 	/** Get ImprimirAuto.
 	  * Si se imprime automáticamente o no un determinado documento
@@ -230,7 +230,7 @@ public interface I_Z_ComercialConfig
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -243,7 +243,7 @@ public interface I_Z_ComercialConfig
 	/** Set LiteralE_Tax_ID.
 	  * ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
 	  */
-	public void setLiteralE_Tax_ID(int LiteralE_Tax_ID);
+	public void setLiteralE_Tax_ID (int LiteralE_Tax_ID);
 
 	/** Get LiteralE_Tax_ID.
 	  * ID de la tasa de Impuesto para gestionar compras y ventas a socios Literal E
@@ -258,12 +258,25 @@ public interface I_Z_ComercialConfig
 	/** Set MarginTolerance.
 	  * Porcentaje de tolerancia para márgenes
 	  */
-	public void setMarginTolerance(BigDecimal MarginTolerance);
+	public void setMarginTolerance (BigDecimal MarginTolerance);
 
 	/** Get MarginTolerance.
 	  * Porcentaje de tolerancia para márgenes
 	  */
 	public BigDecimal getMarginTolerance();
+
+    /** Column name ReservaStockSO */
+    public static final String COLUMNNAME_ReservaStockSO = "ReservaStockSO";
+
+	/** Set ReservaStockSO.
+	  * Si se reserva o no stock en ordenes de venta
+	  */
+	public void setReservaStockSO (boolean ReservaStockSO);
+
+	/** Get ReservaStockSO.
+	  * Si se reserva o no stock en ordenes de venta
+	  */
+	public boolean isReservaStockSO();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -287,18 +300,31 @@ public interface I_Z_ComercialConfig
 	/** Set Search Key.
 	  * Search key for the record in the format required - must be unique
 	  */
-	public void setValue(String Value);
+	public void setValue (String Value);
 
 	/** Get Search Key.
 	  * Search key for the record in the format required - must be unique
 	  */
 	public String getValue();
 
+    /** Column name VtaGeneraInOut */
+    public static final String COLUMNNAME_VtaGeneraInOut = "VtaGeneraInOut";
+
+	/** Set VtaGeneraInOut.
+	  * Si al completar un comprobante de venta se genera una entrega de mercaderia de manera automática.
+	  */
+	public void setVtaGeneraInOut (boolean VtaGeneraInOut);
+
+	/** Get VtaGeneraInOut.
+	  * Si al completar un comprobante de venta se genera una entrega de mercaderia de manera automática.
+	  */
+	public boolean isVtaGeneraInOut();
+
     /** Column name Z_ComercialConfig_ID */
     public static final String COLUMNNAME_Z_ComercialConfig_ID = "Z_ComercialConfig_ID";
 
 	/** Set Z_ComercialConfig ID	  */
-	public void setZ_ComercialConfig_ID(int Z_ComercialConfig_ID);
+	public void setZ_ComercialConfig_ID (int Z_ComercialConfig_ID);
 
 	/** Get Z_ComercialConfig ID	  */
 	public int getZ_ComercialConfig_ID();

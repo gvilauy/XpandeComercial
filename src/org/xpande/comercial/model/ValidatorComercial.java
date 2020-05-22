@@ -423,13 +423,25 @@ public class ValidatorComercial implements ModelValidator {
                 invoiceTax.saveEx();
             }
 
+            // Si en la configuración comercial se indica que en las ventas se debe generar entrega
+            // de manera automática, lo hago ahora.
+            if (comercialConfig.isVtaGeneraInOut()){
+                message = model.generateInOutFromInvoice(false, true);
+                if (message != null){
+                    return message;
+                }
+            }
+
             // Proceso comprobantes marcados con Asiento Manual Contable
             if (model.get_ValueAsBoolean("AsientoManualInvoice")){
+
+                /*
                 // Elimino impuestos y genero los mismos según datos ingresados en la grilla de Asiento Manual.
                 message = this.setInvoiceTaxAsientoManual(model);
                 if (message != null){
                     return message;
                 }
+                */
             }
 
 

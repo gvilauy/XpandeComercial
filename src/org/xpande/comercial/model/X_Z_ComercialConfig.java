@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191017L;
+	private static final long serialVersionUID = 20200521L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -46,7 +46,11 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 // N
 			setImprimirAuto (false);
 // N
+			setReservaStockSO (false);
+// N
 			setValue (null);
+			setVtaGeneraInOut (false);
+// N
 			setZ_ComercialConfig_ID (0);
         } */
     }
@@ -388,6 +392,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 		return bd;
 	}
 
+	/** Set ReservaStockSO.
+		@param ReservaStockSO 
+		Si se reserva o no stock en ordenes de venta
+	  */
+	public void setReservaStockSO (boolean ReservaStockSO)
+	{
+		set_Value (COLUMNNAME_ReservaStockSO, Boolean.valueOf(ReservaStockSO));
+	}
+
+	/** Get ReservaStockSO.
+		@return Si se reserva o no stock en ordenes de venta
+	  */
+	public boolean isReservaStockSO () 
+	{
+		Object oo = get_Value(COLUMNNAME_ReservaStockSO);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set Search Key.
 		@param Value 
 		Search key for the record in the format required - must be unique
@@ -403,6 +431,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public String getValue () 
 	{
 		return (String)get_Value(COLUMNNAME_Value);
+	}
+
+	/** Set VtaGeneraInOut.
+		@param VtaGeneraInOut 
+		Si al completar un comprobante de venta se genera una entrega de mercaderia de manera automática.
+	  */
+	public void setVtaGeneraInOut (boolean VtaGeneraInOut)
+	{
+		set_Value (COLUMNNAME_VtaGeneraInOut, Boolean.valueOf(VtaGeneraInOut));
+	}
+
+	/** Get VtaGeneraInOut.
+		@return Si al completar un comprobante de venta se genera una entrega de mercaderia de manera automática.
+	  */
+	public boolean isVtaGeneraInOut () 
+	{
+		Object oo = get_Value(COLUMNNAME_VtaGeneraInOut);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set Z_ComercialConfig ID.
