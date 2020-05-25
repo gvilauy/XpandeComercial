@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200521L;
+	private static final long serialVersionUID = 20200525L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -200,6 +200,29 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	public int getDefaultDocAPCDtoPag_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPCDtoPag_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set DefaultDocAPC_ID.
+		@param DefaultDocAPC_ID 
+		Documento por defecto para NC de Proveedores
+	  */
+	public void setDefaultDocAPC_ID (int DefaultDocAPC_ID)
+	{
+		if (DefaultDocAPC_ID < 1) 
+			set_Value (COLUMNNAME_DefaultDocAPC_ID, null);
+		else 
+			set_Value (COLUMNNAME_DefaultDocAPC_ID, Integer.valueOf(DefaultDocAPC_ID));
+	}
+
+	/** Get DefaultDocAPC_ID.
+		@return Documento por defecto para NC de Proveedores
+	  */
+	public int getDefaultDocAPC_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_DefaultDocAPC_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

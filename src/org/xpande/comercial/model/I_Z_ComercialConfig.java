@@ -146,6 +146,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public int getDefaultDocAPCDtoPag_ID();
 
+    /** Column name DefaultDocAPC_ID */
+    public static final String COLUMNNAME_DefaultDocAPC_ID = "DefaultDocAPC_ID";
+
+	/** Set DefaultDocAPC_ID.
+	  * Documento por defecto para NC de Proveedores
+	  */
+	public void setDefaultDocAPC_ID (int DefaultDocAPC_ID);
+
+	/** Get DefaultDocAPC_ID.
+	  * Documento por defecto para NC de Proveedores
+	  */
+	public int getDefaultDocAPC_ID();
+
     /** Column name DefaultDocAPIBonif_ID */
     public static final String COLUMNNAME_DefaultDocAPIBonif_ID = "DefaultDocAPIBonif_ID";
 
