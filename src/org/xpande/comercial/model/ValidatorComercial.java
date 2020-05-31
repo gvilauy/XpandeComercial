@@ -107,6 +107,7 @@ public class ValidatorComercial implements ModelValidator {
     public String modelChange(MInvoice model, int type) throws Exception {
 
         String mensaje = null, action = "";
+        String sql = "";
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE) {
 
@@ -184,7 +185,7 @@ public class ValidatorComercial implements ModelValidator {
 
 
                 // Obtengo suma de impuestos manuales con el comportamiento de SUMAR AL SUBTOTAL
-                String sql = " select coalesce(sum(a.taxamt), 0) as total " +
+                sql = " select coalesce(sum(a.taxamt), 0) as total " +
                         "from z_invoicetaxmanual a " +
                         "inner join c_tax t on a.c_tax_id = t.c_tax_id " +
                         "where c_invoice_id =" + model.get_ID() +
@@ -217,6 +218,18 @@ public class ValidatorComercial implements ModelValidator {
                 }
 
                 DB.executeUpdateEx(action, model.get_TrxName());
+            }
+
+            // Si tengo monto auxiliar y el mismo es distinto al monto total, fuerzo monto total = monto auxiliar.
+            // Esto porque por redondeos a veces al traer invoices desde interfaces los montos totales deben ser identicos.
+            BigDecimal amtAuxiliar = (BigDecimal) model.get_Value("AmtAuxiliar");
+            if ((amtAuxiliar != null) && (amtAuxiliar.compareTo(Env.ZERO) > 0)){
+                sql = " select grandtotal from c_invoice where c_invoice_id =" + model.get_ID();
+                BigDecimal grandTotal = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                if (grandTotal.compareTo(amtAuxiliar) != 0){
+                    action = " update c_invoice set grandtotal =" + amtAuxiliar + " where c_invoice_id =" + model.get_ID();
+                    DB.executeUpdateEx(action, model.get_TrxName());
+                }
             }
 
             // Guardo RUT en el comprobante si esta en null
