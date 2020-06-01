@@ -696,6 +696,11 @@ public class ValidatorComercial implements ModelValidator {
                 return "Debe indicar producto o cargo para esta linea.";
             }
 
+            // Me aseguro que esta linea tenga precio de lista
+            if ((model.getPriceList() == null) || (model.getPriceList().compareTo(Env.ZERO) == 0)){
+                model.setPriceList(model.getPriceActual());
+            }
+
             // Siguiendo el mismo concepto que el cabezal, se actualiza subtotal de esta linea.
             // Nuevo campo de subtotal, no se toca el original de ADempiere.
             BigDecimal lineTotal = model.getLineTotalAmt();
