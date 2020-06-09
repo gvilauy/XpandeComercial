@@ -476,6 +476,12 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
 
+            // Al reactivar una invoice me aseguro de dejar en nulo el monto original auxiliar.
+            BigDecimal amtAuxiliar = (BigDecimal) model.get_Value("AmtAuxiliar");
+            if ((amtAuxiliar != null) && (amtAuxiliar.compareTo(Env.ZERO) != 0)){
+                model.set_ValueOfColumn("AmtAuxiliar", null);
+            }
+
             // Cuando reactivo un documento, me aseguro de eliminar de la tabla c_invoicetax, aquellos impuestos manuales.
             String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
             DB.executeUpdateEx(action, model.get_TrxName());
