@@ -181,4 +181,47 @@ public class CalloutComercial extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Al ingresar organización se setea un almacen de expedicion asociado a dicha organizacion.
+     * Xpande. Created by Gabriel Vila on 10/17/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setWarehouseExpedicionByOrg(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if (value == null){
+            mTab.setValue("M_Warehouse_ID", null);
+            return "";
+        }
+
+        int adOrgID = (Integer) value;
+        if (adOrgID <= 0){
+            mTab.setValue("M_Warehouse_ID", null);
+            return "";
+        }
+
+        // Busco almacen asociada a la organización ingresada
+        boolean hayInfo = false;
+        MWarehouse[] warehouseList = MWarehouse.getForOrg(ctx, adOrgID);
+        for (int i = 0; i < warehouseList.length; i++){
+            if (!hayInfo){
+                if (warehouseList[i].get_ValueAsBoolean("ExpideMercaderia")){
+                    mTab.setValue("M_Warehouse_ID", warehouseList[i].get_ID());
+                    hayInfo = true;
+                }
+            }
+        }
+        if (!hayInfo){
+            mTab.setValue("M_Warehouse_ID", null);
+        }
+
+        return "";
+    }
+
 }
