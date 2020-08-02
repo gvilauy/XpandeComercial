@@ -15,6 +15,7 @@ import org.xpande.comercial.utils.ComercialUtils;
 import org.xpande.core.model.MZProductoUPC;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -742,7 +743,6 @@ public class ValidatorComercial implements ModelValidator {
      */
     public String modelChange(MOrderLine model, int type) throws Exception {
 
-        String mensaje = null;
         String action = "";
 
         if ((type == ModelValidator.TYPE_AFTER_NEW) || (type == ModelValidator.TYPE_AFTER_CHANGE)
@@ -777,17 +777,36 @@ public class ValidatorComercial implements ModelValidator {
             }
 
         }
-        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)
-                || (type == ModelValidator.TYPE_BEFORE_DELETE)){
+        else if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
             // Me aseguro que esta linea tenga producto o cargo
             if ((model.getM_Product_ID() <= 0) && (model.getC_Charge_ID() <= 0)){
                 return "Debe indicar producto o cargo para esta linea.";
             }
 
+            MOrder order = (MOrder)model.getC_Order();
+
+            // Para ordenes de venta
+            if (order.isSOTrx()){
+                // Obtengo multiply rate para convertir desde unidad de medida de esta linea,
+                // a la unidad de medida del producto
+                if (model.getM_Product_ID() > 0){
+                    String sql = " select c_uom_id from m_product where m_product_id =" + model.getM_Product_ID();
+                    int cUomProdID = DB.getSQLValueEx(null, sql);
+                    BigDecimal multiplyRate = Env.ONE;
+                    if (cUomProdID != model.getC_UOM_ID()){
+                        multiplyRate = MUOMConversion.getProductRateTo(model.getCtx(), model.getM_Product_ID(), model.getC_UOM_ID());
+                        if ((multiplyRate == null) || (multiplyRate.compareTo(Env.ZERO) <= 0)){
+                            return "No se pudo obtener el factor de conversión entre unidad de medida del producto, " +
+                                    "y la unidad de medida de esta linea.";
+                        }
+                    }
+                    model.set_ValueOfColumn("UomMultiplyRate", multiplyRate.setScale(4, RoundingMode.HALF_UP));
+                }
+            }
         }
 
-        return mensaje;
+        return null;
     }
 
     /***

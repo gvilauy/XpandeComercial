@@ -56,7 +56,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -84,7 +84,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -115,7 +115,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Document Date.
 	  * Date of the Document
 	  */
-	public void setDateDoc(Timestamp DateDoc);
+	public void setDateDoc (Timestamp DateDoc);
 
 	/** Get Document Date.
 	  * Date of the Document
@@ -128,7 +128,7 @@ public interface I_Z_GeneraEntrega
 	/** Set DateOrderedFrom.
 	  * Fecha orden desde
 	  */
-	public void setDateOrderedFrom(Timestamp DateOrderedFrom);
+	public void setDateOrderedFrom (Timestamp DateOrderedFrom);
 
 	/** Get DateOrderedFrom.
 	  * Fecha orden desde
@@ -141,7 +141,7 @@ public interface I_Z_GeneraEntrega
 	/** Set DateOrderedTo.
 	  * Fecha Orden Hasta
 	  */
-	public void setDateOrderedTo(Timestamp DateOrderedTo);
+	public void setDateOrderedTo (Timestamp DateOrderedTo);
 
 	/** Get DateOrderedTo.
 	  * Fecha Orden Hasta
@@ -154,7 +154,7 @@ public interface I_Z_GeneraEntrega
 	/** Set DatePromisedFrom.
 	  * Fecha prometida desde
 	  */
-	public void setDatePromisedFrom(Timestamp DatePromisedFrom);
+	public void setDatePromisedFrom (Timestamp DatePromisedFrom);
 
 	/** Get DatePromisedFrom.
 	  * Fecha prometida desde
@@ -167,7 +167,7 @@ public interface I_Z_GeneraEntrega
 	/** Set DatePromisedTo.
 	  * Fecha prometida hasta
 	  */
-	public void setDatePromisedTo(Timestamp DatePromisedTo);
+	public void setDatePromisedTo (Timestamp DatePromisedTo);
 
 	/** Get DatePromisedTo.
 	  * Fecha prometida hasta
@@ -180,7 +180,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -193,7 +193,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Document Action.
 	  * The targeted status of the document
 	  */
-	public void setDocAction(String DocAction);
+	public void setDocAction (String DocAction);
 
 	/** Get Document Action.
 	  * The targeted status of the document
@@ -206,7 +206,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Document Status.
 	  * The current status of the document
 	  */
-	public void setDocStatus(String DocStatus);
+	public void setDocStatus (String DocStatus);
 
 	/** Get Document Status.
 	  * The current status of the document
@@ -219,7 +219,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Document No.
 	  * Document sequence number of the document
 	  */
-	public void setDocumentNo(String DocumentNo);
+	public void setDocumentNo (String DocumentNo);
 
 	/** Get Document No.
 	  * Document sequence number of the document
@@ -232,7 +232,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -245,18 +245,31 @@ public interface I_Z_GeneraEntrega
 	/** Set Approved.
 	  * Indicates if this document requires approval
 	  */
-	public void setIsApproved(boolean IsApproved);
+	public void setIsApproved (boolean IsApproved);
 
 	/** Get Approved.
 	  * Indicates if this document requires approval
 	  */
 	public boolean isApproved();
 
+    /** Column name IsStockDisponible */
+    public static final String COLUMNNAME_IsStockDisponible = "IsStockDisponible";
+
+	/** Set IsStockDisponible.
+	  * Si tiene en cuenta o no el stock disponible de mercaderia
+	  */
+	public void setIsStockDisponible (boolean IsStockDisponible);
+
+	/** Get IsStockDisponible.
+	  * Si tiene en cuenta o no el stock disponible de mercaderia
+	  */
+	public boolean isStockDisponible();
+
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -267,7 +280,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Processed.
 	  * The document has been processed
 	  */
-	public void setProcessed(boolean Processed);
+	public void setProcessed (boolean Processed);
 
 	/** Get Processed.
 	  * The document has been processed
@@ -278,7 +291,7 @@ public interface I_Z_GeneraEntrega
     public static final String COLUMNNAME_Processing = "Processing";
 
 	/** Set Process Now	  */
-	public void setProcessing(boolean Processing);
+	public void setProcessing (boolean Processing);
 
 	/** Get Process Now	  */
 	public boolean isProcessing();
@@ -289,7 +302,7 @@ public interface I_Z_GeneraEntrega
 	/** Set ShowFilters.
 	  * Si se muestran o no filltros
 	  */
-	public void setShowFilters(boolean ShowFilters);
+	public void setShowFilters (boolean ShowFilters);
 
 	/** Get ShowFilters.
 	  * Si se muestran o no filltros
@@ -302,12 +315,25 @@ public interface I_Z_GeneraEntrega
 	/** Set TextoFiltro.
 	  * Texto genérico para filtro de valores
 	  */
-	public void setTextoFiltro(String TextoFiltro);
+	public void setTextoFiltro (String TextoFiltro);
 
 	/** Get TextoFiltro.
 	  * Texto genérico para filtro de valores
 	  */
 	public String getTextoFiltro();
+
+    /** Column name TipoGeneraEntrega */
+    public static final String COLUMNNAME_TipoGeneraEntrega = "TipoGeneraEntrega";
+
+	/** Set TipoGeneraEntrega.
+	  * Lista de valores posibles para la forma de procesar la generación de entregas / reservas.
+	  */
+	public void setTipoGeneraEntrega (String TipoGeneraEntrega);
+
+	/** Get TipoGeneraEntrega.
+	  * Lista de valores posibles para la forma de procesar la generación de entregas / reservas.
+	  */
+	public String getTipoGeneraEntrega();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -331,7 +357,7 @@ public interface I_Z_GeneraEntrega
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
@@ -342,7 +368,7 @@ public interface I_Z_GeneraEntrega
     public static final String COLUMNNAME_Z_CanalVenta_ID = "Z_CanalVenta_ID";
 
 	/** Set Z_CanalVenta ID	  */
-	public void setZ_CanalVenta_ID(int Z_CanalVenta_ID);
+	public void setZ_CanalVenta_ID (int Z_CanalVenta_ID);
 
 	/** Get Z_CanalVenta ID	  */
 	public int getZ_CanalVenta_ID();
@@ -353,7 +379,7 @@ public interface I_Z_GeneraEntrega
     public static final String COLUMNNAME_Z_GeneraEntrega_ID = "Z_GeneraEntrega_ID";
 
 	/** Set Z_GeneraEntrega ID	  */
-	public void setZ_GeneraEntrega_ID(int Z_GeneraEntrega_ID);
+	public void setZ_GeneraEntrega_ID (int Z_GeneraEntrega_ID);
 
 	/** Get Z_GeneraEntrega ID	  */
 	public int getZ_GeneraEntrega_ID();

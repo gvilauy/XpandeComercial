@@ -18,6 +18,7 @@ package org.xpande.comercial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
@@ -401,9 +402,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	 * @param tipoAccion
 	 * @return
 	 */
-	public String getDocumentos(String tipoAccion) {
-
-		String message = null;
+	public void getDocumentos(String tipoAccion) {
 
 		try{
 
@@ -418,18 +417,17 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 				this.deleteDocuments();
 			}
 
-			// Obtengo ordenes de venta a considerar y genero lineas
-			message = this.getOrders();
-			if (message != null){
-				return message;
+			// Obtengo ordenes de venta a considerar y genero lineas según modalidad de proceso
+			if (this.getTipoGeneraEntrega().equalsIgnoreCase(X_Z_GeneraEntrega.TIPOGENERAENTREGA_SOCIODENEGOCIO)){
+				this.getOrdersByPartner();
 			}
-
+			else if (this.getTipoGeneraEntrega().equalsIgnoreCase(X_Z_GeneraEntrega.TIPOGENERAENTREGA_PRODUCTO)){
+				this.getOrdersByProduct();
+			}
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
 		}
-
-		return message;
 	}
 
 	/***
@@ -445,6 +443,9 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			action = " delete from z_generaentregabp cascade where z_generaentrega_id =" + this.get_ID();
 			DB.executeUpdateEx(action, get_TrxName());
 
+			action = " delete from z_generaentprod cascade where z_generaentrega_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -452,21 +453,15 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	}
 
 	/***
-	 * Obtiene lineas de ordenes de venta a considerar y genera lineas por cada una de ellas.
-	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * Obtiene condiciones para obtener información de documentos a considerar en este proceso.
+	 * Xpande. Created by Gabriel Vila on 8/1/20.
 	 * @return
 	 */
-	private String getOrders(){
+	private String getWhereDocuments(){
 
-		String message = null;
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
+		String whereClause = "";
 
 		try{
-
-			String whereClause = "";
-
 			// Filtros de fechas
 			if (this.getDateOrderedFrom() != null){
 				whereClause = " AND hdr.DateOrdered >='" + this.getDateOrderedFrom() + "' ";
@@ -503,6 +498,29 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			if (filtroSocios != null){
 				whereClause += " AND " + filtroProductos;
 			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return whereClause;
+	}
+
+	/***
+	 * Obtiene lineas de ordenes de venta a considerar ordenadas por socio de negocio y genera
+	 * lineas por cada una de ellas.
+	 * Xpande. Created by Gabriel Vila on 12/5/19.
+	 * @return
+	 */
+	private void getOrdersByPartner(){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = this.getWhereDocuments();
 
 			// Query
 			sql = " select hdr.* " +
@@ -512,7 +530,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 					" and hdr.c_orderline_id not in (select c_orderline_id from z_generaentregalin " +
 					" where z_generaentrega_id =" + this.get_ID() + ") " +
 					whereClause +
-					" order by hdr.c_bpartner_id, hdr.dateordered ";
+					" order by hdr.c_bpartner_id, hdr.dateordered, hdr.c_order_id ";
 
 			int cBPartnerIDAux = 0;
 			MZGeneraEntregaBP entregaBP = null;
@@ -563,16 +581,26 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 				entregaLin.setM_Warehouse_ID(rs.getInt("m_warehouse_id"));
 				entregaLin.setM_Product_ID(rs.getInt("m_product_id"));
 				entregaLin.setC_UOM_ID(rs.getInt("c_uom_id"));
+				entregaLin.setUomMultiplyRate(rs.getBigDecimal("UomMultiplyRate"));
 				entregaLin.setQtyEntered(rs.getBigDecimal("qtyentered"));
 				entregaLin.setQtyOrdered(rs.getBigDecimal("qtyordered"));
 				entregaLin.setQtyReserved(rs.getBigDecimal("qtyreserved"));
 				entregaLin.setQtyDelivered(rs.getBigDecimal("qtydelivered"));
 				entregaLin.setQtyOpen(rs.getBigDecimal("qtyopen"));
 				entregaLin.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
+
+				// Convierto cantidades según factor a unidad de esta linea
+				if (rs.getInt("c_uom_id") != rs.getInt("c_uom_to_id")){
+					MUOM uomTo = (MUOM) entregaLin.getC_UOM();
+					entregaLin.setQtyReserved(entregaLin.getQtyReserved().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyDelivered(entregaLin.getQtyDelivered().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyOpen(entregaLin.getQtyOpen().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyAvailable(entregaLin.getQtyAvailable().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+				}
+
 				entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
 				entregaLin.setLineNetAmt(rs.getBigDecimal("linenetamt"));
 				entregaLin.setAmtOpen(rs.getBigDecimal("amtopen"));
-				entregaLin.setIsSelected(false);
 
 				entregaLin.saveEx();
 			}
@@ -585,8 +613,117 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
+	}
 
-		return message;
+	/***
+	 * Obtiene lineas de ordenes de venta a considerar ordenadas por producto y genera
+	 * lineas por cada una de ellas.
+	 * Xpande. Created by Gabriel Vila on 8/1/20.
+	 * @return
+	 */
+	private void getOrdersByProduct(){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = this.getWhereDocuments();
+
+			// Query
+			sql = " select hdr.* " +
+					" from zv_comercial_openso hdr " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
+					" and hdr.c_orderline_id not in (select c_orderline_id from z_generaentregalin " +
+					" where z_generaentrega_id =" + this.get_ID() + ") " +
+					whereClause +
+					" order by hdr.m_product_id, hdr.dateordered, hdr.c_order_id ";
+
+			int mProductIDAux = 0;
+			MZGeneraEntProd entregaProd = null;
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+
+				// Corte por socio de negocio
+				if (rs.getInt("m_product_id") != mProductIDAux){
+
+					mProductIDAux = rs.getInt("m_product_id");
+
+					// Obtengo modelo de producto a considerar en esta generación, si ya existe.
+					// Si no existe lo creo ahora
+					entregaProd = this.getEntregaProd(mProductIDAux);
+					if ((entregaProd == null) || (entregaProd.get_ID() <= 0)){
+						MProduct product = new MProduct(getCtx(), mProductIDAux, null);
+						entregaProd = new MZGeneraEntProd(getCtx(), 0, get_TrxName());
+						entregaProd.setZ_GeneraEntrega_ID(this.get_ID());
+						entregaProd.setM_Product_ID(mProductIDAux);
+						entregaProd.setC_UOM_ID(product.getC_UOM_ID());
+						entregaProd.setQtyOrdered(Env.ZERO);
+						entregaProd.setQtyReserved(Env.ZERO);
+						entregaProd.setQtyDelivered(Env.ZERO);
+						entregaProd.setQtyOpen(Env.ZERO);
+						entregaProd.setQtyAvailable(Env.ZERO);
+						entregaProd.setQtyToDeliver(Env.ZERO);
+						entregaProd.setQtyOnHand(Env.ZERO);
+						entregaProd.saveEx();
+					}
+				}
+
+				MZGeneraEntregaLin entregaLin = new MZGeneraEntregaLin(getCtx(), 0, get_TrxName());
+				entregaLin.setZ_GeneraEntrega_ID(this.get_ID());
+				entregaLin.setZ_GeneraEntProd_ID(entregaProd.get_ID());
+				entregaLin.setAD_Org_ID(this.getAD_Org_ID());
+				entregaLin.setC_Order_ID(rs.getInt("c_order_id"));
+				entregaLin.setC_OrderLine_ID(rs.getInt("c_orderline_id"));
+				entregaLin.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+				entregaLin.setC_BPartner_Location_ID(rs.getInt("c_bpartner_location_id"));
+				entregaLin.setSalesRep_ID(rs.getInt("salesrep_id"));
+				entregaLin.setC_Currency_ID(rs.getInt("c_currency_id"));
+				entregaLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
+				entregaLin.setC_SalesRegion_ID(rs.getInt("c_salesregion_id"));
+				entregaLin.setDateOrdered(rs.getTimestamp("dateordered"));
+				entregaLin.setDatePromised(rs.getTimestamp("datepromised"));
+				entregaLin.setPOReference(rs.getString("poreference"));
+				entregaLin.setM_Warehouse_ID(rs.getInt("m_warehouse_id"));
+				entregaLin.setM_Product_ID(rs.getInt("m_product_id"));
+				entregaLin.setC_UOM_ID(rs.getInt("c_uom_id"));
+				entregaLin.setUomMultiplyRate(rs.getBigDecimal("UomMultiplyRate"));
+				entregaLin.setQtyEntered(rs.getBigDecimal("qtyentered"));
+				entregaLin.setQtyOrdered(rs.getBigDecimal("qtyordered"));
+				entregaLin.setQtyReserved(rs.getBigDecimal("qtyreserved"));
+				entregaLin.setQtyDelivered(rs.getBigDecimal("qtydelivered"));
+				entregaLin.setQtyOpen(rs.getBigDecimal("qtyopen"));
+				entregaLin.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
+
+				// Convierto cantidades según factor a unidad de esta linea
+				if (rs.getInt("c_uom_id") != rs.getInt("c_uom_to_id")){
+					MUOM uomTo = (MUOM) entregaLin.getC_UOM();
+					entregaLin.setQtyReserved(entregaLin.getQtyReserved().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyDelivered(entregaLin.getQtyDelivered().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyOpen(entregaLin.getQtyOpen().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+					entregaLin.setQtyAvailable(entregaLin.getQtyAvailable().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
+				}
+
+				entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
+				entregaLin.setLineNetAmt(rs.getBigDecimal("linenetamt"));
+				entregaLin.setAmtOpen(rs.getBigDecimal("amtopen"));
+
+				entregaLin.saveEx();
+			}
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
 	}
 
 	/***
@@ -601,6 +738,22 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 				" AND " + X_Z_GeneraEntregaBP.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
 
 		MZGeneraEntregaBP model = new Query(getCtx(), I_Z_GeneraEntregaBP.Table_Name, whereClause, get_TrxName()).first();
+
+		return model;
+	}
+
+	/***
+	 * Obtiene y retorna modelo de entrega de producto según id de producto recibido.
+	 * Xpande. Created by Gabriel Vila on 8/1/20.
+	 * @param mProductID
+	 * @return
+	 */
+	private MZGeneraEntProd getEntregaProd(int mProductID) {
+
+		String whereClause = X_Z_GeneraEntProd.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID() +
+				" AND " + X_Z_GeneraEntProd.COLUMNNAME_M_Product_ID + " =" + mProductID;
+
+		MZGeneraEntProd model = new Query(getCtx(), I_Z_GeneraEntProd.Table_Name, whereClause, get_TrxName()).first();
 
 		return model;
 	}

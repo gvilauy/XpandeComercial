@@ -56,7 +56,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -69,7 +69,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set AmtOpen.
 	  * Monto pendiente
 	  */
-	public void setAmtOpen(BigDecimal AmtOpen);
+	public void setAmtOpen (BigDecimal AmtOpen);
 
 	/** Get AmtOpen.
 	  * Monto pendiente
@@ -82,7 +82,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Business Partner .
 	  * Identifies a Business Partner
 	  */
-	public void setC_BPartner_ID(int C_BPartner_ID);
+	public void setC_BPartner_ID (int C_BPartner_ID);
 
 	/** Get Business Partner .
 	  * Identifies a Business Partner
@@ -97,7 +97,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Partner Location.
 	  * Identifies the (ship to) address for this Business Partner
 	  */
-	public void setC_BPartner_Location_ID(int C_BPartner_Location_ID);
+	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID);
 
 	/** Get Partner Location.
 	  * Identifies the (ship to) address for this Business Partner
@@ -112,7 +112,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Currency.
 	  * The Currency for this record
 	  */
-	public void setC_Currency_ID(int C_Currency_ID);
+	public void setC_Currency_ID (int C_Currency_ID);
 
 	/** Get Currency.
 	  * The Currency for this record
@@ -127,7 +127,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Document Type.
 	  * Document type or rules
 	  */
-	public void setC_DocType_ID(int C_DocType_ID);
+	public void setC_DocType_ID (int C_DocType_ID);
 
 	/** Get Document Type.
 	  * Document type or rules
@@ -142,7 +142,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Order.
 	  * Order
 	  */
-	public void setC_Order_ID(int C_Order_ID);
+	public void setC_Order_ID (int C_Order_ID);
 
 	/** Get Order.
 	  * Order
@@ -157,7 +157,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Sales Order Line.
 	  * Sales Order Line
 	  */
-	public void setC_OrderLine_ID(int C_OrderLine_ID);
+	public void setC_OrderLine_ID (int C_OrderLine_ID);
 
 	/** Get Sales Order Line.
 	  * Sales Order Line
@@ -188,7 +188,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Sales Region.
 	  * Sales coverage region
 	  */
-	public void setC_SalesRegion_ID(int C_SalesRegion_ID);
+	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
 
 	/** Get Sales Region.
 	  * Sales coverage region
@@ -203,7 +203,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set UOM.
 	  * Unit of Measure
 	  */
-	public void setC_UOM_ID(int C_UOM_ID);
+	public void setC_UOM_ID (int C_UOM_ID);
 
 	/** Get UOM.
 	  * Unit of Measure
@@ -218,7 +218,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Date Ordered.
 	  * Date of Order
 	  */
-	public void setDateOrdered(Timestamp DateOrdered);
+	public void setDateOrdered (Timestamp DateOrdered);
 
 	/** Get Date Ordered.
 	  * Date of Order
@@ -231,7 +231,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Date Promised.
 	  * Date Order was promised
 	  */
-	public void setDatePromised(Timestamp DatePromised);
+	public void setDatePromised (Timestamp DatePromised);
 
 	/** Get Date Promised.
 	  * Date Order was promised
@@ -244,21 +244,12 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
 	  */
 	public boolean isActive();
-
-    /** Column name IsSelected */
-    public static final String COLUMNNAME_IsSelected = "IsSelected";
-
-	/** Set Selected	  */
-	public void setIsSelected(boolean IsSelected);
-
-	/** Get Selected	  */
-	public boolean isSelected();
 
     /** Column name LineNetAmt */
     public static final String COLUMNNAME_LineNetAmt = "LineNetAmt";
@@ -266,7 +257,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Line Amount.
 	  * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
 	  */
-	public void setLineNetAmt(BigDecimal LineNetAmt);
+	public void setLineNetAmt (BigDecimal LineNetAmt);
 
 	/** Get Line Amount.
 	  * Line Extended Amount (Quantity * Actual Price) without Freight and Charges
@@ -279,7 +270,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Product.
 	  * Product, Service, Item
 	  */
-	public void setM_Product_ID(int M_Product_ID);
+	public void setM_Product_ID (int M_Product_ID);
 
 	/** Get Product.
 	  * Product, Service, Item
@@ -294,7 +285,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Warehouse.
 	  * Storage Warehouse and Service Point
 	  */
-	public void setM_Warehouse_ID(int M_Warehouse_ID);
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
 
 	/** Get Warehouse.
 	  * Storage Warehouse and Service Point
@@ -309,7 +300,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Order Reference.
 	  * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
 	  */
-	public void setPOReference(String POReference);
+	public void setPOReference (String POReference);
 
 	/** Get Order Reference.
 	  * Transaction Reference Number (Sales Order, Purchase Order) of your Business Partner
@@ -322,7 +313,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Available Quantity.
 	  * Available Quantity (On Hand - Reserved)
 	  */
-	public void setQtyAvailable(BigDecimal QtyAvailable);
+	public void setQtyAvailable (BigDecimal QtyAvailable);
 
 	/** Get Available Quantity.
 	  * Available Quantity (On Hand - Reserved)
@@ -335,7 +326,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Delivered Quantity.
 	  * Delivered Quantity
 	  */
-	public void setQtyDelivered(BigDecimal QtyDelivered);
+	public void setQtyDelivered (BigDecimal QtyDelivered);
 
 	/** Get Delivered Quantity.
 	  * Delivered Quantity
@@ -348,7 +339,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Quantity.
 	  * The Quantity Entered is based on the selected UoM
 	  */
-	public void setQtyEntered(BigDecimal QtyEntered);
+	public void setQtyEntered (BigDecimal QtyEntered);
 
 	/** Get Quantity.
 	  * The Quantity Entered is based on the selected UoM
@@ -361,7 +352,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set QtyOpen.
 	  * Cantidad pendiente del documento o linea
 	  */
-	public void setQtyOpen(BigDecimal QtyOpen);
+	public void setQtyOpen (BigDecimal QtyOpen);
 
 	/** Get QtyOpen.
 	  * Cantidad pendiente del documento o linea
@@ -374,7 +365,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Ordered Quantity.
 	  * Ordered Quantity
 	  */
-	public void setQtyOrdered(BigDecimal QtyOrdered);
+	public void setQtyOrdered (BigDecimal QtyOrdered);
 
 	/** Get Ordered Quantity.
 	  * Ordered Quantity
@@ -387,7 +378,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Reserved Quantity.
 	  * Reserved Quantity
 	  */
-	public void setQtyReserved(BigDecimal QtyReserved);
+	public void setQtyReserved (BigDecimal QtyReserved);
 
 	/** Get Reserved Quantity.
 	  * Reserved Quantity
@@ -398,7 +389,7 @@ public interface I_Z_GeneraEntregaLin
     public static final String COLUMNNAME_QtyToDeliver = "QtyToDeliver";
 
 	/** Set Qty to deliver	  */
-	public void setQtyToDeliver(BigDecimal QtyToDeliver);
+	public void setQtyToDeliver (BigDecimal QtyToDeliver);
 
 	/** Get Qty to deliver	  */
 	public BigDecimal getQtyToDeliver();
@@ -409,7 +400,7 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Sales Representative.
 	  * Sales Representative or Company Agent
 	  */
-	public void setSalesRep_ID(int SalesRep_ID);
+	public void setSalesRep_ID (int SalesRep_ID);
 
 	/** Get Sales Representative.
 	  * Sales Representative or Company Agent
@@ -417,6 +408,19 @@ public interface I_Z_GeneraEntregaLin
 	public int getSalesRep_ID();
 
 	public I_AD_User getSalesRep() throws RuntimeException;
+
+    /** Column name UomMultiplyRate */
+    public static final String COLUMNNAME_UomMultiplyRate = "UomMultiplyRate";
+
+	/** Set UomMultiplyRate.
+	  * Factor de conversión de multiplicación entre unidades de medida
+	  */
+	public void setUomMultiplyRate (BigDecimal UomMultiplyRate);
+
+	/** Get UomMultiplyRate.
+	  * Factor de conversión de multiplicación entre unidades de medida
+	  */
+	public BigDecimal getUomMultiplyRate();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -440,18 +444,29 @@ public interface I_Z_GeneraEntregaLin
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
 	public String getUUID();
 
+    /** Column name Z_GeneraEntProd_ID */
+    public static final String COLUMNNAME_Z_GeneraEntProd_ID = "Z_GeneraEntProd_ID";
+
+	/** Set Z_GeneraEntProd ID	  */
+	public void setZ_GeneraEntProd_ID (int Z_GeneraEntProd_ID);
+
+	/** Get Z_GeneraEntProd ID	  */
+	public int getZ_GeneraEntProd_ID();
+
+	public I_Z_GeneraEntProd getZ_GeneraEntProd() throws RuntimeException;
+
     /** Column name Z_GeneraEntregaBP_ID */
     public static final String COLUMNNAME_Z_GeneraEntregaBP_ID = "Z_GeneraEntregaBP_ID";
 
 	/** Set Z_GeneraEntregaBP ID	  */
-	public void setZ_GeneraEntregaBP_ID(int Z_GeneraEntregaBP_ID);
+	public void setZ_GeneraEntregaBP_ID (int Z_GeneraEntregaBP_ID);
 
 	/** Get Z_GeneraEntregaBP ID	  */
 	public int getZ_GeneraEntregaBP_ID();
@@ -462,7 +477,7 @@ public interface I_Z_GeneraEntregaLin
     public static final String COLUMNNAME_Z_GeneraEntrega_ID = "Z_GeneraEntrega_ID";
 
 	/** Set Z_GeneraEntrega ID	  */
-	public void setZ_GeneraEntrega_ID(int Z_GeneraEntrega_ID);
+	public void setZ_GeneraEntrega_ID (int Z_GeneraEntrega_ID);
 
 	/** Get Z_GeneraEntrega ID	  */
 	public int getZ_GeneraEntrega_ID();
@@ -473,7 +488,7 @@ public interface I_Z_GeneraEntregaLin
     public static final String COLUMNNAME_Z_GeneraEntregaLin_ID = "Z_GeneraEntregaLin_ID";
 
 	/** Set Z_GeneraEntregaLin ID	  */
-	public void setZ_GeneraEntregaLin_ID(int Z_GeneraEntregaLin_ID);
+	public void setZ_GeneraEntregaLin_ID (int Z_GeneraEntregaLin_ID);
 
 	/** Get Z_GeneraEntregaLin ID	  */
 	public int getZ_GeneraEntregaLin_ID();

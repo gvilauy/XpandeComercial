@@ -30,7 +30,7 @@ public class X_Z_GeneraEntregaBP extends PO implements I_Z_GeneraEntregaBP, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191204L;
+	private static final long serialVersionUID = 20200801L;
 
     /** Standard Constructor */
     public X_Z_GeneraEntregaBP (Properties ctx, int Z_GeneraEntregaBP_ID, String trxName)

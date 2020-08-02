@@ -31,7 +31,7 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191204L;
+	private static final long serialVersionUID = 20200801L;
 
     /** Standard Constructor */
     public X_Z_GeneraEntrega (Properties ctx, int Z_GeneraEntrega_ID, String trxName)
@@ -49,12 +49,16 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 			setDocumentNo (null);
 			setIsApproved (false);
 // N
+			setIsStockDisponible (true);
+// Y
 			setProcessed (false);
 // N
 			setProcessing (false);
 // N
 			setShowFilters (true);
 // Y
+			setTipoGeneraEntrega (null);
+// PRODUCT
 			setZ_GeneraEntrega_ID (0);
         } */
     }
@@ -378,6 +382,30 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 		return false;
 	}
 
+	/** Set IsStockDisponible.
+		@param IsStockDisponible 
+		Si tiene en cuenta o no el stock disponible de mercaderia
+	  */
+	public void setIsStockDisponible (boolean IsStockDisponible)
+	{
+		set_Value (COLUMNNAME_IsStockDisponible, Boolean.valueOf(IsStockDisponible));
+	}
+
+	/** Get IsStockDisponible.
+		@return Si tiene en cuenta o no el stock disponible de mercaderia
+	  */
+	public boolean isStockDisponible () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsStockDisponible);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set ProcessButton.
 		@param ProcessButton ProcessButton	  */
 	public void setProcessButton (String ProcessButton)
@@ -476,6 +504,30 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 	public String getTextoFiltro () 
 	{
 		return (String)get_Value(COLUMNNAME_TextoFiltro);
+	}
+
+	/** TipoGeneraEntrega AD_Reference_ID=1000047 */
+	public static final int TIPOGENERAENTREGA_AD_Reference_ID=1000047;
+	/** PRODUCTO = PRODUCT */
+	public static final String TIPOGENERAENTREGA_PRODUCTO = "PRODUCT";
+	/** SOCIO DE NEGOCIO = PARTNER */
+	public static final String TIPOGENERAENTREGA_SOCIODENEGOCIO = "PARTNER";
+	/** Set TipoGeneraEntrega.
+		@param TipoGeneraEntrega 
+		Lista de valores posibles para la forma de procesar la generación de entregas / reservas.
+	  */
+	public void setTipoGeneraEntrega (String TipoGeneraEntrega)
+	{
+
+		set_Value (COLUMNNAME_TipoGeneraEntrega, TipoGeneraEntrega);
+	}
+
+	/** Get TipoGeneraEntrega.
+		@return Lista de valores posibles para la forma de procesar la generación de entregas / reservas.
+	  */
+	public String getTipoGeneraEntrega () 
+	{
+		return (String)get_Value(COLUMNNAME_TipoGeneraEntrega);
 	}
 
 	/** Set Immutable Universally Unique Identifier.

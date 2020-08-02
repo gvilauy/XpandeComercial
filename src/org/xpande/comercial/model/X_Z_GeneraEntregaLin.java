@@ -33,7 +33,7 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191204L;
+	private static final long serialVersionUID = 20200801L;
 
     /** Standard Constructor */
     public X_Z_GeneraEntregaLin (Properties ctx, int Z_GeneraEntregaLin_ID, String trxName)
@@ -50,8 +50,6 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 			setC_OrderLine_ID (0);
 			setC_UOM_ID (0);
 			setDateOrdered (new Timestamp( System.currentTimeMillis() ));
-			setIsSelected (false);
-// N
 			setLineNetAmt (Env.ZERO);
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
@@ -62,7 +60,7 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 			setQtyOrdered (Env.ZERO);
 			setQtyReserved (Env.ZERO);
 			setQtyToDeliver (Env.ZERO);
-			setZ_GeneraEntregaBP_ID (0);
+			setUomMultiplyRate (Env.ZERO);
 			setZ_GeneraEntrega_ID (0);
 			setZ_GeneraEntregaLin_ID (0);
         } */
@@ -374,27 +372,6 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 		return (Timestamp)get_Value(COLUMNNAME_DatePromised);
 	}
 
-	/** Set Selected.
-		@param IsSelected Selected	  */
-	public void setIsSelected (boolean IsSelected)
-	{
-		set_Value (COLUMNNAME_IsSelected, Boolean.valueOf(IsSelected));
-	}
-
-	/** Get Selected.
-		@return Selected	  */
-	public boolean isSelected () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsSelected);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Line Amount.
 		@param LineNetAmt 
 		Line Extended Amount (Quantity * Actual Price) without Freight and Charges
@@ -653,6 +630,26 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 		return ii.intValue();
 	}
 
+	/** Set UomMultiplyRate.
+		@param UomMultiplyRate 
+		Factor de conversión de multiplicación entre unidades de medida
+	  */
+	public void setUomMultiplyRate (BigDecimal UomMultiplyRate)
+	{
+		set_Value (COLUMNNAME_UomMultiplyRate, UomMultiplyRate);
+	}
+
+	/** Get UomMultiplyRate.
+		@return Factor de conversión de multiplicación entre unidades de medida
+	  */
+	public BigDecimal getUomMultiplyRate () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_UomMultiplyRate);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
 	/** Set Immutable Universally Unique Identifier.
 		@param UUID 
 		Immutable Universally Unique Identifier
@@ -668,6 +665,31 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 	public String getUUID () 
 	{
 		return (String)get_Value(COLUMNNAME_UUID);
+	}
+
+	public I_Z_GeneraEntProd getZ_GeneraEntProd() throws RuntimeException
+    {
+		return (I_Z_GeneraEntProd)MTable.get(getCtx(), I_Z_GeneraEntProd.Table_Name)
+			.getPO(getZ_GeneraEntProd_ID(), get_TrxName());	}
+
+	/** Set Z_GeneraEntProd ID.
+		@param Z_GeneraEntProd_ID Z_GeneraEntProd ID	  */
+	public void setZ_GeneraEntProd_ID (int Z_GeneraEntProd_ID)
+	{
+		if (Z_GeneraEntProd_ID < 1) 
+			set_Value (COLUMNNAME_Z_GeneraEntProd_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_GeneraEntProd_ID, Integer.valueOf(Z_GeneraEntProd_ID));
+	}
+
+	/** Get Z_GeneraEntProd ID.
+		@return Z_GeneraEntProd ID	  */
+	public int getZ_GeneraEntProd_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraEntProd_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_GeneraEntregaBP getZ_GeneraEntregaBP() throws RuntimeException
