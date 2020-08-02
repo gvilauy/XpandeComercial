@@ -212,6 +212,21 @@ public interface I_Z_GeneraEntregaLin
 
 	public I_C_UOM getC_UOM() throws RuntimeException;
 
+    /** Column name C_UOM_To_ID */
+    public static final String COLUMNNAME_C_UOM_To_ID = "C_UOM_To_ID";
+
+	/** Set UoM To.
+	  * Target or destination Unit of Measure
+	  */
+	public void setC_UOM_To_ID (int C_UOM_To_ID);
+
+	/** Get UoM To.
+	  * Target or destination Unit of Measure
+	  */
+	public int getC_UOM_To_ID();
+
+	public I_C_UOM getC_UOM_To() throws RuntimeException;
+
     /** Column name DateOrdered */
     public static final String COLUMNNAME_DateOrdered = "DateOrdered";
 
@@ -307,19 +322,6 @@ public interface I_Z_GeneraEntregaLin
 	  */
 	public String getPOReference();
 
-    /** Column name QtyAvailable */
-    public static final String COLUMNNAME_QtyAvailable = "QtyAvailable";
-
-	/** Set Available Quantity.
-	  * Available Quantity (On Hand - Reserved)
-	  */
-	public void setQtyAvailable (BigDecimal QtyAvailable);
-
-	/** Get Available Quantity.
-	  * Available Quantity (On Hand - Reserved)
-	  */
-	public BigDecimal getQtyAvailable();
-
     /** Column name QtyDelivered */
     public static final String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
@@ -358,6 +360,19 @@ public interface I_Z_GeneraEntregaLin
 	  * Cantidad pendiente del documento o linea
 	  */
 	public BigDecimal getQtyOpen();
+
+    /** Column name QtyOpenUomProd */
+    public static final String COLUMNNAME_QtyOpenUomProd = "QtyOpenUomProd";
+
+	/** Set QtyOpenUomProd.
+	  * Cantidad pendiente en unidad de medida del producto
+	  */
+	public void setQtyOpenUomProd (BigDecimal QtyOpenUomProd);
+
+	/** Get QtyOpenUomProd.
+	  * Cantidad pendiente en unidad de medida del producto
+	  */
+	public BigDecimal getQtyOpenUomProd();
 
     /** Column name QtyOrdered */
     public static final String COLUMNNAME_QtyOrdered = "QtyOrdered";

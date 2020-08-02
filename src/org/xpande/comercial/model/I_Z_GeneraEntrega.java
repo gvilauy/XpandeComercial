@@ -252,6 +252,19 @@ public interface I_Z_GeneraEntrega
 	  */
 	public boolean isApproved();
 
+    /** Column name IsConfirmed */
+    public static final String COLUMNNAME_IsConfirmed = "IsConfirmed";
+
+	/** Set Confirmed.
+	  * Assignment is confirmed
+	  */
+	public void setIsConfirmed (boolean IsConfirmed);
+
+	/** Get Confirmed.
+	  * Assignment is confirmed
+	  */
+	public boolean isConfirmed();
+
     /** Column name IsStockDisponible */
     public static final String COLUMNNAME_IsStockDisponible = "IsStockDisponible";
 
@@ -264,6 +277,21 @@ public interface I_Z_GeneraEntrega
 	  * Si tiene en cuenta o no el stock disponible de mercaderia
 	  */
 	public boolean isStockDisponible();
+
+    /** Column name M_Warehouse_ID */
+    public static final String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
+
+	/** Set Warehouse.
+	  * Storage Warehouse and Service Point
+	  */
+	public void setM_Warehouse_ID (int M_Warehouse_ID);
+
+	/** Get Warehouse.
+	  * Storage Warehouse and Service Point
+	  */
+	public int getM_Warehouse_ID();
+
+	public I_M_Warehouse getM_Warehouse() throws RuntimeException;
 
     /** Column name ProcessButton */
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";

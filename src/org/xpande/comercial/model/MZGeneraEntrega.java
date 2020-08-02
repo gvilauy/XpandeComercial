@@ -22,6 +22,7 @@ import java.math.RoundingMode;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -236,7 +237,23 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			approveIt();
 		log.info(toString());
 		//
-		
+
+		// Obtiene lineas y productos a considerar
+		List<MZGeneraEntregaLin> entregaLinList = this.getLinesByOrder();
+		List<MZGeneraEntProd> entProdList = this.getLinesEntProd();
+
+		// Valido condiciones para completar este documento
+		m_processMsg = this.validateDocument(entProdList, entregaLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
+		// Genero reservas
+		m_processMsg = this.generateReservas(entProdList, entregaLinList);
+		if (m_processMsg != null){
+			return DocAction.STATUS_Invalid;
+		}
+
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -402,7 +419,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	 * @param tipoAccion
 	 * @return
 	 */
-	public void getDocumentos(String tipoAccion) {
+	public void getData(String tipoAccion) {
 
 		try{
 
@@ -417,13 +434,17 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 				this.deleteDocuments();
 			}
 
-			// Obtengo ordenes de venta a considerar y genero lineas según modalidad de proceso
-			if (this.getTipoGeneraEntrega().equalsIgnoreCase(X_Z_GeneraEntrega.TIPOGENERAENTREGA_SOCIODENEGOCIO)){
-				this.getOrdersByPartner();
+			// Obtiene ordenes de venta segun criterios de búsqueda y genera lineas.
+			this.getOrders();
+
+			// Si esta marcada la opcion para asignar stock disponible de manera automatica, lo hago.
+			if (this.isConfirmed()){
+				this.asignarStockDisponible(-1);
+
+
 			}
-			else if (this.getTipoGeneraEntrega().equalsIgnoreCase(X_Z_GeneraEntrega.TIPOGENERAENTREGA_PRODUCTO)){
-				this.getOrdersByProduct();
-			}
+
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);
@@ -462,9 +483,13 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		String whereClause = "";
 
 		try{
+
+			// Filtro almacen
+			whereClause = "  and hdr.m_warehouse_id =" + this.getM_Warehouse_ID();
+
 			// Filtros de fechas
 			if (this.getDateOrderedFrom() != null){
-				whereClause = " AND hdr.DateOrdered >='" + this.getDateOrderedFrom() + "' ";
+				whereClause += " AND hdr.DateOrdered >='" + this.getDateOrderedFrom() + "' ";
 			}
 			if (this.getDateOrderedTo() != null){
 				whereClause += " AND hdr.DateOrdered <='" + this.getDateOrderedTo() + "' ";
@@ -507,123 +532,14 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	}
 
 	/***
-	 * Obtiene lineas de ordenes de venta a considerar ordenadas por socio de negocio y genera
-	 * lineas por cada una de ellas.
-	 * Xpande. Created by Gabriel Vila on 12/5/19.
-	 * @return
-	 */
-	private void getOrdersByPartner(){
-
-		String sql = "";
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-
-		try{
-
-			String whereClause = this.getWhereDocuments();
-
-			// Query
-			sql = " select hdr.* " +
-					" from zv_comercial_openso hdr " +
-					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
-					" and hdr.ad_org_id =" + this.getAD_Org_ID() +
-					" and hdr.c_orderline_id not in (select c_orderline_id from z_generaentregalin " +
-					" where z_generaentrega_id =" + this.get_ID() + ") " +
-					whereClause +
-					" order by hdr.c_bpartner_id, hdr.dateordered, hdr.c_order_id ";
-
-			int cBPartnerIDAux = 0;
-			MZGeneraEntregaBP entregaBP = null;
-
-			pstmt = DB.prepareStatement(sql, get_TrxName());
-			rs = pstmt.executeQuery();
-
-			while(rs.next()){
-
-				// Corte por socio de negocio
-				if (rs.getInt("c_bpartner_id") != cBPartnerIDAux){
-
-					cBPartnerIDAux = rs.getInt("c_bpartner_id");
-
-					// Obtengo modelo de socio a considerar en esta generación, si ya existe
-					// Si no existe lo creo ahora
-					entregaBP = this.getEntregaBP(cBPartnerIDAux);
-					if ((entregaBP == null) || (entregaBP.get_ID() <= 0)){
-						MBPartner partner = new MBPartner(getCtx(), cBPartnerIDAux, null);
-						entregaBP = new MZGeneraEntregaBP(getCtx(), 0, get_TrxName());
-						entregaBP.setZ_GeneraEntrega_ID(this.get_ID());
-						entregaBP.setC_BPartner_ID(cBPartnerIDAux);
-						entregaBP.setTaxID(partner.getTaxID());
-
-						if (partner.get_ValueAsInt("Z_CanalVenta_ID") > 0){
-							entregaBP.setZ_CanalVenta_ID(partner.get_ValueAsInt("Z_CanalVenta_ID"));
-						}
-
-						entregaBP.saveEx();
-					}
-				}
-
-				MZGeneraEntregaLin entregaLin = new MZGeneraEntregaLin(getCtx(), 0, get_TrxName());
-				entregaLin.setZ_GeneraEntrega_ID(this.get_ID());
-				entregaLin.setZ_GeneraEntregaBP_ID(entregaBP.get_ID());
-				entregaLin.setAD_Org_ID(this.getAD_Org_ID());
-				entregaLin.setC_Order_ID(rs.getInt("c_order_id"));
-				entregaLin.setC_OrderLine_ID(rs.getInt("c_orderline_id"));
-				entregaLin.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
-				entregaLin.setC_BPartner_Location_ID(rs.getInt("c_bpartner_location_id"));
-				entregaLin.setSalesRep_ID(rs.getInt("salesrep_id"));
-				entregaLin.setC_Currency_ID(rs.getInt("c_currency_id"));
-				entregaLin.setC_DocType_ID(rs.getInt("c_doctype_id"));
-				entregaLin.setC_SalesRegion_ID(rs.getInt("c_salesregion_id"));
-				entregaLin.setDateOrdered(rs.getTimestamp("dateordered"));
-				entregaLin.setDatePromised(rs.getTimestamp("datepromised"));
-				entregaLin.setPOReference(rs.getString("poreference"));
-				entregaLin.setM_Warehouse_ID(rs.getInt("m_warehouse_id"));
-				entregaLin.setM_Product_ID(rs.getInt("m_product_id"));
-				entregaLin.setC_UOM_ID(rs.getInt("c_uom_id"));
-				entregaLin.setUomMultiplyRate(rs.getBigDecimal("UomMultiplyRate"));
-				entregaLin.setQtyEntered(rs.getBigDecimal("qtyentered"));
-				entregaLin.setQtyOrdered(rs.getBigDecimal("qtyordered"));
-				entregaLin.setQtyReserved(rs.getBigDecimal("qtyreserved"));
-				entregaLin.setQtyDelivered(rs.getBigDecimal("qtydelivered"));
-				entregaLin.setQtyOpen(rs.getBigDecimal("qtyopen"));
-				entregaLin.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
-
-				// Convierto cantidades según factor a unidad de esta linea
-				if (rs.getInt("c_uom_id") != rs.getInt("c_uom_to_id")){
-					MUOM uomTo = (MUOM) entregaLin.getC_UOM();
-					entregaLin.setQtyReserved(entregaLin.getQtyReserved().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
-					entregaLin.setQtyDelivered(entregaLin.getQtyDelivered().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
-					entregaLin.setQtyOpen(entregaLin.getQtyOpen().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
-					entregaLin.setQtyAvailable(entregaLin.getQtyAvailable().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
-				}
-
-				entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
-				entregaLin.setLineNetAmt(rs.getBigDecimal("linenetamt"));
-				entregaLin.setAmtOpen(rs.getBigDecimal("amtopen"));
-
-				entregaLin.saveEx();
-			}
-
-		}
-		catch (Exception e){
-			throw new AdempiereException(e);
-		}
-		finally {
-			DB.close(rs, pstmt);
-			rs = null; pstmt = null;
-		}
-	}
-
-	/***
 	 * Obtiene lineas de ordenes de venta a considerar ordenadas por producto y genera
 	 * lineas por cada una de ellas.
 	 * Xpande. Created by Gabriel Vila on 8/1/20.
 	 * @return
 	 */
-	private void getOrdersByProduct(){
+	private void getOrders(){
 
-		String sql = "";
+		String sql = "", action = "";
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
@@ -643,13 +559,14 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 
 			int mProductIDAux = 0;
 			MZGeneraEntProd entregaProd = null;
+			MZGeneraEntregaBP entregaBP = null;
 
 			pstmt = DB.prepareStatement(sql, get_TrxName());
 			rs = pstmt.executeQuery();
 
 			while(rs.next()){
 
-				// Corte por socio de negocio
+				// Corte por producto
 				if (rs.getInt("m_product_id") != mProductIDAux){
 
 					mProductIDAux = rs.getInt("m_product_id");
@@ -658,25 +575,48 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 					// Si no existe lo creo ahora
 					entregaProd = this.getEntregaProd(mProductIDAux);
 					if ((entregaProd == null) || (entregaProd.get_ID() <= 0)){
-						MProduct product = new MProduct(getCtx(), mProductIDAux, null);
 						entregaProd = new MZGeneraEntProd(getCtx(), 0, get_TrxName());
 						entregaProd.setZ_GeneraEntrega_ID(this.get_ID());
 						entregaProd.setM_Product_ID(mProductIDAux);
-						entregaProd.setC_UOM_ID(product.getC_UOM_ID());
+						entregaProd.setC_UOM_ID(rs.getInt("c_uom_to_id"));
 						entregaProd.setQtyOrdered(Env.ZERO);
 						entregaProd.setQtyReserved(Env.ZERO);
 						entregaProd.setQtyDelivered(Env.ZERO);
 						entregaProd.setQtyOpen(Env.ZERO);
-						entregaProd.setQtyAvailable(Env.ZERO);
 						entregaProd.setQtyToDeliver(Env.ZERO);
 						entregaProd.setQtyOnHand(Env.ZERO);
-						entregaProd.saveEx();
+					}
+					entregaProd.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
+					entregaProd.saveEx();
+				}
+
+				// Si se indica tipo de proceso por Socio de negocio
+				if (this.getTipoGeneraEntrega().equalsIgnoreCase(X_Z_GeneraEntrega.TIPOGENERAENTREGA_SOCIODENEGOCIO)){
+					// Obtengo modelo de socio a considerar en esta generación, si ya existe
+					// Si no existe lo creo ahora
+					entregaBP = this.getEntregaBP(rs.getInt("c_bpartner_id"));
+					if ((entregaBP == null) || (entregaBP.get_ID() <= 0)){
+						MBPartner partner = new MBPartner(getCtx(), rs.getInt("c_bpartner_id"), null);
+						entregaBP = new MZGeneraEntregaBP(getCtx(), 0, get_TrxName());
+						entregaBP.setZ_GeneraEntrega_ID(this.get_ID());
+						entregaBP.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+						entregaBP.setTaxID(partner.getTaxID());
+
+						if (partner.get_ValueAsInt("Z_CanalVenta_ID") > 0){
+							entregaBP.setZ_CanalVenta_ID(partner.get_ValueAsInt("Z_CanalVenta_ID"));
+						}
+						entregaBP.saveEx();
 					}
 				}
 
 				MZGeneraEntregaLin entregaLin = new MZGeneraEntregaLin(getCtx(), 0, get_TrxName());
 				entregaLin.setZ_GeneraEntrega_ID(this.get_ID());
 				entregaLin.setZ_GeneraEntProd_ID(entregaProd.get_ID());
+
+				if (entregaBP != null){
+					entregaLin.setZ_GeneraEntregaBP_ID(entregaBP.get_ID());
+				}
+
 				entregaLin.setAD_Org_ID(this.getAD_Org_ID());
 				entregaLin.setC_Order_ID(rs.getInt("c_order_id"));
 				entregaLin.setC_OrderLine_ID(rs.getInt("c_orderline_id"));
@@ -692,13 +632,21 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 				entregaLin.setM_Warehouse_ID(rs.getInt("m_warehouse_id"));
 				entregaLin.setM_Product_ID(rs.getInt("m_product_id"));
 				entregaLin.setC_UOM_ID(rs.getInt("c_uom_id"));
+				entregaLin.setC_UOM_To_ID(rs.getInt("c_uom_to_id"));
 				entregaLin.setUomMultiplyRate(rs.getBigDecimal("UomMultiplyRate"));
 				entregaLin.setQtyEntered(rs.getBigDecimal("qtyentered"));
 				entregaLin.setQtyOrdered(rs.getBigDecimal("qtyordered"));
 				entregaLin.setQtyReserved(rs.getBigDecimal("qtyreserved"));
 				entregaLin.setQtyDelivered(rs.getBigDecimal("qtydelivered"));
+				entregaLin.setQtyOpenUomProd(rs.getBigDecimal("qtyopen"));
 				entregaLin.setQtyOpen(rs.getBigDecimal("qtyopen"));
-				entregaLin.setQtyAvailable(rs.getBigDecimal("qtyavailable"));
+				entregaLin.setQtyToDeliver(Env.ZERO);
+
+				entregaProd.setQtyOrdered(entregaProd.getQtyOrdered().add(entregaLin.getQtyOrdered()));
+				entregaProd.setQtyReserved(entregaProd.getQtyReserved().add(entregaLin.getQtyReserved()));
+				entregaProd.setQtyDelivered(entregaProd.getQtyDelivered().add(entregaLin.getQtyDelivered()));
+				entregaProd.setQtyOpen(entregaProd.getQtyOpen().add(entregaLin.getQtyOpen()));
+				entregaProd.saveEx();
 
 				// Convierto cantidades según factor a unidad de esta linea
 				if (rs.getInt("c_uom_id") != rs.getInt("c_uom_to_id")){
@@ -706,15 +654,13 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 					entregaLin.setQtyReserved(entregaLin.getQtyReserved().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
 					entregaLin.setQtyDelivered(entregaLin.getQtyDelivered().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
 					entregaLin.setQtyOpen(entregaLin.getQtyOpen().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
-					entregaLin.setQtyAvailable(entregaLin.getQtyAvailable().multiply(entregaLin.getUomMultiplyRate()).setScale(uomTo.getStdPrecision(), RoundingMode.HALF_UP));
 				}
 
-				entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
 				entregaLin.setLineNetAmt(rs.getBigDecimal("linenetamt"));
 				entregaLin.setAmtOpen(rs.getBigDecimal("amtopen"));
-
 				entregaLin.saveEx();
 			}
+
 
 		}
 		catch (Exception e){
@@ -725,6 +671,104 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			rs = null; pstmt = null;
 		}
 	}
+
+	private void asignarStockDisponible(int mProductID){
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			String whereClause = "";
+			if (mProductID > 0){
+				whereClause = " and m_product_id =" + mProductID;
+			}
+
+		    sql = " select z_generaentregalin_id from z_generaentregalin " +
+				  " where z_generaentrega_id =" + this.get_ID() + whereClause +
+				  " order by m_product_id, dateordered, c_order_id ";
+
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
+
+			MZGeneraEntProd entregaProd = null;
+			int mProductIDAux = 0;
+			BigDecimal qtyAvailable = Env.ZERO;
+
+			while(rs.next()){
+
+				MZGeneraEntregaLin entregaLin = new MZGeneraEntregaLin(getCtx(), rs.getInt("z_generaentregalin_id"), get_TrxName());
+
+				// Corte por producto
+				if (entregaLin.getM_Product_ID() != mProductIDAux){
+
+					mProductIDAux = entregaLin.getM_Product_ID();
+
+					MUOM uomProd = (MUOM) entregaProd.getC_UOM();
+
+					// Obtengo modelo de producto a considerar, si no hay no hago nada con este producto.
+					entregaProd = this.getEntregaProd(mProductIDAux);
+					if ((entregaProd == null) || (entregaProd.get_ID() <= 0)){
+						mProductIDAux = -1;
+						qtyAvailable = Env.ZERO;
+						continue;
+					}
+
+					// Inicializo cantidades para asiganción
+					// Obtengo stock disponible actual para este producto
+					sql = " select z_stk_warproddisp(" + this.getAD_Client_ID() + ", " + this.getAD_Org_ID() + ", " +
+							this.getM_Warehouse_ID()  + ", " + mProductIDAux + ")";
+					BigDecimal qtyAvailableProd = DB.getSQLValueBDEx(null, sql);
+					if (qtyAvailableProd == null) qtyAvailableProd = Env.ZERO;
+
+					// Precision según unidad de medida del producto
+					qtyAvailableProd = qtyAvailableProd.setScale(uomProd.getStdPrecision(), RoundingMode.HALF_UP);
+
+					// Si no tengo disponible no hago nada
+					if (qtyAvailableProd.compareTo(Env.ZERO) <= 0){
+						mProductIDAux = -1;
+						qtyAvailable = Env.ZERO;
+						continue;
+					}
+
+					entregaProd.setQtyAvailable(qtyAvailableProd);
+					entregaProd.setQtyOnHand(entregaProd.getQtyAvailable());
+					entregaProd.setQtyToDeliver(Env.ZERO);
+					entregaProd.saveEx();
+
+					qtyAvailable = entregaProd.getQtyAvailable();
+				}
+
+				// Si tengo disponible, asigno
+				if (qtyAvailable.compareTo(entregaLin.getQtyOpenUomProd()) >= 0){
+
+					entregaLin.setQtyToDeliver(entregaLin.getQtyOpen());
+					entregaLin.saveEx();
+
+					entregaProd.setQtyToDeliver(entregaProd.getQtyToDeliver().add(entregaLin.getQtyOpenUomProd()));
+					entregaProd.saveEx();
+
+					// Bajo el disponible para este producto
+					qtyAvailable = qtyAvailable.subtract(entregaLin.getQtyOpenUomProd());
+				}
+
+			}
+
+			// Actualizo disponible final de productos
+			String action = " update z_generaentprod set qtyonhand = (qtyavailable - qtytodeliver) " +
+					        " where z_generaentrega_id =" + this.get_ID() + whereClause;
+			DB.executeUpdateEx(action, get_TrxName());
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+		finally {
+		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+	}
+
 
 	/***
 	 * Obtiene y retorna modelo de entrega de socio de negocio según id de socio de negocio recibido.
@@ -847,5 +891,173 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 
 		return whereClause;
 	}
+
+	/***
+	 * Genera reservas para cada orden de venta considerada en este proceso.
+	 * Xpande. Created by Gabriel Vila on 8/2/20.
+	 * @param entProdList
+	 * @param entregaLinList
+	 * @return
+	 */
+	private String generateReservas(List<MZGeneraEntProd> entProdList, List<MZGeneraEntregaLin> entregaLinList){
+
+		try{
+
+			// Recorro lineas del documento
+			for (MZGeneraEntregaLin entregaLin: entregaLinList){
+
+			}
+
+					/*
+
+			//	Check Product - Stocked and Item
+			MProduct product = line.getProduct();
+			if (product != null)
+			{
+				if (product.isStocked())
+				{
+					//	Mandatory Product Attribute Set Instance
+					MAttributeSet.validateAttributeSetInstanceMandatory(product, line.Table_ID, isSOTrx() , line.getM_AttributeSetInstance_ID());
+
+					BigDecimal ordered = isSOTrx ? Env.ZERO : difference;
+					BigDecimal reserved = isSOTrx ? difference : Env.ZERO;
+					int M_Locator_ID = 0;
+					//	Get Locator to reserve
+					if (line.getM_AttributeSetInstance_ID() != 0)	//	Get existing Location
+						M_Locator_ID = MStorage.getM_Locator_ID (line.getM_Warehouse_ID(),
+								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
+								ordered, get_TrxName());
+					//	Get default Location
+					if (M_Locator_ID == 0)
+					{
+						// try to take default locator for product first
+						// if it is from the selected warehouse
+						MWarehouse wh = MWarehouse.get(getCtx(), line.getM_Warehouse_ID());
+						M_Locator_ID = product.getM_Locator_ID();
+						if (M_Locator_ID!=0) {
+							MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
+							//product has default locator defined but is not from the order warehouse
+							if(locator.getM_Warehouse_ID()!=wh.get_ID()) {
+								M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+							}
+						} else {
+							M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+						}
+					}
+					//	Update Storage
+					if (!MStorage.add(getCtx(), line.getM_Warehouse_ID(), M_Locator_ID,
+							line.getM_Product_ID(),
+							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
+							Env.ZERO, reserved, ordered, get_TrxName()))
+						return false;
+				}	//	stockec
+				//	update line
+				line.setQtyReserved(line.getQtyReserved().add(difference));
+				if (!line.save(get_TrxName()))
+					return false;
+				//
+				Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
+				Weight = Weight.add(product.getWeight().multiply(line.getQtyOrdered()));
+			}	//	product
+
+			 */
+
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
+
+	/***
+	 * Obtiene y retorna lineas ordenadas por orden de venta y linea de venta.
+	 * Xpande. Created by Gabriel Vila on 8/2/20.
+	 * @return
+	 */
+	public List<MZGeneraEntregaLin> getLinesByOrder() {
+
+		String whereClause = X_Z_GeneraEntregaLin.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID();
+
+		List<MZGeneraEntregaLin> lines = new Query(getCtx(), I_Z_GeneraEntregaLin.Table_Name, whereClause, get_TrxName())
+				.setOrderBy(" c_order_id, c_orderline_id ").list();
+
+		return lines;
+	}
+
+	/***
+	 * Obtiene y retorna lineas de entrega de productos.
+	 * Xpande. Created by Gabriel Vila on 8/2/20.
+	 * @return
+	 */
+	public List<MZGeneraEntProd> getLinesEntProd(){
+
+		String whereClause = X_Z_GeneraEntProd.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID();
+
+		List<MZGeneraEntProd> lines = new Query(getCtx(), I_Z_GeneraEntProd.Table_Name, whereClause, get_TrxName())
+				.setOrderBy(" m_product_id ").list();
+
+		return lines;
+	}
+
+
+	/***
+	 * Validaciones previas a completar este documento.
+	 * Xpande. Created by Gabriel Vila on 8/2/20.
+	 * @param entProdList
+	 * @param entregaLinList
+	 * @return
+	 */
+	private String validateDocument(List<MZGeneraEntProd> entProdList, List<MZGeneraEntregaLin> entregaLinList){
+
+		String sql = "";
+
+		try{
+
+			// Si no tengo lineas aviso.
+			if (entProdList.size() <= 0){
+				return "No hay lineas para procesar.";
+			}
+			if (entregaLinList.size() <= 0){
+				return "No hay lineas para procesar.";
+			}
+
+			// Valido que el disponible actual de cada producto alcance para la asignacion efectuada.
+			for (MZGeneraEntProd entProd: entProdList){
+
+				MUOM uomProd = (MUOM) entProd.getC_UOM();
+
+				// Obtengo disponible actual para este producto
+				sql = " select z_stk_warproddisp(" + this.getAD_Client_ID() + ", " + this.getAD_Org_ID() + ", " +
+						this.getM_Warehouse_ID()  + ", " + entProd.getM_Product_ID() + ")";
+				BigDecimal qtyAvailableProd = DB.getSQLValueBDEx(null, sql);
+				if (qtyAvailableProd == null) qtyAvailableProd = Env.ZERO;
+
+				// Precision según unidad de medida del producto
+				qtyAvailableProd = qtyAvailableProd.setScale(uomProd.getStdPrecision(), RoundingMode.HALF_UP);
+
+				// Actualizo totales de este modelo de generacion de producto
+				entProd.setQtyAvailable(qtyAvailableProd);
+				entProd.setQtyOnHand(entProd.getQtyAvailable().subtract(entProd.getQtyToDeliver()));
+				entProd.saveEx();
+
+				// Si la cantidad disponible actual es menor a la cantidad asignada, aviso y no hago nada
+				if (qtyAvailableProd.compareTo(entProd.getQtyToDeliver()) < 0){
+
+					MProduct product = (MProduct) entProd.getM_Product();
+					return "La cantidad disponible del producto " + product.getValue() + " - " + product.getName() +
+							" ha variado y no alcanza para la cantidad a procesar.\n " +
+							" Disponible actual = " + qtyAvailableProd + ", cantidad a procesar = " + entProd.getQtyToDeliver();
+				}
+			}
+		}
+		catch (Exception e){
+		    throw new AdempiereException(e);
+		}
+
+		return null;
+	}
+
 
 }

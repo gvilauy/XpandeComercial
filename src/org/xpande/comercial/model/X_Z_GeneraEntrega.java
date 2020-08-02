@@ -31,7 +31,7 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200801L;
+	private static final long serialVersionUID = 20200802L;
 
     /** Standard Constructor */
     public X_Z_GeneraEntrega (Properties ctx, int Z_GeneraEntrega_ID, String trxName)
@@ -49,8 +49,11 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 			setDocumentNo (null);
 			setIsApproved (false);
 // N
+			setIsConfirmed (true);
+// Y
 			setIsStockDisponible (true);
 // Y
+			setM_Warehouse_ID (0);
 			setProcessed (false);
 // N
 			setProcessing (false);
@@ -382,6 +385,30 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 		return false;
 	}
 
+	/** Set Confirmed.
+		@param IsConfirmed 
+		Assignment is confirmed
+	  */
+	public void setIsConfirmed (boolean IsConfirmed)
+	{
+		set_Value (COLUMNNAME_IsConfirmed, Boolean.valueOf(IsConfirmed));
+	}
+
+	/** Get Confirmed.
+		@return Assignment is confirmed
+	  */
+	public boolean isConfirmed () 
+	{
+		Object oo = get_Value(COLUMNNAME_IsConfirmed);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
 	/** Set IsStockDisponible.
 		@param IsStockDisponible 
 		Si tiene en cuenta o no el stock disponible de mercaderia
@@ -404,6 +431,34 @@ public class X_Z_GeneraEntrega extends PO implements I_Z_GeneraEntrega, I_Persis
 			return "Y".equals(oo);
 		}
 		return false;
+	}
+
+	public I_M_Warehouse getM_Warehouse() throws RuntimeException
+    {
+		return (I_M_Warehouse)MTable.get(getCtx(), I_M_Warehouse.Table_Name)
+			.getPO(getM_Warehouse_ID(), get_TrxName());	}
+
+	/** Set Warehouse.
+		@param M_Warehouse_ID 
+		Storage Warehouse and Service Point
+	  */
+	public void setM_Warehouse_ID (int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 0) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, Integer.valueOf(M_Warehouse_ID));
+	}
+
+	/** Get Warehouse.
+		@return Storage Warehouse and Service Point
+	  */
+	public int getM_Warehouse_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Warehouse_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set ProcessButton.

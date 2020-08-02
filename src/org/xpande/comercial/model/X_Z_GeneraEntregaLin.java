@@ -33,7 +33,7 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200801L;
+	private static final long serialVersionUID = 20200802L;
 
     /** Standard Constructor */
     public X_Z_GeneraEntregaLin (Properties ctx, int Z_GeneraEntregaLin_ID, String trxName)
@@ -49,14 +49,15 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 			setC_Order_ID (0);
 			setC_OrderLine_ID (0);
 			setC_UOM_ID (0);
+			setC_UOM_To_ID (0);
 			setDateOrdered (new Timestamp( System.currentTimeMillis() ));
 			setLineNetAmt (Env.ZERO);
 			setM_Product_ID (0);
 			setM_Warehouse_ID (0);
-			setQtyAvailable (Env.ZERO);
 			setQtyDelivered (Env.ZERO);
 			setQtyEntered (Env.ZERO);
 			setQtyOpen (Env.ZERO);
+			setQtyOpenUomProd (Env.ZERO);
 			setQtyOrdered (Env.ZERO);
 			setQtyReserved (Env.ZERO);
 			setQtyToDeliver (Env.ZERO);
@@ -338,6 +339,34 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 		return ii.intValue();
 	}
 
+	public I_C_UOM getC_UOM_To() throws RuntimeException
+    {
+		return (I_C_UOM)MTable.get(getCtx(), I_C_UOM.Table_Name)
+			.getPO(getC_UOM_To_ID(), get_TrxName());	}
+
+	/** Set UoM To.
+		@param C_UOM_To_ID 
+		Target or destination Unit of Measure
+	  */
+	public void setC_UOM_To_ID (int C_UOM_To_ID)
+	{
+		if (C_UOM_To_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_To_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_To_ID, Integer.valueOf(C_UOM_To_ID));
+	}
+
+	/** Get UoM To.
+		@return Target or destination Unit of Measure
+	  */
+	public int getC_UOM_To_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_UOM_To_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Date Ordered.
 		@param DateOrdered 
 		Date of Order
@@ -465,26 +494,6 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 		return (String)get_Value(COLUMNNAME_POReference);
 	}
 
-	/** Set Available Quantity.
-		@param QtyAvailable 
-		Available Quantity (On Hand - Reserved)
-	  */
-	public void setQtyAvailable (BigDecimal QtyAvailable)
-	{
-		set_ValueNoCheck (COLUMNNAME_QtyAvailable, QtyAvailable);
-	}
-
-	/** Get Available Quantity.
-		@return Available Quantity (On Hand - Reserved)
-	  */
-	public BigDecimal getQtyAvailable () 
-	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyAvailable);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
-	}
-
 	/** Set Delivered Quantity.
 		@param QtyDelivered 
 		Delivered Quantity
@@ -540,6 +549,26 @@ public class X_Z_GeneraEntregaLin extends PO implements I_Z_GeneraEntregaLin, I_
 	public BigDecimal getQtyOpen () 
 	{
 		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOpen);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
+
+	/** Set QtyOpenUomProd.
+		@param QtyOpenUomProd 
+		Cantidad pendiente en unidad de medida del producto
+	  */
+	public void setQtyOpenUomProd (BigDecimal QtyOpenUomProd)
+	{
+		set_Value (COLUMNNAME_QtyOpenUomProd, QtyOpenUomProd);
+	}
+
+	/** Get QtyOpenUomProd.
+		@return Cantidad pendiente en unidad de medida del producto
+	  */
+	public BigDecimal getQtyOpenUomProd () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_QtyOpenUomProd);
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;

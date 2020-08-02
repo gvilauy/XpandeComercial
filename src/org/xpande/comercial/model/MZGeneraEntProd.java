@@ -1,5 +1,7 @@
 package org.xpande.comercial.model;
 
+import org.adempiere.exceptions.AdempiereException;
+
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -17,4 +19,5 @@ public class MZGeneraEntProd extends X_Z_GeneraEntProd{
     public MZGeneraEntProd(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
     }
+
 }

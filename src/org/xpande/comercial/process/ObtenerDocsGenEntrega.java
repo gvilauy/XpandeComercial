@@ -41,7 +41,7 @@ public class ObtenerDocsGenEntrega extends SvrProcess {
     @Override
     protected String doIt() throws Exception {
 
-        this.generaEntrega.getDocumentos(tipoAccion);
+        this.generaEntrega.getData(tipoAccion);
 
         return "OK";
     }
