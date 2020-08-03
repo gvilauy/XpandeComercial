@@ -249,7 +249,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		}
 
 		// Genero reservas
-		m_processMsg = this.generateReservas(entProdList, entregaLinList);
+		m_processMsg = this.generateReservas(entregaLinList);
 		if (m_processMsg != null){
 			return DocAction.STATUS_Invalid;
 		}
@@ -895,73 +895,114 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	/***
 	 * Genera reservas para cada orden de venta considerada en este proceso.
 	 * Xpande. Created by Gabriel Vila on 8/2/20.
-	 * @param entProdList
 	 * @param entregaLinList
 	 * @return
 	 */
-	private String generateReservas(List<MZGeneraEntProd> entProdList, List<MZGeneraEntregaLin> entregaLinList){
+	private String generateReservas(List<MZGeneraEntregaLin> entregaLinList){
+
+		String message = null;
 
 		try{
+			// Documento para reservas de venta
+			MDocType[] docTypes = MDocType.getOfDocBaseType(getCtx(), "RVT");
+			if (docTypes.length <= 0){
+				return "Falta configurar Tipo de Documento para Reservas de Venta (RVT)";
+			}
+			MDocType docType = docTypes[0];
+
+			MZReservaVta reservaVta = null;
+			BigDecimal totalAmt = Env.ZERO;
+			int cOrderIDAux = -1;
 
 			// Recorro lineas del documento
 			for (MZGeneraEntregaLin entregaLin: entregaLinList){
 
+				// Corte por orden de venta
+				if (entregaLin.getC_Order_ID() != cOrderIDAux){
+
+					// Si ya tengo un cabezal de reserva en proceso
+					if ((reservaVta != null) && (reservaVta.get_ID() > 0)){
+
+						reservaVta.setTotalAmt(totalAmt);
+
+						// Lo completo
+						if (!reservaVta.processIt(DOCACTION_Complete)){
+							message = "No se pudo completar documento de Reserva de Venta. ";
+							if (reservaVta.getProcessMsg() != null){
+								message += reservaVta.getProcessMsg();
+							}
+							return message;
+						}
+						reservaVta.saveEx();
+					}
+
+					// Nuevo cabezal de reserva
+					reservaVta = new MZReservaVta(getCtx(), 0, get_TrxName());
+					reservaVta.setAD_Org_ID(this.getAD_Org_ID());
+					reservaVta.setZ_GeneraEntrega_ID(this.get_ID());
+					reservaVta.setC_BPartner_ID(entregaLin.getC_BPartner_ID());
+					reservaVta.setC_BPartner_Location_ID(entregaLin.getC_BPartner_Location_ID());
+					reservaVta.setC_Order_ID(entregaLin.getC_Order_ID());
+					reservaVta.setC_Currency_ID(entregaLin.getC_Currency_ID());
+					reservaVta.setC_DocType_ID(docType.get_ID());
+					reservaVta.setDateDoc(this.getDateDoc());
+					reservaVta.setDateOrdered(entregaLin.getDateOrdered());
+					reservaVta.setDescription("Generada automáticamente desde Generador de Reservas número : " + this.getDocumentNo());
+					reservaVta.setM_Warehouse_ID(this.getM_Warehouse_ID());
+					reservaVta.setTotalAmt(Env.ZERO);
+					reservaVta.saveEx();
+
+					cOrderIDAux = entregaLin.getC_Order_ID();
+					totalAmt = Env.ZERO;
+				}
+
+				MOrderLine orderLine = (MOrderLine) entregaLin.getC_OrderLine();
+
+				// Nueva linea de reserva
+				MZReservaVtaLin reservaVtaLin = new MZReservaVtaLin(getCtx(), 0, get_TrxName());
+				reservaVtaLin.setAD_Org_ID(reservaVta.getAD_Org_ID());
+				reservaVtaLin.setZ_ReservaVta_ID(reservaVta.get_ID());
+				reservaVtaLin.setC_OrderLine_ID(entregaLin.getC_OrderLine_ID());
+				reservaVtaLin.setC_UOM_ID(entregaLin.getC_UOM_ID());
+				reservaVtaLin.setUomMultiplyRate(entregaLin.getUomMultiplyRate());
+
+				BigDecimal montoLinRes = entregaLin.getQtyToDeliver().multiply(orderLine.getPriceEntered().setScale(2, RoundingMode.HALF_UP));
+				reservaVtaLin.setLineNetAmt(montoLinRes);
+				reservaVtaLin.setM_Product_ID(entregaLin.getM_Product_ID());
+
+				MZGeneraEntProd entProd = (MZGeneraEntProd) entregaLin.getZ_GeneraEntProd();
+
+				BigDecimal qtyAvailableEnt = entProd.getQtyAvailable().multiply(entregaLin.getUomMultiplyRate());
+				MUOM uomProd = (MUOM) entProd.getC_UOM();
+				qtyAvailableEnt = qtyAvailableEnt.setScale(uomProd.getStdPrecision(), RoundingMode.HALF_UP);
+
+				reservaVtaLin.setQtyAvailable(entProd.getQtyAvailable());
+				reservaVtaLin.setQtyAvailableEnt(qtyAvailableEnt);
+				reservaVtaLin.setQtyEntered(entregaLin.getQtyEntered());
+				reservaVtaLin.setQtyOrdered(entregaLin.getQtyOrdered());
+
+
+				BigDecimal qtyReserved = entregaLin.getQtyToDeliver().divide(entregaLin.getUomMultiplyRate(), uomProd.getStdPrecision(), RoundingMode.HALF_UP);
+				reservaVtaLin.setQtyReservedEnt(entregaLin.getQtyToDeliver());
+				reservaVtaLin.setQtyReserved(qtyReserved);
+				reservaVtaLin.saveEx();
 			}
 
-					/*
+			// Si ya tengo un cabezal de reserva en proceso
+			if ((reservaVta != null) && (reservaVta.get_ID() > 0)){
 
-			//	Check Product - Stocked and Item
-			MProduct product = line.getProduct();
-			if (product != null)
-			{
-				if (product.isStocked())
-				{
-					//	Mandatory Product Attribute Set Instance
-					MAttributeSet.validateAttributeSetInstanceMandatory(product, line.Table_ID, isSOTrx() , line.getM_AttributeSetInstance_ID());
+				reservaVta.setTotalAmt(totalAmt);
 
-					BigDecimal ordered = isSOTrx ? Env.ZERO : difference;
-					BigDecimal reserved = isSOTrx ? difference : Env.ZERO;
-					int M_Locator_ID = 0;
-					//	Get Locator to reserve
-					if (line.getM_AttributeSetInstance_ID() != 0)	//	Get existing Location
-						M_Locator_ID = MStorage.getM_Locator_ID (line.getM_Warehouse_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								ordered, get_TrxName());
-					//	Get default Location
-					if (M_Locator_ID == 0)
-					{
-						// try to take default locator for product first
-						// if it is from the selected warehouse
-						MWarehouse wh = MWarehouse.get(getCtx(), line.getM_Warehouse_ID());
-						M_Locator_ID = product.getM_Locator_ID();
-						if (M_Locator_ID!=0) {
-							MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
-							//product has default locator defined but is not from the order warehouse
-							if(locator.getM_Warehouse_ID()!=wh.get_ID()) {
-								M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
-							}
-						} else {
-							M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
-						}
+				// Lo completo
+				if (!reservaVta.processIt(DOCACTION_Complete)){
+					message = "No se pudo completar documento de Reserva de Venta. ";
+					if (reservaVta.getProcessMsg() != null){
+						message += reservaVta.getProcessMsg();
 					}
-					//	Update Storage
-					if (!MStorage.add(getCtx(), line.getM_Warehouse_ID(), M_Locator_ID,
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
-							Env.ZERO, reserved, ordered, get_TrxName()))
-						return false;
-				}	//	stockec
-				//	update line
-				line.setQtyReserved(line.getQtyReserved().add(difference));
-				if (!line.save(get_TrxName()))
-					return false;
-				//
-				Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
-				Weight = Weight.add(product.getWeight().multiply(line.getQtyOrdered()));
-			}	//	product
-
-			 */
-
+					return message;
+				}
+				reservaVta.saveEx();
+			}
 		}
 		catch (Exception e){
 			throw new AdempiereException(e);
@@ -1058,6 +1099,5 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 
 		return null;
 	}
-
 
 }
