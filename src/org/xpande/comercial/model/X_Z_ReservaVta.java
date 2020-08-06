@@ -33,7 +33,7 @@ public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200802L;
+	private static final long serialVersionUID = 20200806L;
 
     /** Standard Constructor */
     public X_Z_ReservaVta (Properties ctx, int Z_ReservaVta_ID, String trxName)
@@ -229,6 +229,34 @@ public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent
 	public int getC_Order_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_C_Order_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	public I_C_SalesRegion getC_SalesRegion() throws RuntimeException
+    {
+		return (I_C_SalesRegion)MTable.get(getCtx(), I_C_SalesRegion.Table_Name)
+			.getPO(getC_SalesRegion_ID(), get_TrxName());	}
+
+	/** Set Sales Region.
+		@param C_SalesRegion_ID 
+		Sales coverage region
+	  */
+	public void setC_SalesRegion_ID (int C_SalesRegion_ID)
+	{
+		if (C_SalesRegion_ID < 1) 
+			set_Value (COLUMNNAME_C_SalesRegion_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_SalesRegion_ID, Integer.valueOf(C_SalesRegion_ID));
+	}
+
+	/** Get Sales Region.
+		@return Sales coverage region
+	  */
+	public int getC_SalesRegion_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_C_SalesRegion_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
@@ -491,6 +519,34 @@ public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent
 		return false;
 	}
 
+	public I_AD_User getSalesRep() throws RuntimeException
+    {
+		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
+			.getPO(getSalesRep_ID(), get_TrxName());	}
+
+	/** Set Sales Representative.
+		@param SalesRep_ID 
+		Sales Representative or Company Agent
+	  */
+	public void setSalesRep_ID (int SalesRep_ID)
+	{
+		if (SalesRep_ID < 1) 
+			set_Value (COLUMNNAME_SalesRep_ID, null);
+		else 
+			set_Value (COLUMNNAME_SalesRep_ID, Integer.valueOf(SalesRep_ID));
+	}
+
+	/** Get Sales Representative.
+		@return Sales Representative or Company Agent
+	  */
+	public int getSalesRep_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_SalesRep_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
 	/** Set Total Amount.
 		@param TotalAmt 
 		Total Amount
@@ -526,6 +582,26 @@ public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent
 	public String getUUID () 
 	{
 		return (String)get_Value(COLUMNNAME_UUID);
+	}
+
+	/** Set Z_AsignaTrLog ID.
+		@param Z_AsignaTrLog_ID Z_AsignaTrLog ID	  */
+	public void setZ_AsignaTrLog_ID (int Z_AsignaTrLog_ID)
+	{
+		if (Z_AsignaTrLog_ID < 1) 
+			set_Value (COLUMNNAME_Z_AsignaTrLog_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_AsignaTrLog_ID, Integer.valueOf(Z_AsignaTrLog_ID));
+	}
+
+	/** Get Z_AsignaTrLog ID.
+		@return Z_AsignaTrLog ID	  */
+	public int getZ_AsignaTrLog_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_AsignaTrLog_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	public I_Z_GeneraEntrega getZ_GeneraEntrega() throws RuntimeException

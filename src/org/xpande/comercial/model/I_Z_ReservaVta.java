@@ -154,6 +154,21 @@ public interface I_Z_ReservaVta
 	  */
 	public int getCreatedBy();
 
+    /** Column name C_SalesRegion_ID */
+    public static final String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/** Set Sales Region.
+	  * Sales coverage region
+	  */
+	public void setC_SalesRegion_ID (int C_SalesRegion_ID);
+
+	/** Get Sales Region.
+	  * Sales coverage region
+	  */
+	public int getC_SalesRegion_ID();
+
+	public I_C_SalesRegion getC_SalesRegion() throws RuntimeException;
+
     /** Column name DateDoc */
     public static final String COLUMNNAME_DateDoc = "DateDoc";
 
@@ -295,6 +310,21 @@ public interface I_Z_ReservaVta
 	/** Get Process Now	  */
 	public boolean isProcessing();
 
+    /** Column name SalesRep_ID */
+    public static final String COLUMNNAME_SalesRep_ID = "SalesRep_ID";
+
+	/** Set Sales Representative.
+	  * Sales Representative or Company Agent
+	  */
+	public void setSalesRep_ID (int SalesRep_ID);
+
+	/** Get Sales Representative.
+	  * Sales Representative or Company Agent
+	  */
+	public int getSalesRep_ID();
+
+	public I_AD_User getSalesRep() throws RuntimeException;
+
     /** Column name TotalAmt */
     public static final String COLUMNNAME_TotalAmt = "TotalAmt";
 
@@ -336,6 +366,15 @@ public interface I_Z_ReservaVta
 	  * Immutable Universally Unique Identifier
 	  */
 	public String getUUID();
+
+    /** Column name Z_AsignaTrLog_ID */
+    public static final String COLUMNNAME_Z_AsignaTrLog_ID = "Z_AsignaTrLog_ID";
+
+	/** Set Z_AsignaTrLog ID	  */
+	public void setZ_AsignaTrLog_ID (int Z_AsignaTrLog_ID);
+
+	/** Get Z_AsignaTrLog ID	  */
+	public int getZ_AsignaTrLog_ID();
 
     /** Column name Z_GeneraEntrega_ID */
     public static final String COLUMNNAME_Z_GeneraEntrega_ID = "Z_GeneraEntrega_ID";

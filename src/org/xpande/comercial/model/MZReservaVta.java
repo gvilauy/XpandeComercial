@@ -18,8 +18,10 @@ package org.xpande.comercial.model;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 import org.compiere.model.*;
 import org.compiere.process.DocAction;
@@ -65,7 +67,7 @@ public class MZReservaVta extends X_Z_ReservaVta implements DocAction, DocOption
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			//options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
@@ -231,59 +233,96 @@ public class MZReservaVta extends X_Z_ReservaVta implements DocAction, DocOption
 		log.info(toString());
 		//
 
+		// Obtengo lineas de este documento
+		List<MZReservaVtaLin> vtaLinList = this.getLines();
 
-					/*
-			//	Check Product - Stocked and Item
-			MProduct product = line.getProduct();
-			if (product != null)
+		// Si no tengo lineas a procesar, salgo y aviso.
+		if (vtaLinList.size() <= 0){
+			m_processMsg = "Este Documento no tiene lineas para procesar.";
+			return DocAction.STATUS_Invalid;
+		}
+
+		String sql = "", action = "";
+		MWarehouse warehouse = (MWarehouse) this.getM_Warehouse();
+
+		// Recorro, valido y proceso lineas
+		for (MZReservaVtaLin vtaLin: vtaLinList){
+
+			MOrderLine orderLine = (MOrderLine) vtaLin.getC_OrderLine();
+			MProduct product = (MProduct) vtaLin.getM_Product();
+			MUOM uomProd = (MUOM) product.getC_UOM();
+
+			// Obtengo disponible actual para este producto
+			sql = " select z_stk_warproddisp(" + this.getAD_Client_ID() + ", " + this.getAD_Org_ID() + ", " +
+					this.getM_Warehouse_ID()  + ", " + product.get_ID() + ")";
+			BigDecimal qtyAvailableProd = DB.getSQLValueBDEx(null, sql);
+			if (qtyAvailableProd == null) qtyAvailableProd = Env.ZERO;
+
+			// Precision según unidad de medida del producto
+			qtyAvailableProd = qtyAvailableProd.setScale(uomProd.getStdPrecision(), RoundingMode.HALF_UP);
+
+			// Si la cantidad disponible actual es menor a la cantidad asignada, aviso y no hago nada
+			if (qtyAvailableProd.compareTo(vtaLin.getQtyReserved()) < 0){
+
+				MUOM umoVta = (MUOM) vtaLin.getC_UOM();
+
+				BigDecimal qtyAvailableProdEnt = qtyAvailableProd.multiply(vtaLin.getUomMultiplyRate()).setScale(umoVta.getStdPrecision(), RoundingMode.HALF_UP);
+
+				m_processMsg = "La cantidad disponible del producto " + product.getValue() + " - " + product.getName() +
+						" ha variado y no alcanza para la cantidad a procesar.\n " +
+						" Disponible actual = " + qtyAvailableProdEnt + ", cantidad a procesar = " + vtaLin.getQtyReservedEnt();
+				return DocAction.STATUS_Invalid;
+			}
+
+			// Actualizo Storage para la reserva
+			if (product.isStocked())
 			{
-				if (product.isStocked())
-				{
-					//	Mandatory Product Attribute Set Instance
-					MAttributeSet.validateAttributeSetInstanceMandatory(product, line.Table_ID, isSOTrx() , line.getM_AttributeSetInstance_ID());
+				//	Mandatory Product Attribute Set Instance
+				MAttributeSet.validateAttributeSetInstanceMandatory(product, I_C_OrderLine.Table_ID, true, orderLine.getM_AttributeSetInstance_ID());
 
-					BigDecimal ordered = isSOTrx ? Env.ZERO : difference;
-					BigDecimal reserved = isSOTrx ? difference : Env.ZERO;
-					int M_Locator_ID = 0;
-					//	Get Locator to reserve
-					if (line.getM_AttributeSetInstance_ID() != 0)	//	Get existing Location
-						M_Locator_ID = MStorage.getM_Locator_ID (line.getM_Warehouse_ID(),
-								line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-								ordered, get_TrxName());
-					//	Get default Location
-					if (M_Locator_ID == 0)
-					{
-						// try to take default locator for product first
-						// if it is from the selected warehouse
-						MWarehouse wh = MWarehouse.get(getCtx(), line.getM_Warehouse_ID());
-						M_Locator_ID = product.getM_Locator_ID();
-						if (M_Locator_ID!=0) {
-							MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
-							//product has default locator defined but is not from the order warehouse
-							if(locator.getM_Warehouse_ID()!=wh.get_ID()) {
-								M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
-							}
-						} else {
-							M_Locator_ID = wh.getDefaultLocator().getM_Locator_ID();
+				int mLocatorID = 0;
+
+				//	Get Locator to reserve
+				if (orderLine.getM_AttributeSetInstance_ID() != 0){
+					//	Get existing Location
+					mLocatorID = MStorage.getM_Locator_ID (orderLine.getM_Warehouse_ID(), orderLine.getM_Product_ID(), orderLine.getM_AttributeSetInstance_ID(), Env.ZERO, get_TrxName());
+				}
+
+				//	Get default Location
+				if (mLocatorID == 0)
+				{
+					// try to take default locator for product first
+					// if it is from the selected warehouse
+					mLocatorID = product.getM_Locator_ID();
+					if ( mLocatorID != 0) {
+						MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
+						//product has default locator defined but is not from the order warehouse
+						if(locator.getM_Warehouse_ID() != warehouse.get_ID()) {
+							mLocatorID = warehouse.getDefaultLocator().getM_Locator_ID();
 						}
 					}
-					//	Update Storage
-					if (!MStorage.add(getCtx(), line.getM_Warehouse_ID(), M_Locator_ID,
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(), line.getM_AttributeSetInstance_ID(),
-							Env.ZERO, reserved, ordered, get_TrxName()))
-						return false;
-				}	//	stockec
-				//	update line
-				line.setQtyReserved(line.getQtyReserved().add(difference));
-				if (!line.save(get_TrxName()))
-					return false;
-				//
-				Volume = Volume.add(product.getVolume().multiply(line.getQtyOrdered()));
-				Weight = Weight.add(product.getWeight().multiply(line.getQtyOrdered()));
-			}	//	product
+					else {
+						mLocatorID = warehouse.getDefaultLocator().getM_Locator_ID();
+					}
+				}
 
-			 */
+				//	Update Storage
+				if (!MStorage.add(getCtx(), warehouse.get_ID(), mLocatorID, orderLine.getM_Product_ID(),
+						orderLine.getM_AttributeSetInstance_ID(), orderLine.getM_AttributeSetInstance_ID(),
+						Env.ZERO, vtaLin.getQtyReserved(), Env.ZERO, get_TrxName())){
+
+					m_processMsg = "No se pudo generar la reserva para el producto : " + product.getValue() + " - " + product.getName();
+					return DocAction.STATUS_Invalid;
+				}
+
+				// Actualizo cantidad reservada de la linea de la orden de venta
+				action = " update c_orderline set qtyreserved = qtyreserved + " + vtaLin.getQtyReserved() +
+						" where c_orderline_id =" + vtaLin.getC_OrderLine_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+
+
 
 
 		//	User Validation
@@ -444,4 +483,21 @@ public class MZReservaVta extends X_Z_ReservaVta implements DocAction, DocOption
         .append(getSummary()).append("]");
       return sb.toString();
     }
+
+
+	/***
+	 * Metodo que obtiene y retorna lineas de este documento.
+	 * Xpande. Created by Gabriel Vila on 8/4/20.
+	 * @return
+	 */
+	public List<MZReservaVtaLin> getLines(){
+
+		String whereClause = X_Z_ReservaVtaLin.COLUMNNAME_Z_ReservaVta_ID + " =" + this.get_ID();
+
+		List<MZReservaVtaLin> lines = new Query(getCtx(), I_Z_ReservaVtaLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
+
 }

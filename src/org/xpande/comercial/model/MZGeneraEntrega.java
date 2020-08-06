@@ -71,7 +71,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			//options[newIndex++] = DocumentEngine.ACTION_None;
-			//options[newIndex++] = DocumentEngine.ACTION_ReActivate;
+			options[newIndex++] = DocumentEngine.ACTION_ReActivate;
 			//options[newIndex++] = DocumentEngine.ACTION_Void;
 		}
 
@@ -440,10 +440,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 			// Si esta marcada la opcion para asignar stock disponible de manera automatica, lo hago.
 			if (this.isConfirmed()){
 				this.asignarStockDisponible(-1);
-
-
 			}
-
 
 		}
 		catch (Exception e){
@@ -544,7 +541,6 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		ResultSet rs = null;
 
 		try{
-
 			String whereClause = this.getWhereDocuments();
 
 			// Query
@@ -947,6 +943,15 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 					reservaVta.setC_DocType_ID(docType.get_ID());
 					reservaVta.setDateDoc(this.getDateDoc());
 					reservaVta.setDateOrdered(entregaLin.getDateOrdered());
+
+					if (entregaLin.getC_SalesRegion_ID() > 0){
+						reservaVta.setC_SalesRegion_ID(entregaLin.getC_SalesRegion_ID());
+					}
+
+					if (entregaLin.getSalesRep_ID() > 0){
+						reservaVta.setSalesRep_ID(entregaLin.getSalesRep_ID());
+					}
+
 					reservaVta.setDescription("Generada automáticamente desde Generador de Reservas número : " + this.getDocumentNo());
 					reservaVta.setM_Warehouse_ID(this.getM_Warehouse_ID());
 					reservaVta.setTotalAmt(Env.ZERO);
