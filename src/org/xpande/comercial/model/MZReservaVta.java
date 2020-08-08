@@ -322,9 +322,6 @@ public class MZReservaVta extends X_Z_ReservaVta implements DocAction, DocOption
 			}
 		}
 
-
-
-
 		//	User Validation
 		String valid = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_AFTER_COMPLETE);
 		if (valid != null)
@@ -412,11 +409,88 @@ public class MZReservaVta extends X_Z_ReservaVta implements DocAction, DocOption
 	 */
 	public boolean reActivateIt()
 	{
-		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Valido que esta reserva no este asociada a un documento de Asignación de Transporte.
+		if (this.getZ_AsignaTrLog_ID() > 0){
+			m_processMsg = "No es posible Reactivar esta Reserva ya que asociada a una Asignación de Transporte.\n" +
+					"Debe Eliminar dicha Asignación antes de Reactivar esta Reserva.";
+			return false;
+		}
+
+		// Obtengo lineas de este documento
+		List<MZReservaVtaLin> vtaLinList = this.getLines();
+
+		String action = "";
+		MWarehouse warehouse = (MWarehouse) this.getM_Warehouse();
+
+		// Recorro lineas y deshago reserva en Storage y en linea de orden de venta.
+		for (MZReservaVtaLin vtaLin: vtaLinList){
+
+			MOrderLine orderLine = (MOrderLine) vtaLin.getC_OrderLine();
+			MProduct product = (MProduct) vtaLin.getM_Product();
+
+			// Actualizo Storage para la reserva
+			if (product.isStocked())
+			{
+				//	Mandatory Product Attribute Set Instance
+				MAttributeSet.validateAttributeSetInstanceMandatory(product, I_C_OrderLine.Table_ID, true, orderLine.getM_AttributeSetInstance_ID());
+
+				int mLocatorID = 0;
+
+				//	Get Locator to reserve
+				if (orderLine.getM_AttributeSetInstance_ID() != 0){
+					//	Get existing Location
+					mLocatorID = MStorage.getM_Locator_ID (orderLine.getM_Warehouse_ID(), orderLine.getM_Product_ID(), orderLine.getM_AttributeSetInstance_ID(), Env.ZERO, get_TrxName());
+				}
+
+				//	Get default Location
+				if (mLocatorID == 0)
+				{
+					// try to take default locator for product first
+					// if it is from the selected warehouse
+					mLocatorID = product.getM_Locator_ID();
+					if ( mLocatorID != 0) {
+						MLocator locator = new MLocator(getCtx(), product.getM_Locator_ID(), get_TrxName());
+						//product has default locator defined but is not from the order warehouse
+						if(locator.getM_Warehouse_ID() != warehouse.get_ID()) {
+							mLocatorID = warehouse.getDefaultLocator().getM_Locator_ID();
+						}
+					}
+					else {
+						mLocatorID = warehouse.getDefaultLocator().getM_Locator_ID();
+					}
+				}
+
+				//	Update Storage
+				if (!MStorage.add(getCtx(), warehouse.get_ID(), mLocatorID, orderLine.getM_Product_ID(),
+						orderLine.getM_AttributeSetInstance_ID(), orderLine.getM_AttributeSetInstance_ID(),
+						Env.ZERO, vtaLin.getQtyReserved().negate(), Env.ZERO, get_TrxName())){
+
+					m_processMsg = "No se pudo Reactivar la reserva para el producto : " + product.getValue() + " - " + product.getName();
+					return false;
+				}
+
+				// Actualizo cantidad reservada de la linea de la orden de venta
+				action = " update c_orderline set qtyreserved = qtyreserved - " + vtaLin.getQtyReserved() +
+						" where c_orderline_id =" + vtaLin.getC_OrderLine_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
+		}
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	

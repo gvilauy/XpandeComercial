@@ -341,11 +341,45 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	 */
 	public boolean reActivateIt()
 	{
-		log.info("reActivateIt - " + toString());
-		setProcessed(false);
-		if (reverseCorrectIt())
-			return true;
-		return false;
+		// Before reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_BEFORE_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		// Obtengo lista de documentos de reserva generados en este proceso
+		List<MZReservaVta> reservaVtaList = this.getReservas();
+
+		// Recorro, reactivo y elimino reservas
+		for (MZReservaVta reservaVta: reservaVtaList){
+
+			// Si le reserva este completa, la reactivo antes de eliminarla.
+			if (reservaVta.getDocStatus().equalsIgnoreCase(DOCSTATUS_Completed)){
+
+				// Si no puedo reactivar, aviso y salgo
+				if (!reservaVta.reActivateIt()){
+					m_processMsg = "No se pudo Reactivar la Reserva : " + reservaVta.getDocumentNo() + ". ";
+					if (reservaVta.getProcessMsg() != null){
+						m_processMsg += reservaVta.getProcessMsg();
+						return false;
+					}
+				}
+				reservaVta.saveEx();
+			}
+
+			// Delete de Reserva
+			reservaVta.deleteEx(true);
+		}
+
+		// After reActivate
+		m_processMsg = ModelValidationEngine.get().fireDocValidate(this,ModelValidator.TIMING_AFTER_REACTIVATE);
+		if (m_processMsg != null)
+			return false;
+
+		this.setProcessed(false);
+		this.setDocStatus(DOCSTATUS_InProgress);
+		this.setDocAction(DOCACTION_Complete);
+
+		return true;
 	}	//	reActivateIt
 	
 	
@@ -668,6 +702,11 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		}
 	}
 
+	/***
+	 * Asigna stock disponible a las lineas de ordenes de venta.
+	 * Xpande. Created by Gabriel Vila on 8/7/20.
+	 * @param mProductID
+	 */
 	private void asignarStockDisponible(int mProductID){
 
 		String sql = "";
@@ -701,8 +740,6 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 
 					mProductIDAux = entregaLin.getM_Product_ID();
 
-					MUOM uomProd = (MUOM) entregaProd.getC_UOM();
-
 					// Obtengo modelo de producto a considerar, si no hay no hago nada con este producto.
 					entregaProd = this.getEntregaProd(mProductIDAux);
 					if ((entregaProd == null) || (entregaProd.get_ID() <= 0)){
@@ -710,6 +747,8 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 						qtyAvailable = Env.ZERO;
 						continue;
 					}
+
+					MUOM uomProd = (MUOM) entregaProd.getC_UOM();
 
 					// Inicializo cantidades para asiganción
 					// Obtengo stock disponible actual para este producto
@@ -1105,4 +1144,17 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		return null;
 	}
 
+	/***
+	 * Obtiene y retorna lista de documentos de reserva generados en este proceso.
+	 * Xpande. Created by Gabriel Vila on 8/7/20.
+	 * @return
+	 */
+	public List<MZReservaVta> getReservas(){
+
+		String whereClause = X_Z_ReservaVta.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID();
+
+		List<MZReservaVta> lines = new Query(getCtx(), I_Z_ReservaVta.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
 }

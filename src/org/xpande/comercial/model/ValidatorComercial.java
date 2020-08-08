@@ -604,6 +604,13 @@ public class ValidatorComercial implements ModelValidator {
                 }
             }
         }
+        else if (timing == TIMING_BEFORE_REACTIVATE){
+
+            // Si es una orden de venta
+            if (model.isSOTrx()){
+                
+            }
+        }
 
         return null;
     }
