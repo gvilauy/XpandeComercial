@@ -608,7 +608,7 @@ public class ValidatorComercial implements ModelValidator {
 
             // Si es una orden de venta
             if (model.isSOTrx()){
-                
+
             }
         }
 
