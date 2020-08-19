@@ -17,6 +17,7 @@ import java.math.BigDecimal;
  */
 public class CopiarInvoice extends SvrProcess {
 
+    private int adOrgID = -1;
     private int cBPartnerID = 0;
     private int cDocTypeID = 0;
     private String documentSerie = "";
@@ -41,6 +42,9 @@ public class CopiarInvoice extends SvrProcess {
                     else if (name.trim().equalsIgnoreCase("C_BPartner_ID")){
                         this.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValue();
                     }
+                    else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
+                        this.adOrgID = ((BigDecimal)para[i].getParameter()).intValue();
+                    }
                     else if (name.trim().equalsIgnoreCase("C_DocType_ID")){
                         this.cDocTypeID = ((BigDecimal)para[i].getParameter()).intValue();
                     }
@@ -51,7 +55,8 @@ public class CopiarInvoice extends SvrProcess {
             }
         }
 
-        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, this.documentSerie, this.documentNo, this.cBPartnerID, get_TrxName());
+        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.adOrgID, this.cDocTypeID,
+                this.documentSerie, this.documentNo, this.cBPartnerID, get_TrxName());
         this.invoiceTo = new MInvoice(this.getCtx(), this.getRecord_ID(), this.get_TrxName());
 
     }

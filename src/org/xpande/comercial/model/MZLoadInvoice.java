@@ -926,7 +926,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				}
 
 				// Valido que no existe un comprobante con ese socio de negocio, tipo de documento, serie y numero.
-				MInvoice invoice = ComercialUtils.getInvoiceByDocPartner(getCtx(), loadInvoiceFile.getC_DocType_ID(), loadInvoiceFile.getDocumentSerie(), loadInvoiceFile.getDocumentNoRef(), loadInvoiceFile.getC_BPartner_ID(), get_TrxName());
+				MInvoice invoice = ComercialUtils.getInvoiceByDocPartner(getCtx(), loadInvoiceFile.getAD_OrgTrx_ID(), loadInvoiceFile.getC_DocType_ID(), loadInvoiceFile.getDocumentSerie(), loadInvoiceFile.getDocumentNoRef(), loadInvoiceFile.getC_BPartner_ID(), get_TrxName());
 				if ((invoice != null) && (invoice.get_ID() > 0)){
 					loadInvoiceFile.setIsConfirmed(false);
 					loadInvoiceFile.setErrorMsg("Ya existe un comprobante en el sistema para ese Socio de Negocio - Documento");

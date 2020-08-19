@@ -16,6 +16,7 @@ import java.math.BigDecimal;
  */
 public class GenerarInOutFromInvoice extends SvrProcess {
 
+    private int adOrgID = -1;
     private int cDocTypeID = -1;
     private int cBPartnerID = -1;
     private String documentNo = "";
@@ -40,6 +41,9 @@ public class GenerarInOutFromInvoice extends SvrProcess {
                     else if (name.trim().equalsIgnoreCase("C_BPartner_ID")){
                         this.cBPartnerID = ((BigDecimal)para[i].getParameter()).intValue();
                     }
+                    else if (name.trim().equalsIgnoreCase("AD_Org_ID")){
+                        this.adOrgID = ((BigDecimal)para[i].getParameter()).intValue();
+                    }
                     else if (name.trim().equalsIgnoreCase("C_DocType_ID")){
                         this.cDocTypeID = ((BigDecimal)para[i].getParameter()).intValue();
                     }
@@ -47,7 +51,8 @@ public class GenerarInOutFromInvoice extends SvrProcess {
             }
         }
 
-        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.cDocTypeID, null, this.documentNo, this.cBPartnerID, get_TrxName());
+        this.invoiceFrom = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.adOrgID, this.cDocTypeID, null,
+                this.documentNo, this.cBPartnerID, get_TrxName());
     }
 
     @Override

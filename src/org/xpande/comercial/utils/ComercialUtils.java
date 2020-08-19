@@ -71,6 +71,7 @@ public final class ComercialUtils {
      * Metodo que obtiene y retorna una invoice según tipo de documento, número y socio de negocio recibidos.
      * Xpande. Created by Gabriel Vila on 8/8/18.
      * @param ctx
+     * @param adOrgID
      * @param cDocTypeID
      * @param serie
      * @param documentNo
@@ -78,7 +79,7 @@ public final class ComercialUtils {
      * @param trxName
      * @return
      */
-    public static MInvoice getInvoiceByDocPartner(Properties ctx, int cDocTypeID, String serie, String documentNo,
+    public static MInvoice getInvoiceByDocPartner(Properties ctx, int adOrgID, int cDocTypeID, String serie, String documentNo,
                                                   int cBPartnerID, String trxName){
 
         String whereSerie = "";
@@ -86,7 +87,8 @@ public final class ComercialUtils {
             whereSerie = " AND DocumentSerie ='" + serie + "' ";
         }
 
-        String whereClause = X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
+        String whereClause = X_C_Invoice.COLUMNNAME_AD_Org_ID + " =" + adOrgID +
+                " AND " + X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
                 whereSerie +
                 " AND " + X_C_Invoice.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
                 " AND " + X_C_Invoice.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
