@@ -68,7 +68,7 @@ public final class ComercialUtils {
 
 
     /***
-     * Metodo que obtiene y retorna una invoice según tipo de documento, número y socio de negocio recibidos.
+     * Metodo que obtiene y retorna una invoice según: organizacion, tipo de documento, serie, número y socio de negocio recibidos.
      * Xpande. Created by Gabriel Vila on 8/8/18.
      * @param ctx
      * @param adOrgID
@@ -90,6 +90,30 @@ public final class ComercialUtils {
         String whereClause = X_C_Invoice.COLUMNNAME_AD_Org_ID + " =" + adOrgID +
                 " AND " + X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
                 whereSerie +
+                " AND " + X_C_Invoice.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
+                " AND " + X_C_Invoice.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
+
+        MInvoice model = new Query(ctx, I_C_Invoice.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
+
+    /***
+     * Metodo que obtiene y retorna una invoice según: organizacion, tipo de documento, número y socio de negocio recibidos.
+     * Xpande. Created by Gabriel Vila on 8/8/18.
+     * @param ctx
+     * @param adOrgID
+     * @param cDocTypeID
+     * @param documentNo
+     * @param cBPartnerID
+     * @param trxName
+     * @return
+     */
+    public static MInvoice getInvoiceByDocPartner(Properties ctx, int adOrgID, int cDocTypeID, String documentNo,
+                                                  int cBPartnerID, String trxName){
+
+        String whereClause = X_C_Invoice.COLUMNNAME_AD_Org_ID + " =" + adOrgID +
+                " AND " + X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID + " =" + cDocTypeID +
                 " AND " + X_C_Invoice.COLUMNNAME_DocumentNo + " ='" + documentNo + "' " +
                 " AND " + X_C_Invoice.COLUMNNAME_C_BPartner_ID + " =" + cBPartnerID;
 

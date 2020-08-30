@@ -51,8 +51,7 @@ public class AnularInvoiceVenta extends SvrProcess {
                 }
             }
         }
-        this.invoice = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.adOrgID, this.cDocTypeID,
-                this.documentSerie, this.documentNo, this.cBPartnerID, get_TrxName());
+        this.invoice = ComercialUtils.getInvoiceByDocPartner(getCtx(), this.adOrgID, this.cDocTypeID, this.documentNo, this.cBPartnerID, get_TrxName());
     }
 
     @Override
