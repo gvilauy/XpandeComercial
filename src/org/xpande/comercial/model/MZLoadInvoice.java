@@ -352,7 +352,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			else{
 				if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
 					// Si es documento de venta y tipo nota de crédito, tengo que pnerle una referencia
-					invoice.set_ValueOfColumn("ReferenciaCFE", "NC POS");
+					invoice.set_ValueOfColumn("ReferenciaCFE", "NOTA CREDITO");
 				}
 			}
 
@@ -520,7 +520,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			else{
 				if (docType.getDocBaseType().equalsIgnoreCase(Doc.DOCTYPE_ARCredit)){
 					// Si es documento de venta y tipo nota de crédito, tengo que pnerle una referencia
-					invoice.set_ValueOfColumn("ReferenciaCFE", "NC POS");
+					invoice.set_ValueOfColumn("ReferenciaCFE", "NOTA DE CREDITO");
 				}
 			}
 
