@@ -265,7 +265,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		setDefiniteDocumentNo();
 
 		setProcessed(true);
-		setDocAction(DOCACTION_Close);
+		setDocAction(DOCACTION_None);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
 	
