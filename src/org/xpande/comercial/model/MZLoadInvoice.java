@@ -327,9 +327,13 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			else{
 				pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), loadInvoiceFile.getAD_OrgTrx_ID(), loadInvoiceFile.getC_Currency_ID(), true, null, get_TrxName());
 				if ((pl == null) || (pl.get_ID() <= 0)){
-					m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + loadInvoiceFile.getC_Currency_ID() +
-									" y Organización (ID: " + loadInvoiceFile.getAD_OrgTrx_ID() + ")";
-					return DocAction.STATUS_Invalid;
+					// Veo si hay lista de precios generica con organizacion cero
+					pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), 0, loadInvoiceFile.getC_Currency_ID(), true, null, get_TrxName());
+					if ((pl == null) || (pl.get_ID() <= 0)){
+						m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + loadInvoiceFile.getC_Currency_ID() +
+								" y Organización (ID: " + loadInvoiceFile.getAD_OrgTrx_ID() + ")";
+						return DocAction.STATUS_Invalid;
+					}
 				}
 			}
 
@@ -495,9 +499,13 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			else{
 				pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), invoiceMan.getAD_OrgTrx_ID(), invoiceMan.getC_Currency_ID(), true, null, get_TrxName());
 				if ((pl == null) || (pl.get_ID() <= 0)){
-					m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + invoiceMan.getC_Currency_ID() +
-							" y Organización (ID: " + invoiceMan.getAD_OrgTrx_ID() + ")";
-					return DocAction.STATUS_Invalid;
+					// Veo si hay lista de precios generica con organizacion cero
+					pl = PriceListUtils.getPriceListByOrg(getCtx(), this.getAD_Client_ID(), 0, invoiceMan.getC_Currency_ID(), true, null, get_TrxName());
+					if ((pl == null) || (pl.get_ID() <= 0)){
+						m_processMsg = "No se pudo obtener Lista de Precios de Venta para Moneda (" + invoiceMan.getC_Currency_ID() +
+								" y Organización (ID: " + invoiceMan.getAD_OrgTrx_ID() + ")";
+						return DocAction.STATUS_Invalid;
+					}
 				}
 			}
 
