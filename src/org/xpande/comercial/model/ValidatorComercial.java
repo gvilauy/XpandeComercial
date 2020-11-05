@@ -214,7 +214,7 @@ public class ValidatorComercial implements ModelValidator {
                             " where c_invoice_id =" + model.get_ID();
                 }
                 else{
-                    action = " update c_invoice set grandtotal = grandtotal + " + importeTaxManuales +
+                    action = " update c_invoice set grandtotal = grandtotal + (coalesce(amtrounding,0)) + " + importeTaxManuales +
                             " where c_invoice_id =" + model.get_ID();
                 }
 
