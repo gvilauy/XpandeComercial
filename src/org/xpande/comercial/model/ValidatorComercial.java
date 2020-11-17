@@ -6,7 +6,6 @@ import org.compiere.model.*;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
-import org.compiere.util.Trx;
 import org.eevolution.model.X_C_TaxGroup;
 import org.xpande.cfe.model.MZCFEConfig;
 import org.xpande.cfe.model.MZCFEConfigDocSend;
@@ -107,8 +106,8 @@ public class ValidatorComercial implements ModelValidator {
      */
     public String modelChange(MInvoice model, int type) throws Exception {
 
-        String mensaje = null, action = "";
-        String sql = "";
+        String action;
+        String sql;
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE) {
 
@@ -153,7 +152,6 @@ public class ValidatorComercial implements ModelValidator {
                 return "Debe indicar Organización para este Documento";
             }
 
-
             if ((type == ModelValidator.TYPE_BEFORE_NEW) || (model.is_ValueChanged(X_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID))){
 
                 MDocType docType = (MDocType) model.getC_DocTypeTarget();
@@ -181,9 +179,6 @@ public class ValidatorComercial implements ModelValidator {
             // Si es asi, debo reflejarlo en el total del comprobante.
             if ((model.is_ValueChanged("AmtRounding") || (model.is_ValueChanged("AmtSubtotal"))
                     || (model.is_ValueChanged("Grandtotal")))){
-                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
-                if (amtRounding == null) amtRounding = Env.ZERO;
-
 
                 // Obtengo suma de impuestos manuales con el comportamiento de SUMAR AL SUBTOTAL
                 sql = " select coalesce(sum(a.taxamt), 0) as total " +
@@ -207,8 +202,10 @@ public class ValidatorComercial implements ModelValidator {
 
                 BigDecimal importeTaxManuales = sumar.subtract(restar);
 
-                // Actualizo total de la invoice para considerar impuestos manuales.
+                // Actualizo total de la invoice para considerar impuestos manuales y redondeo
                 // Considero el caso de impuestos incluidos o no.
+
+                /*
                 if (model.isTaxIncluded()){
                     action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
                             " where c_invoice_id =" + model.get_ID();
@@ -217,20 +214,23 @@ public class ValidatorComercial implements ModelValidator {
                     action = " update c_invoice set grandtotal = grandtotal + (coalesce(amtrounding,0)) + " + importeTaxManuales +
                             " where c_invoice_id =" + model.get_ID();
                 }
+                */
+
+                BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null) amtRounding = Env.ZERO;
+
+                BigDecimal amtSubtotal = (BigDecimal) model.get_Value("AmtSubtotal");
+                if (amtSubtotal == null) amtSubtotal = Env.ZERO;
+
+                BigDecimal taxAmt = (BigDecimal) model.get_Value("TaxAmt");
+                if (taxAmt == null) taxAmt = Env.ZERO;
+
+                BigDecimal grandTotal = amtSubtotal.add(taxAmt).add(importeTaxManuales).add(amtRounding);
+
+                action = " update c_invoice set grandtotal =" +  grandTotal +
+                         " where c_invoice_id =" + model.get_ID();
 
                 DB.executeUpdateEx(action, model.get_TrxName());
-            }
-
-            // Si tengo monto auxiliar y el mismo es distinto al monto total, fuerzo monto total = monto auxiliar.
-            // Esto porque por redondeos a veces al traer invoices desde interfaces los montos totales deben ser identicos.
-            BigDecimal amtAuxiliar = (BigDecimal) model.get_Value("AmtAuxiliar");
-            if ((amtAuxiliar != null) && (amtAuxiliar.compareTo(Env.ZERO) > 0)){
-                sql = " select grandtotal from c_invoice where c_invoice_id =" + model.get_ID();
-                BigDecimal grandTotal = DB.getSQLValueBDEx(model.get_TrxName(), sql);
-                if (grandTotal.compareTo(amtAuxiliar) != 0){
-                    action = " update c_invoice set grandtotal =" + amtAuxiliar + " where c_invoice_id =" + model.get_ID();
-                    DB.executeUpdateEx(action, model.get_TrxName());
-                }
             }
 
             // Guardo RUT en el comprobante si esta en null
@@ -263,11 +263,9 @@ public class ValidatorComercial implements ModelValidator {
                     DB.executeUpdateEx(action, model.get_TrxName());
                 }
             }
-
         }
 
-
-        return mensaje;
+        return null;
     }
 
     /***
@@ -638,14 +636,12 @@ public class ValidatorComercial implements ModelValidator {
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
             // impuestos incluídos, me muestra el total de lineas = grand total en el cabezal del comprobante.
-            // En retail, se tiene mostrar subtotal = total - impuestos.
             // Para ello no se modifico el comportamiento original de ADempiere y se mantuvo el campo: TotalLines.
             // Pero se agrego campo nuevo para desplegarse con el calculo requerido.
 
             BigDecimal grandTotal = invoice.getGrandTotal();
             if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
                 invoice.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
-                invoice.saveEx();
             }
             else{
                 // Obtengo suma de impuestos para esta invoice
@@ -657,9 +653,10 @@ public class ValidatorComercial implements ModelValidator {
                 else{
                     sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
                 }
+                invoice.set_ValueOfColumn("TaxAmt", sumImpuestos);
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
-                invoice.saveEx();
             }
+            invoice.saveEx();
 
             if (type == ModelValidator.TYPE_AFTER_DELETE){
 
@@ -737,7 +734,7 @@ public class ValidatorComercial implements ModelValidator {
 
         }
 
-        return mensaje;
+        return null;
     }
 
     /***
