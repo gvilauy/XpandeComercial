@@ -32,7 +32,7 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200525L;
+	private static final long serialVersionUID = 20201123L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -46,6 +46,8 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 // N
 			setImprimirAuto (false);
 // N
+			setRedondeoAutoVta (true);
+// Y
 			setReservaStockSO (false);
 // N
 			setValue (null);
@@ -413,6 +415,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 		if (bd == null)
 			 return Env.ZERO;
 		return bd;
+	}
+
+	/** Set RedondeoAutoVta.
+		@param RedondeoAutoVta 
+		Si el monto por redondeo se calcula o no de manera automática para comprobantes de venta
+	  */
+	public void setRedondeoAutoVta (boolean RedondeoAutoVta)
+	{
+		set_Value (COLUMNNAME_RedondeoAutoVta, Boolean.valueOf(RedondeoAutoVta));
+	}
+
+	/** Get RedondeoAutoVta.
+		@return Si el monto por redondeo se calcula o no de manera automática para comprobantes de venta
+	  */
+	public boolean isRedondeoAutoVta () 
+	{
+		Object oo = get_Value(COLUMNNAME_RedondeoAutoVta);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set ReservaStockSO.

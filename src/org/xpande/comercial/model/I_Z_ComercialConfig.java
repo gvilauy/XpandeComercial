@@ -278,6 +278,19 @@ public interface I_Z_ComercialConfig
 	  */
 	public BigDecimal getMarginTolerance();
 
+    /** Column name RedondeoAutoVta */
+    public static final String COLUMNNAME_RedondeoAutoVta = "RedondeoAutoVta";
+
+	/** Set RedondeoAutoVta.
+	  * Si el monto por redondeo se calcula o no de manera automática para comprobantes de venta
+	  */
+	public void setRedondeoAutoVta (boolean RedondeoAutoVta);
+
+	/** Get RedondeoAutoVta.
+	  * Si el monto por redondeo se calcula o no de manera automática para comprobantes de venta
+	  */
+	public boolean isRedondeoAutoVta();
+
     /** Column name ReservaStockSO */
     public static final String COLUMNNAME_ReservaStockSO = "ReservaStockSO";
 

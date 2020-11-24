@@ -203,19 +203,6 @@ public class ValidatorComercial implements ModelValidator {
                 BigDecimal importeTaxManuales = sumar.subtract(restar);
 
                 // Actualizo total de la invoice para considerar impuestos manuales y redondeo
-                // Considero el caso de impuestos incluidos o no.
-
-                /*
-                if (model.isTaxIncluded()){
-                    action = " update c_invoice set grandtotal = totallines + (coalesce(amtrounding,0)) + " + importeTaxManuales +
-                            " where c_invoice_id =" + model.get_ID();
-                }
-                else{
-                    action = " update c_invoice set grandtotal = grandtotal + (coalesce(amtrounding,0)) + " + importeTaxManuales +
-                            " where c_invoice_id =" + model.get_ID();
-                }
-                */
-
                 BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
                 if (amtRounding == null) amtRounding = Env.ZERO;
 
@@ -642,6 +629,7 @@ public class ValidatorComercial implements ModelValidator {
             BigDecimal grandTotal = invoice.getGrandTotal();
             if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
                 invoice.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
+                invoice.set_ValueOfColumn("AmtRounding", Env.ZERO);
             }
             else{
                 // Obtengo suma de impuestos para esta invoice
@@ -655,6 +643,23 @@ public class ValidatorComercial implements ModelValidator {
                 }
                 invoice.set_ValueOfColumn("TaxAmt", sumImpuestos);
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
+
+                // Para comprobantes de venta, proceso importe de redondeo automático si así esta parametrizado el sistema.
+                if (invoice.isSOTrx()){
+                    // Obtengo configuracion comercial
+                    MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+                    if ((comercialConfig == null) || (comercialConfig.get_ID() <= 0)){
+                        return "No se pudo obtener información de Configuración Comercial";
+                    }
+
+                    if (comercialConfig.isRedondeoAutoVta()){
+                        // Redondeo = redondeo (Subtotal + impuestos, 0) - (subtotal + impuestos)
+                        BigDecimal totalInvoice = ((BigDecimal) invoice.get_Value("AmtSubtotal")).add(sumImpuestos);
+                        BigDecimal totalPrecisionCero = totalInvoice.setScale(0, RoundingMode.HALF_UP);
+                        BigDecimal amtRounding = totalPrecisionCero.subtract(totalInvoice);
+                        invoice.set_ValueOfColumn("AmtRounding", amtRounding);
+                    }
+                }
             }
             invoice.saveEx();
 
