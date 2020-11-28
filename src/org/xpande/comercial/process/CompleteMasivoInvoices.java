@@ -92,7 +92,7 @@ public class CompleteMasivoInvoices extends SvrProcess {
                     " where h.docstatus in ('DR', 'IP') " +
                     " and h.issotrx='Y' " + whereClause;
 
-        	pstmt = DB.prepareStatement(sql, get_TrxName());
+        	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
 
         	while(rs.next()){
