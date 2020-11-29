@@ -645,20 +645,28 @@ public class ValidatorComercial implements ModelValidator {
                 invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
 
                 // Para comprobantes de venta, proceso importe de redondeo automático si así esta parametrizado el sistema.
+                // Ademas este redondeo automático solo aplica cuando la moneda del comprobante es la del esquema comtable.
                 if (invoice.isSOTrx()){
-                    // Obtengo configuracion comercial
-                    MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
-                    if ((comercialConfig == null) || (comercialConfig.get_ID() <= 0)){
-                        return "No se pudo obtener información de Configuración Comercial";
+
+                    // Si moneda del comprobante es igual a la moneda del esquema contable
+                    MAcctSchema acctSchema = MClient.get(model.getCtx(), invoice.getAD_Client_ID()).getAcctSchema();
+                    if (acctSchema.getC_Currency_ID() == invoice.getC_Currency_ID()){
+
+                        // Obtengo configuracion comercial
+                        MZComercialConfig comercialConfig = MZComercialConfig.getDefault(model.getCtx(), null);
+                        if ((comercialConfig == null) || (comercialConfig.get_ID() <= 0)){
+                            return "No se pudo obtener información de Configuración Comercial";
+                        }
+                        // Si se aplica redondeo automatico
+                        if (comercialConfig.isRedondeoAutoVta()){
+                            // Redondeo = redondeo (Subtotal + impuestos, 0) - (subtotal + impuestos)
+                            BigDecimal totalInvoice = ((BigDecimal) invoice.get_Value("AmtSubtotal")).add(sumImpuestos);
+                            BigDecimal totalPrecisionCero = totalInvoice.setScale(0, RoundingMode.HALF_UP);
+                            BigDecimal amtRounding = totalPrecisionCero.subtract(totalInvoice);
+                            invoice.set_ValueOfColumn("AmtRounding", amtRounding);
+                        }
                     }
 
-                    if (comercialConfig.isRedondeoAutoVta()){
-                        // Redondeo = redondeo (Subtotal + impuestos, 0) - (subtotal + impuestos)
-                        BigDecimal totalInvoice = ((BigDecimal) invoice.get_Value("AmtSubtotal")).add(sumImpuestos);
-                        BigDecimal totalPrecisionCero = totalInvoice.setScale(0, RoundingMode.HALF_UP);
-                        BigDecimal amtRounding = totalPrecisionCero.subtract(totalInvoice);
-                        invoice.set_ValueOfColumn("AmtRounding", amtRounding);
-                    }
                 }
             }
             invoice.saveEx();
