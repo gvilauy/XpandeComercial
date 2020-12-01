@@ -384,7 +384,21 @@ public class CalloutInvoice extends CalloutEngine {
         mTab.setValue("C_UOM_ID", new Integer(100));	//	EA
 
         Env.setContext(ctx, WindowNo, "DiscountSchema", "N");
-        Env.setContext(Env.getCtx(), WindowNo, "IsTaxIncluded", "Y");
+
+        // Xpande. Gabriel Vila. 01/12/2020.
+        // Comento linea original donde se seteaba impuesto incluido en true.
+        // Ahora lo toma desde el cabezal del comprobante.
+
+        //Env.setContext(Env.getCtx(), WindowNo, "IsTaxIncluded", "Y");
+
+        int cInvoiceID = Env.getContextAsInt(ctx, WindowNo, "C_Invoice_ID");
+        if (cInvoiceID <= 0) {
+            return "No se obtuvo ID interno de Comprobante";
+        }
+        MInvoice invoice = new MInvoice(ctx, cInvoiceID, null);
+        Env.setContext(Env.getCtx(), WindowNo, "IsTaxIncluded", invoice.isTaxIncluded());
+
+        // Fin Xpande
 
         String sql = "SELECT ChargeAmt FROM C_Charge WHERE C_Charge_ID=?";
         PreparedStatement pstmt = null;
