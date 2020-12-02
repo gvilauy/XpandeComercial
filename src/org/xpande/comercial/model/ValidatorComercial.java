@@ -618,7 +618,6 @@ public class ValidatorComercial implements ModelValidator {
                 || (type == ModelValidator.TYPE_AFTER_DELETE)){
 
             MInvoice invoice = (MInvoice)model.getC_Invoice();
-            MDocType docType = (MDocType) invoice.getC_DocTypeTarget();
 
             // Cuando modifico linea de comprobante, me aseguro que se calcule bien el campo del cabezal
             // para subtotal. Esto es porque Adempiere de fábrica, cuando maneja lista de precios con
@@ -627,22 +626,21 @@ public class ValidatorComercial implements ModelValidator {
             // Pero se agrego campo nuevo para desplegarse con el calculo requerido.
 
             BigDecimal grandTotal = invoice.getGrandTotal();
-            if ((grandTotal == null) || (grandTotal.compareTo(Env.ZERO) <= 0)){
-                invoice.set_ValueOfColumn("AmtSubtotal", Env.ZERO);
-                invoice.set_ValueOfColumn("AmtRounding", Env.ZERO);
-            }
-            else{
+            BigDecimal sumImpuestos = Env.ZERO, amtSubTotal = Env.ZERO;
+            BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+            if (amtRounding == null) amtRounding = Env.ZERO;
+
+            if ((grandTotal != null) && (grandTotal.compareTo(Env.ZERO) > 0)){
                 // Obtengo suma de impuestos para esta invoice
                 String sql = " select sum(coalesce(taxamt,0)) as taxamt from c_invoicetax where c_invoice_id =" + invoice.get_ID();
-                BigDecimal sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                sumImpuestos = DB.getSQLValueBDEx(model.get_TrxName(), sql);
                 if (sumImpuestos == null){
                     sumImpuestos = Env.ZERO;
                 }
                 else{
                     sumImpuestos = sumImpuestos.setScale(2, BigDecimal.ROUND_HALF_UP);
                 }
-                invoice.set_ValueOfColumn("TaxAmt", sumImpuestos);
-                invoice.set_ValueOfColumn("AmtSubtotal", grandTotal.subtract(sumImpuestos));
+                amtSubTotal = grandTotal.subtract(sumImpuestos);
 
                 // Para comprobantes de venta, proceso importe de redondeo automático si así esta parametrizado el sistema.
                 // Ademas este redondeo automático solo aplica cuando la moneda del comprobante es la del esquema comtable.
@@ -662,14 +660,18 @@ public class ValidatorComercial implements ModelValidator {
                             // Redondeo = redondeo (Subtotal + impuestos, 0) - (subtotal + impuestos)
                             BigDecimal totalInvoice = ((BigDecimal) invoice.get_Value("AmtSubtotal")).add(sumImpuestos);
                             BigDecimal totalPrecisionCero = totalInvoice.setScale(0, RoundingMode.HALF_UP);
-                            BigDecimal amtRounding = totalPrecisionCero.subtract(totalInvoice);
-                            invoice.set_ValueOfColumn("AmtRounding", amtRounding);
+                            amtRounding = totalPrecisionCero.subtract(totalInvoice);
                         }
                     }
-
                 }
             }
-            invoice.saveEx();
+            action = " update c_invoice set TaxAmt =" + sumImpuestos + ", " +
+                    " AmtSubtotal =" + amtSubTotal + ", " +
+                    " AmtRounding =" + amtRounding +
+                    " where c_invoice_id =" + invoice.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+
+            //invoice.saveEx();
 
             if (type == ModelValidator.TYPE_AFTER_DELETE){
 
@@ -681,7 +683,6 @@ public class ValidatorComercial implements ModelValidator {
                         inOutLine.saveEx();
                     }
                 }
-
             }
 
         }
