@@ -210,6 +210,10 @@ public class ValidatorComercial implements ModelValidator {
                 if (amtSubtotal == null) amtSubtotal = Env.ZERO;
 
                 BigDecimal taxAmt = (BigDecimal) model.get_Value("TaxAmt");
+                if (taxAmt == null){
+                    sql = " select sum(coalesce(taxamt,0)) as taxamt from c_invoicetax where c_invoice_id =" + model.get_ID();
+                    taxAmt = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                }
                 if (taxAmt == null) taxAmt = Env.ZERO;
 
                 BigDecimal grandTotal = amtSubtotal.add(taxAmt).add(importeTaxManuales).add(amtRounding);
