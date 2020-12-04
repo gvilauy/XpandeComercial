@@ -90,7 +90,8 @@ public class CompleteMasivoInvoices extends SvrProcess {
             sql = " select c_invoice_id " +
                     " from c_invoice h " +
                     " where h.docstatus in ('DR', 'IP') " +
-                    " and h.issotrx='Y' " + whereClause;
+                    " and h.issotrx='Y' " + whereClause +
+                    " order by h.dateinvoiced ";
 
         	pstmt = DB.prepareStatement(sql, null);
         	rs = pstmt.executeQuery();
@@ -114,6 +115,9 @@ public class CompleteMasivoInvoices extends SvrProcess {
             }
         }
         catch (Exception e){
+            if (trans!=null){
+                trans.rollback();
+            }
             throw new AdempiereException(e);
         }
         finally {

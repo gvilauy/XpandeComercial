@@ -348,22 +348,9 @@ public class ValidatorComercial implements ModelValidator {
                                 " AND Ref_InvoiceLine_ID > 0 ";
                         int contador = DB.getSQLValueEx(model.get_TrxName(), sql);
                         if (contador <= 0){
-                            message = "Es obligatorio indicar Facturas afectadas por este comprobante.";
+                            message = "Es obligatorio indicar Facturas afectadas por este comprobante: " + model.getDocumentNo();
                             return message;
                         }
-
-                        /*
-                        // No puedo seleccionar productos en esta Nota de Credito, que no pertenezcan a las facturas refereciadas por esta NC.
-                        sql = " select count(l.*) from c_invoiceline l " +
-                                " where l.c_invoice_id =" + model.get_ID() +
-                                " and l.m_product_id is not null " +
-                                " and l.m_product_id not in (select m_product_id from z_invoiceref where c_invoice_id =" + model.get_ID() + ") ";
-                        contador = DB.getSQLValueEx(model.get_TrxName(), sql);
-                        if (contador > 0){
-                            message = "Este comprobante tiene productos que no figuran en las Facturas afectadas.";
-                            return message;
-                        }
-                        */
                     }
                 }
 
@@ -627,7 +614,7 @@ public class ValidatorComercial implements ModelValidator {
 
             BigDecimal grandTotal = invoice.getGrandTotal();
             BigDecimal sumImpuestos = Env.ZERO, amtSubTotal = Env.ZERO;
-            BigDecimal amtRounding = (BigDecimal) invoice.get_Value("AmtRounding");
+            BigDecimal amtRounding = Env.ZERO;
             if (amtRounding == null) amtRounding = Env.ZERO;
 
             if ((grandTotal != null) && (grandTotal.compareTo(Env.ZERO) > 0)){
@@ -658,20 +645,17 @@ public class ValidatorComercial implements ModelValidator {
                         // Si se aplica redondeo automatico
                         if (comercialConfig.isRedondeoAutoVta()){
                             // Redondeo = redondeo (Subtotal + impuestos, 0) - (subtotal + impuestos)
-                            BigDecimal totalInvoice = ((BigDecimal) invoice.get_Value("AmtSubtotal")).add(sumImpuestos);
+                            BigDecimal totalInvoice = amtSubTotal.add(sumImpuestos);
                             BigDecimal totalPrecisionCero = totalInvoice.setScale(0, RoundingMode.HALF_UP);
                             amtRounding = totalPrecisionCero.subtract(totalInvoice);
                         }
                     }
                 }
             }
-            action = " update c_invoice set TaxAmt =" + sumImpuestos + ", " +
-                    " AmtSubtotal =" + amtSubTotal + ", " +
-                    " AmtRounding =" + amtRounding +
-                    " where c_invoice_id =" + invoice.get_ID();
-            DB.executeUpdateEx(action, model.get_TrxName());
-
-            //invoice.saveEx();
+            invoice.set_ValueOfColumn("AmtSubtotal", amtSubTotal);
+            invoice.set_ValueOfColumn("TaxAmt", sumImpuestos);
+            invoice.set_ValueOfColumn("AmtRounding", amtRounding);
+            invoice.saveEx();
 
             if (type == ModelValidator.TYPE_AFTER_DELETE){
 
