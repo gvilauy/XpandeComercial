@@ -204,9 +204,17 @@ public class ValidatorComercial implements ModelValidator {
 
                 // Actualizo total de la invoice para considerar impuestos manuales y redondeo
                 BigDecimal amtRounding = (BigDecimal) model.get_Value("AmtRounding");
+                if (amtRounding == null){
+                    sql = " select coalesce(amtrounding,0) as amtrounding from c_invoice where c_invoice_id =" + model.get_ID();
+                    amtRounding = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                }
                 if (amtRounding == null) amtRounding = Env.ZERO;
 
                 BigDecimal amtSubtotal = (BigDecimal) model.get_Value("AmtSubtotal");
+                if (amtSubtotal == null){
+                    sql = " select coalesce(amtsubtotal,0) as amtsubtotal from c_invoice where c_invoice_id =" + model.get_ID();
+                    amtSubtotal = DB.getSQLValueBDEx(model.get_TrxName(), sql);
+                }
                 if (amtSubtotal == null) amtSubtotal = Env.ZERO;
 
                 BigDecimal taxAmt = (BigDecimal) model.get_Value("TaxAmt");
