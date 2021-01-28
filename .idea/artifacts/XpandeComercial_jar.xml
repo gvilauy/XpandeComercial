@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="XpandeComercial:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/XpandeComercial_jar</output-path>
+    <root id="archive" name="XpandeComercial.jar">
+      <element id="module-output" name="XpandeComercial" />
+    </root>
+  </artifact>
+</component>
