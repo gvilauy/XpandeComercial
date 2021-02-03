@@ -390,7 +390,20 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				invoice.setPosted(true);
 			}
 
+			invoice.set_ValueOfColumn("Z_LoadInvoice_ID", this.get_ID());
 			invoice.saveEx();
+
+			// Si el venvimiento que tengo es distinto a la fecha de emisión, debo guardarlo
+			if (loadInvoiceFile.getDueDate() != null){
+				if (loadInvoiceFile.getDueDate().compareTo(loadInvoiceFile.getDateInvoiced()) != 0){
+					MInvoicePaySchedule invoicePaySchedule = new MInvoicePaySchedule(getCtx(), 0, get_TrxName());
+					invoicePaySchedule.setC_Invoice_ID(invoice.get_ID());
+					invoicePaySchedule.setDueDate(loadInvoiceFile.getDueDate());
+					invoicePaySchedule.setDueAmt(invoice.getGrandTotal());
+					invoicePaySchedule.setIsValid(true);
+					invoicePaySchedule.saveEx();
+				}
+			}
 
 			// Si tengo que contabilizar, agrego lineas para producto indicado, y mando a completar el comprobante para que contabilize.
 			if (this.isContabilizar()){
@@ -601,6 +614,11 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				if (!invoice.processIt(DocAction.ACTION_Complete)){
 					m_processMsg = invoice.getProcessMsg();
 					return DocAction.STATUS_Invalid;
+				}
+			}
+			else{
+				if (this.isAfectaSaldo()){
+					//FinancialUtils.setEstadoCtaInvoice(model.getCtx(), model, transferSaldo, true, model.get_TrxName());
 				}
 			}
 
@@ -924,8 +942,10 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				}
 
 				if ((loadInvoiceFile.getDocumentSerie() == null) || (loadInvoiceFile.getDocumentSerie().trim().equalsIgnoreCase(""))){
-					loadInvoiceFile.setIsConfirmed(false);
-					loadInvoiceFile.setErrorMsg("Debe indicar Serie del Documento");
+					if (!this.isSOTrx()){
+						loadInvoiceFile.setIsConfirmed(false);
+						loadInvoiceFile.setErrorMsg("Debe indicar Serie del Documento");
+					}
 				}
 
 				if ((loadInvoiceFile.getDocumentNoRef() == null) || (loadInvoiceFile.getDocumentNoRef().trim().equalsIgnoreCase(""))){

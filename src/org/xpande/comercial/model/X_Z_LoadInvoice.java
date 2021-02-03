@@ -24,14 +24,14 @@ import org.compiere.model.*;
 
 /** Generated Model for Z_LoadInvoice
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20190228L;
+	private static final long serialVersionUID = 20210202L;
 
     /** Standard Constructor */
     public X_Z_LoadInvoice (Properties ctx, int Z_LoadInvoice_ID, String trxName)
@@ -39,6 +39,8 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
       super (ctx, Z_LoadInvoice_ID, trxName);
       /** if (Z_LoadInvoice_ID == 0)
         {
+			setAfectaSaldo (true);
+// Y
 			setC_DocType_ID (0);
 			setContabilizar (false);
 // N
@@ -90,6 +92,30 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set AfectaSaldo.
+		@param AfectaSaldo 
+		Si afecta o no saldo
+	  */
+	public void setAfectaSaldo (boolean AfectaSaldo)
+	{
+		set_Value (COLUMNNAME_AfectaSaldo, Boolean.valueOf(AfectaSaldo));
+	}
+
+	/** Get AfectaSaldo.
+		@return Si afecta o no saldo
+	  */
+	public boolean isAfectaSaldo () 
+	{
+		Object oo = get_Value(COLUMNNAME_AfectaSaldo);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
 
 	public I_C_DocType getC_DocType() throws RuntimeException
     {
@@ -495,12 +521,12 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
 		return ii.intValue();
 	}
 
-	/** TipoCargaInvoicePO AD_Reference_ID=1000049 */
-	public static final int TIPOCARGAINVOICEPO_AD_Reference_ID=1000049;
-	/** COMPROBANTES DE PROVEEDORES = PROVEEDOR */
-	public static final String TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES = "PROVEEDOR";
+	/** TipoCargaInvoicePO AD_Reference_ID=1000038 */
+	public static final int TIPOCARGAINVOICEPO_AD_Reference_ID=1000038;
 	/** COMPROBANTES DE GASTOS = GASTOS */
 	public static final String TIPOCARGAINVOICEPO_COMPROBANTESDEGASTOS = "GASTOS";
+	/** COMPROBANTES DE PROVEEDORES = PROVEEDOR */
+	public static final String TIPOCARGAINVOICEPO_COMPROBANTESDEPROVEEDORES = "PROVEEDOR";
 	/** Set TipoCargaInvoicePO.
 		@param TipoCargaInvoicePO 
 		Lista con valores de tipos de documentos para procesos de carga de comprobantes de compra

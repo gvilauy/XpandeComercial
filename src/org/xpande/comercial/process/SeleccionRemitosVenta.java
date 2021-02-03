@@ -24,6 +24,7 @@ import org.compiere.model.MInvoice;
 import org.compiere.model.MInvoiceLine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.python.modules._systemrestart;
 import org.xpande.core.model.MZProductoUPC;
 
 import java.math.BigDecimal;
@@ -72,6 +73,9 @@ public class SeleccionRemitosVenta extends SeleccionRemitosVentaAbstract
 					MInvoiceLine invoiceLine = new MInvoiceLine(this.invoice);
 					invoiceLine.setM_InOutLine_ID(inOutLine.get_ID());
 					invoiceLine.setM_Product_ID(inOutLine.getM_Product_ID());
+
+					System.out.println("-----------------------------------RemitoVenta:" + inOutLine.get_ID() + " - " + qtyOpen);
+
 					invoiceLine.setQtyEntered(qtyOpen);
 					invoiceLine.setQtyInvoiced(qtyOpen);
 					invoiceLine.setC_UOM_ID(inOutLine.getC_UOM_ID());
