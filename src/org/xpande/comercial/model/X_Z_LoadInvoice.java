@@ -31,7 +31,7 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20210202L;
+	private static final long serialVersionUID = 20210216L;
 
     /** Standard Constructor */
     public X_Z_LoadInvoice (Properties ctx, int Z_LoadInvoice_ID, String trxName)
@@ -43,6 +43,8 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
 // Y
 			setC_DocType_ID (0);
 			setContabilizar (false);
+// N
+			setCrearListaPrecioBP (false);
 // N
 			setDateDoc (new Timestamp( System.currentTimeMillis() ));
 // @#Date@
@@ -160,6 +162,30 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
 	public boolean isContabilizar () 
 	{
 		Object oo = get_Value(COLUMNNAME_Contabilizar);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
+	}
+
+	/** Set CrearListaPrecioBP.
+		@param CrearListaPrecioBP 
+		Si se crea o no una lista de precios segun Trx y Socio de Negocio
+	  */
+	public void setCrearListaPrecioBP (boolean CrearListaPrecioBP)
+	{
+		set_Value (COLUMNNAME_CrearListaPrecioBP, Boolean.valueOf(CrearListaPrecioBP));
+	}
+
+	/** Get CrearListaPrecioBP.
+		@return Si se crea o no una lista de precios segun Trx y Socio de Negocio
+	  */
+	public boolean isCrearListaPrecioBP () 
+	{
+		Object oo = get_Value(COLUMNNAME_CrearListaPrecioBP);
 		if (oo != null) 
 		{
 			 if (oo instanceof Boolean) 
@@ -417,6 +443,23 @@ public class X_Z_LoadInvoice extends PO implements I_Z_LoadInvoice, I_Persistent
 	public String getProcessButton () 
 	{
 		return (String)get_Value(COLUMNNAME_ProcessButton);
+	}
+
+	/** Set ProcessButton2.
+		@param ProcessButton2 
+		Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2)
+	{
+		set_Value (COLUMNNAME_ProcessButton2, ProcessButton2);
+	}
+
+	/** Get ProcessButton2.
+		@return Botón de Proceso
+	  */
+	public String getProcessButton2 () 
+	{
+		return (String)get_Value(COLUMNNAME_ProcessButton2);
 	}
 
 	/** Set Processed.

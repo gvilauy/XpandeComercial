@@ -104,6 +104,19 @@ public interface I_Z_LoadInvoice
 	  */
 	public boolean isContabilizar();
 
+    /** Column name CrearListaPrecioBP */
+    public static final String COLUMNNAME_CrearListaPrecioBP = "CrearListaPrecioBP";
+
+	/** Set CrearListaPrecioBP.
+	  * Si se crea o no una lista de precios segun Trx y Socio de Negocio
+	  */
+	public void setCrearListaPrecioBP (boolean CrearListaPrecioBP);
+
+	/** Get CrearListaPrecioBP.
+	  * Si se crea o no una lista de precios segun Trx y Socio de Negocio
+	  */
+	public boolean isCrearListaPrecioBP();
+
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";
 
@@ -260,6 +273,19 @@ public interface I_Z_LoadInvoice
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
+
+    /** Column name ProcessButton2 */
+    public static final String COLUMNNAME_ProcessButton2 = "ProcessButton2";
+
+	/** Set ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public void setProcessButton2 (String ProcessButton2);
+
+	/** Get ProcessButton2.
+	  * Botón de Proceso
+	  */
+	public String getProcessButton2();
 
     /** Column name Processed */
     public static final String COLUMNNAME_Processed = "Processed";
