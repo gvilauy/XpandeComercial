@@ -471,6 +471,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			if (dueDate != null){
 				if (dueDate.compareTo(dateInvoiced) != 0){
 					MInvoicePaySchedule invoicePaySchedule = new MInvoicePaySchedule(getCtx(), 0, get_TrxName());
+					invoicePaySchedule.setAD_Org_ID(invoice.getAD_Org_ID());
 					invoicePaySchedule.setC_Invoice_ID(invoice.get_ID());
 					invoicePaySchedule.setDueDate(dueDate);
 					invoicePaySchedule.setDueAmt(grandTotal);
@@ -1046,7 +1047,5 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			}
 		}
 	}
-
-
 
 }
