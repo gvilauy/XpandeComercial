@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.logging.Level;
@@ -309,6 +310,8 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 	 */
 	private String processLines(MZLoadInvoiceFile loadInvoiceFile, MZLoadInvoiceMan loadInvoiceMan){
 
+		String action;
+
 		try{
 			int cBPartnerID = 0, cCurrencyID = 0, adOrgID = -1, cDocTypeID = 0;
 			String documentSerie, documentNoRef, description;
@@ -340,10 +343,40 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 				grandTotal = loadInvoiceMan.getGrandTotal();
 			}
 
+			MZComercialConfig comercialConfig = MZComercialConfig.getDefault(getCtx(), null);
 			MBPartner partner = new MBPartner(getCtx(), cBPartnerID, null);
 			MCurrency currency = new MCurrency(getCtx(), cCurrencyID, null);
 			MDocType docType = new MDocType(getCtx(), cDocTypeID, null);
 			MPriceList pl = null;
+
+			MInvoice invoiceAux = ComercialUtils.getInvoiceByDocPartner(getCtx(), adOrgID,
+					cDocTypeID, documentSerie, documentNoRef, cBPartnerID, get_TrxName());
+			if ((invoiceAux != null) && (invoiceAux.get_ID() > 0)){
+
+				BigDecimal amtSubTotal = (BigDecimal) invoiceAux.get_Value("AmtSubtotal");
+				invoiceAux.set_ValueOfColumn("AmtSubtotal", amtSubTotal.add(grandTotal));
+				invoiceAux.setTotalLines(invoiceAux.getTotalLines().add(grandTotal));
+				invoiceAux.setGrandTotal(invoiceAux.getGrandTotal().add(grandTotal));
+				invoiceAux.saveEx();
+
+				// Si el venvimiento que tengo es distinto a la fecha de emisión, debo guardarlo
+				if (dueDate != null){
+					if (dueDate.compareTo(dateInvoiced) != 0){
+						MInvoicePaySchedule invoicePaySchedule = new MInvoicePaySchedule(getCtx(), 0, get_TrxName());
+						invoicePaySchedule.setAD_Org_ID(invoiceAux.getAD_Org_ID());
+						invoicePaySchedule.setC_Invoice_ID(invoiceAux.get_ID());
+						invoicePaySchedule.setDueDate(dueDate);
+						invoicePaySchedule.setDueAmt(grandTotal);
+						invoicePaySchedule.setIsValid(true);
+						invoicePaySchedule.saveEx();
+
+						// En el save del vencimiento, el flag de valido se setea en False, por eso fuerzo el flag en true
+						action = " update c_invoicepayschedule set isvalid ='Y' where c_invoicepayschedule_id =" + invoicePaySchedule.get_ID();
+						DB.executeUpdateEx(action, get_TrxName());
+					}
+				}
+				return null;
+			}
 
 			// Lista de precios segun compra/venta
 			if (!this.isSOTrx()){
@@ -448,6 +481,10 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			invoice.setTotalLines(grandTotal);
 			invoice.setGrandTotal(grandTotal);
 
+			if (comercialConfig.getC_PaymentTerm_ID() > 0){
+				invoice.setC_PaymentTerm_ID(comercialConfig.getC_PaymentTerm_ID());
+			}
+
 			if ((pl != null) && (pl.get_ID() > 0)){
 				if (pl.getC_Currency_ID() <= 0){
 					pl.setC_Currency_ID(cCurrencyID);
@@ -477,6 +514,10 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					invoicePaySchedule.setDueAmt(grandTotal);
 					invoicePaySchedule.setIsValid(true);
 					invoicePaySchedule.saveEx();
+
+					// En el save del vencimiento, el flag de valido se setea en False, por eso fuerzo el flag en true
+					action = " update c_invoicepayschedule set isvalid ='Y' where c_invoicepayschedule_id =" + invoicePaySchedule.get_ID();
+					DB.executeUpdateEx(action, get_TrxName());
 				}
 			}
 
