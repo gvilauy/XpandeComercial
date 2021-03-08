@@ -349,6 +349,11 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			MDocType docType = new MDocType(getCtx(), cDocTypeID, null);
 			MPriceList pl = null;
 
+			MBPartnerLocation partnerLocation = partner.getPrimaryC_BPartner_Location();
+			if ((partnerLocation == null) || (partnerLocation.get_ID() <= 0)){
+				return "No se obtuvo Localización para Socio de Negocio: " + partner.getName();
+			}
+
 			MInvoice invoiceAux = ComercialUtils.getInvoiceByDocPartner(getCtx(), adOrgID,
 					cDocTypeID, documentSerie, documentNoRef, cBPartnerID, get_TrxName());
 			if ((invoiceAux != null) && (invoiceAux.get_ID() > 0)){
@@ -471,6 +476,7 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			invoice.set_ValueOfColumn("DocumentSerie", documentSerie);
 			invoice.setDocumentNo(documentNoRef);
 			invoice.setC_BPartner_ID(cBPartnerID);
+			invoice.setC_BPartner_Location_ID(partnerLocation.get_ID());
 			invoice.setC_Currency_ID(cCurrencyID);
 			invoice.setDateInvoiced(dateInvoiced);
 			invoice.setDateAcct(dateInvoiced);
@@ -480,10 +486,6 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 			invoice.set_ValueOfColumn("AmtSubtotal", grandTotal);
 			invoice.setTotalLines(grandTotal);
 			invoice.setGrandTotal(grandTotal);
-
-			if (comercialConfig.getC_PaymentTerm_ID() > 0){
-				invoice.setC_PaymentTerm_ID(comercialConfig.getC_PaymentTerm_ID());
-			}
 
 			if ((pl != null) && (pl.get_ID() > 0)){
 				if (pl.getC_Currency_ID() <= 0){
@@ -503,6 +505,13 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 
 			invoice.set_ValueOfColumn("Z_LoadInvoice_ID", this.get_ID());
 			invoice.saveEx();
+
+			// Actualizo termino de pago por fuera del save para que lo tome
+			if (comercialConfig.getC_PaymentTerm_ID() > 0){
+				action = " update c_invoice set c_paymentterm_id =" + comercialConfig.getC_PaymentTerm_ID() +
+						" where c_invoice_id =" + invoice.get_ID();
+				DB.executeUpdateEx(action, get_TrxName());
+			}
 
 			// Si el venvimiento que tengo es distinto a la fecha de emisión, debo guardarlo
 			if (dueDate != null){
@@ -951,9 +960,14 @@ public class MZLoadInvoice extends X_Z_LoadInvoice implements DocAction, DocOpti
 					loadInvoiceFile.setDueDate(fecVenc);
 				}
 
-				if ((loadInvoiceFile.getGrandTotal() == null) || (loadInvoiceFile.getGrandTotal().compareTo(Env.ZERO) <= 0)){
+				if ((loadInvoiceFile.getGrandTotal() == null) || (loadInvoiceFile.getGrandTotal().compareTo(Env.ZERO) == 0)){
 					loadInvoiceFile.setIsConfirmed(false);
 					loadInvoiceFile.setErrorMsg("Debe indicar Saldo Pendiente del Comprobante");
+				}
+				else {
+					if (loadInvoiceFile.getGrandTotal().compareTo(Env.ZERO) < 0){
+						loadInvoiceFile.setGrandTotal(loadInvoiceFile.getGrandTotal().negate());
+					}
 				}
 
 				MCurrency currency = new MCurrency(getCtx(), loadInvoiceFile.getC_Currency_ID(), null);
