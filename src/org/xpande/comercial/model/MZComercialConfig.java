@@ -98,6 +98,6 @@ public class MZComercialConfig extends X_Z_ComercialConfig {
             throw new AdempiereException(e);
         }
 
-        return message;
+        return null;
     }
 }

@@ -339,7 +339,6 @@ public class ValidatorComercial implements ModelValidator {
                 }
 
                 // Valido que el socio de negocio de este comprobante tenga número de identificación según el Tipo de Identificación
-
                 X_C_TaxGroup taxGroup = (X_C_TaxGroup) partner.getC_TaxGroup();
                 if (taxGroup.getValue() != null){
                     if (!taxGroup.getValue().equalsIgnoreCase("OTRO")){
@@ -421,12 +420,22 @@ public class ValidatorComercial implements ModelValidator {
                 invoiceTax.saveEx();
             }
 
-            // Si en la configuración comercial se indica que en las ventas se debe generar entrega
-            // de manera automática, lo hago ahora.
-            if (comercialConfig.isVtaGeneraInOut()){
-                message = model.generateInOutFromInvoice(false, true);
-                if (message != null){
-                    return message;
+            // Si en la configuración comercial se indica que en las ventas se debe generar entrega de manera automática, lo hago ahora.
+            if (model.isSOTrx()){
+                if (comercialConfig.isVtaGeneraInOut()){
+                    message = model.generateInOutFromInvoice(false, true);
+                    if (message != null){
+                        return message;
+                    }
+                }
+            }
+            else{
+                // Si en la configuración comercial se indica que en las compras se debe generar recepcoón de manera automática, lo hago ahora.
+                if (comercialConfig.isCpraGeneraInOut()){
+                    message = model.generateInOutFromInvoice(false, true);
+                    if (message != null){
+                        return message;
+                    }
                 }
             }
 

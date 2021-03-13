@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_ComercialConfig
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_ComercialConfig 
 {
@@ -103,6 +103,19 @@ public interface I_Z_ComercialConfig
 	public int getC_PaymentTerm_ID();
 
 	public I_C_PaymentTerm getC_PaymentTerm() throws RuntimeException;
+
+    /** Column name CpraGeneraInOut */
+    public static final String COLUMNNAME_CpraGeneraInOut = "CpraGeneraInOut";
+
+	/** Set CpraGeneraInOut.
+	  * Si al completar un comprobante de compra se genera una recepción de mercaderia de manera automática.
+	  */
+	public void setCpraGeneraInOut (boolean CpraGeneraInOut);
+
+	/** Get CpraGeneraInOut.
+	  * Si al completar un comprobante de compra se genera una recepción de mercaderia de manera automática.
+	  */
+	public boolean isCpraGeneraInOut();
 
     /** Column name Created */
     public static final String COLUMNNAME_Created = "Created";

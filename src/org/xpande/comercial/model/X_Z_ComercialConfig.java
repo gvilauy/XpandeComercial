@@ -25,14 +25,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_ComercialConfig
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20201123L;
+	private static final long serialVersionUID = 20210311L;
 
     /** Standard Constructor */
     public X_Z_ComercialConfig (Properties ctx, int Z_ComercialConfig_ID, String trxName)
@@ -43,6 +43,8 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 			setCheckPriceInList (false);
 // N
 			setCompletaRecepcion (false);
+// N
+			setCpraGeneraInOut (false);
 // N
 			setImprimirAuto (false);
 // N
@@ -159,6 +161,30 @@ public class X_Z_ComercialConfig extends PO implements I_Z_ComercialConfig, I_Pe
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
+	}
+
+	/** Set CpraGeneraInOut.
+		@param CpraGeneraInOut 
+		Si al completar un comprobante de compra se genera una recepción de mercaderia de manera automática.
+	  */
+	public void setCpraGeneraInOut (boolean CpraGeneraInOut)
+	{
+		set_Value (COLUMNNAME_CpraGeneraInOut, Boolean.valueOf(CpraGeneraInOut));
+	}
+
+	/** Get CpraGeneraInOut.
+		@return Si al completar un comprobante de compra se genera una recepción de mercaderia de manera automática.
+	  */
+	public boolean isCpraGeneraInOut () 
+	{
+		Object oo = get_Value(COLUMNNAME_CpraGeneraInOut);
+		if (oo != null) 
+		{
+			 if (oo instanceof Boolean) 
+				 return ((Boolean)oo).booleanValue(); 
+			return "Y".equals(oo);
+		}
+		return false;
 	}
 
 	/** Set DefaultDocAPCDif_ID.
