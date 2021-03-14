@@ -318,24 +318,30 @@ public class ValidatorComercial implements ModelValidator {
             // Para comprobantes de venta, valido datos para CFE.
             if (model.isSOTrx()){
 
-                // Valido que la localización de este comprobante de venta tenga departamento, ciudad y dirección.
                 MBPartner partner = (MBPartner) model.getC_BPartner();
-                MBPartnerLocation partnerLocation = (MBPartnerLocation) model.getC_BPartner_Location();
-                MLocation location = (MLocation) partnerLocation.getC_Location();
-                if ((location.getAddress1() == null) || (location.getAddress1().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Dirección en la Localización del Socio de Negocio de este Comprobante " +
-                            "(código : " + partner.getValue() + ")";
-                    return message;
-                }
-                if ((location.getRegionName() == null) || (location.getRegionName().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Departamento en la Localización del Socio de Negocio de este Comprobante " +
-                            "(código : " + partner.getValue() + ")";
-                    return message;
-                }
-                if ((location.getCity() == null) || (location.getCity().trim().equalsIgnoreCase(""))){
-                    message = "Es obligatorio indicar Ciudad en la Localización del Socio de Negocio de este Comprobante " +
-                            "(código : " + partner.getValue() + ")";
-                    return message;
+
+                // Si el documento de esta invoice esta marcado para enviarse electrónicamente
+                MZCFEConfig cfeConfig = MZCFEConfig.getDefault(model.getCtx(), model.get_TrxName());
+                boolean docsendCFE = cfeConfig.isDocSendCFE(model.getAD_Org_ID(), model.getC_DocTypeTarget_ID());
+                if (docsendCFE){
+                    // Valido que la localización de este comprobante de venta tenga departamento, ciudad y dirección.
+                    MBPartnerLocation partnerLocation = (MBPartnerLocation) model.getC_BPartner_Location();
+                    MLocation location = (MLocation) partnerLocation.getC_Location();
+                    if ((location.getAddress1() == null) || (location.getAddress1().trim().equalsIgnoreCase(""))){
+                        message = "Es obligatorio indicar Dirección en la Localización del Socio de Negocio de este Comprobante " +
+                                "(código : " + partner.getValue() + ")";
+                        return message;
+                    }
+                    if ((location.getRegionName() == null) || (location.getRegionName().trim().equalsIgnoreCase(""))){
+                        message = "Es obligatorio indicar Departamento en la Localización del Socio de Negocio de este Comprobante " +
+                                "(código : " + partner.getValue() + ")";
+                        return message;
+                    }
+                    if ((location.getCity() == null) || (location.getCity().trim().equalsIgnoreCase(""))){
+                        message = "Es obligatorio indicar Ciudad en la Localización del Socio de Negocio de este Comprobante " +
+                                "(código : " + partner.getValue() + ")";
+                        return message;
+                    }
                 }
 
                 // Valido que el socio de negocio de este comprobante tenga número de identificación según el Tipo de Identificación
