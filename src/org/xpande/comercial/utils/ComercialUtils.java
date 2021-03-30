@@ -311,6 +311,22 @@ public final class ComercialUtils {
         return model;
     }
 
+    /***
+     * Obtiene y retorno modelo de socio de negocio según razoón social recibida.
+     * Xpande. Created by Gabriel Vila on 2/28/19.
+     * @param ctx
+     * @param name
+     * @param trxName
+     * @return
+     */
+    public static MBPartner getPartnerByName(Properties ctx, String name, String trxName){
+
+        String whereClause = " upper(" + X_C_BPartner.COLUMNNAME_Name + ") ='" + name.toUpperCase() + "'";
+
+        MBPartner model = new Query(ctx, I_C_BPartner.Table_Name, whereClause, trxName).first();
+
+        return model;
+    }
 
     /***
      * Obtiene y retorna modelo de producto según código recibido.
