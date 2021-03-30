@@ -95,6 +95,7 @@ public final class ComercialUtils {
 
         MInvoice model = new Query(ctx, I_C_Invoice.Table_Name, whereClause, trxName).first();
 
+
         return model;
     }
 
