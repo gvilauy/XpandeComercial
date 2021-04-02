@@ -266,4 +266,42 @@ public class CalloutComercial extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Al ingresar organización se setea un almacen asociado a dicha organizacion.
+     * Xpande. Created by Gabriel Vila on 10/17/19.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String setSOCreditStatusByAction(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if (value == null){
+            return "";
+        }
+
+        int cBPArtnerID = Env.getContextAsInt(ctx, WindowNo, "C_BPartner_ID");
+        MBPartner partner = new MBPartner(ctx, cBPArtnerID, null);
+
+        String soCreditAction = (String) value;
+
+        if (soCreditAction.equalsIgnoreCase("NO_VERIFICAR")){
+            mTab.setValue(X_C_BPartner.COLUMNNAME_SOCreditStatus, X_C_BPartner.SOCREDITSTATUS_NoCreditCheck);
+        }
+        else if (soCreditAction.equalsIgnoreCase("VERIFICAR")){
+            // Obtengo y seteo estado de credito actual del socio de negocio
+            String statusCredito = partner.getSOCreditStatusActual();
+            mTab.setValue(X_C_BPartner.COLUMNNAME_SOCreditStatus, statusCredito);
+        }
+        else if (soCreditAction.equalsIgnoreCase("SUSPENDER")){
+            mTab.setValue(X_C_BPartner.COLUMNNAME_SOCreditStatus, X_C_BPartner.SOCREDITSTATUS_CreditStop);
+        }
+
+        return "";
+    }
+
 }
