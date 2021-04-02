@@ -155,7 +155,14 @@ public class CalloutOrder extends CalloutEngine {
 
         mTab.setValue("C_Currency_ID", pp.getC_Currency_ID());
         mTab.setValue("Discount", pp.getDiscount());
-        mTab.setValue("C_UOM_ID", product.getC_UOM_ID());
+
+        // Xpande. Gabriel Vila. 02/04/2021.
+        // Comento linea donde se setea la unidad de medida.
+        // Esto para no tener valor por defecto cuando hay clientes que tienen mas de una unidad de venta o compra.
+
+        //mTab.setValue("C_UOM_ID", product.getC_UOM_ID());
+        // Fin Xpande.
+
         mTab.setValue("QtyOrdered", mTab.getValue("QtyEntered"));
         Env.setContext(ctx, WindowNo, "EnforcePriceLimit", pp.isEnforcePriceLimit() ? "Y" : "N");
         Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
@@ -975,6 +982,52 @@ public class CalloutOrder extends CalloutEngine {
         return "";
     }
 
+    /***
+     * Al ingresar código de barras o producto, se deben setear los otros valores asociados.
+     * Xpande. Created by Gabriel Vila on 1/10/18.
+     * @param ctx
+     * @param WindowNo
+     * @param mTab
+     * @param mField
+     * @param value
+     * @return
+     */
+    public String upcProduct(Properties ctx, int WindowNo, GridTab mTab, GridField mField, Object value) {
+
+        if (isCalloutActive()) return "";
+
+        if ((value == null) || (value.toString().trim().equalsIgnoreCase(""))){
+            mTab.setValue("UPC", null);
+            mTab.setValue("M_Product_ID", null);
+            return "";
+        }
+
+        String column = mField.getColumnName();
+
+        if (column.equalsIgnoreCase("UPC")){
+            MZProductoUPC pupc = MZProductoUPC.getByUPC(ctx, value.toString().trim(), null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                mTab.setValue("M_Product_ID", pupc.getM_Product_ID());
+            }
+            else{
+                mTab.setValue("M_Product_ID", null);
+                mTab.fireDataStatusEEvent ("Error", "No existe Producto con código de barras ingresado", true);
+            }
+        }
+        else if (column.equalsIgnoreCase("M_Product_ID")){
+            int mProductID = ((Integer) value).intValue();
+            MZProductoUPC pupc = MZProductoUPC.getByProduct(ctx, mProductID, null);
+            if ((pupc != null) && (pupc.get_ID() > 0)){
+                mTab.setValue("UPC", pupc.getUPC());
+            }
+            else{
+                mTab.setValue("UPC", null);
+            }
+        }
+
+        return "";
+    }
+
     /**
      *	Order Header - PriceList.
      *	(used also in Invoice)
@@ -1146,10 +1199,19 @@ public class CalloutOrder extends CalloutEngine {
                         }
                     }
                 }
+
+
+                // Xpande. Gabriel Vila. 01/04/2021.
+                // Comento seteo de localización ya que si tengo mas de una, tengo que refrescar el campo en la ventana
+                // para que despliegue las demas localizaciones.
+
+                /*
                 if (shipTo_ID == 0)
                     mTab.setValue("C_BPartner_Location_ID", null);
                 else
                     mTab.setValue("C_BPartner_Location_ID", new Integer(shipTo_ID));
+                */
+                // Fin Xpande
 
                 //	Contact - overwritten by InfoBP selection
                 int contID = rs.getInt("AD_User_ID");

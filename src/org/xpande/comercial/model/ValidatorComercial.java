@@ -831,6 +831,10 @@ public class ValidatorComercial implements ModelValidator {
                         }
                     }
                     model.set_ValueOfColumn("UomMultiplyRate", multiplyRate.setScale(4, RoundingMode.HALF_UP));
+
+                    // Guardo precisión decimal de la unidad de venta
+                    MUOM uomVenta = (MUOM) model.getC_UOM();
+                    model.set_ValueOfColumn("UomStdPrecision", uomVenta.getStdPrecision());
                 }
             }
         }
