@@ -1202,15 +1202,14 @@ public class CalloutOrder extends CalloutEngine {
 
 
                 // Xpande. Gabriel Vila. 01/04/2021.
-                // Comento seteo de localización ya que si tengo mas de una, tengo que refrescar el campo en la ventana
-                // para que despliegue las demas localizaciones.
-
-                /*
-                if (shipTo_ID == 0)
-                    mTab.setValue("C_BPartner_Location_ID", null);
-                else
-                    mTab.setValue("C_BPartner_Location_ID", new Integer(shipTo_ID));
-                */
+                // Agrego if para setear localización automatica solo cuando es una orden de compra.
+                // En ordenes de venta el usuario debe indicar cual localización utilizar.
+                if (!IsSOTrx){
+                    if (shipTo_ID == 0)
+                        mTab.setValue("C_BPartner_Location_ID", null);
+                    else
+                        mTab.setValue("C_BPartner_Location_ID", new Integer(shipTo_ID));
+                }
                 // Fin Xpande
 
                 //	Contact - overwritten by InfoBP selection

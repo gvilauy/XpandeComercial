@@ -41,6 +41,7 @@ public class ValidatorComercial implements ModelValidator {
         engine.addModelChange(I_C_Invoice.Table_Name, this);
         engine.addModelChange(I_C_InvoiceLine.Table_Name, this);
         engine.addModelChange(I_M_InOutLine.Table_Name, this);
+        engine.addModelChange(I_C_Order.Table_Name, this);
         engine.addModelChange(I_C_OrderLine.Table_Name, this);
         engine.addModelChange(I_M_InOut.Table_Name, this);
 
@@ -74,6 +75,9 @@ public class ValidatorComercial implements ModelValidator {
         }
         else if (po.get_TableName().equalsIgnoreCase(I_C_OrderLine.Table_Name)){
             return modelChange((MOrderLine) po, type);
+        }
+        else if (po.get_TableName().equalsIgnoreCase(I_C_Order.Table_Name)){
+            return modelChange((MOrder) po, type);
         }
         else if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
             return modelChange((MInOut) po, type);
@@ -815,6 +819,9 @@ public class ValidatorComercial implements ModelValidator {
 
             MOrder order = (MOrder)model.getC_Order();
 
+            // Me aseguro que esta linea tenga la moneda del cabezal
+            model.setC_Currency_ID(order.getC_Currency_ID());
+
             // Para ordenes de venta
             if (order.isSOTrx()){
                 // Obtengo multiply rate para convertir desde unidad de medida de esta linea,
@@ -932,7 +939,30 @@ public class ValidatorComercial implements ModelValidator {
             rs = null; pstmt = null;
         }
 
-        return message;
+        return null;
+    }
+
+    /***
+     * Validaciones para el modelo de Orders (c_order)
+     * Xpande. Created by Gabriel Vila on 4/7/21.
+     * @param model
+     * @param type
+     * @return
+     * @throws Exception
+     */
+    public String modelChange(MOrder model, int type) throws Exception {
+
+        String mensaje = null;
+
+        // Si modifico la lista de precios en el cabezal de una orden de compra o venta
+        if ((type == ModelValidator.TYPE_AFTER_CHANGE) && (model.is_ValueChanged("M_PriceList_ID"))){
+            // Me aseguro que las lineas tengan la misma moneda que la moneda del cabezal
+            String action = " update c_orderline set c_currency_id =" + model.getC_Currency_ID() +
+                            " where c_order_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
+        }
+
+        return null;
     }
 
 }
