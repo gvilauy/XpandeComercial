@@ -66,6 +66,7 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
 			options[newIndex++] = DocumentEngine.ACTION_Complete;
 
 		}
+
 		else if (docStatus.equalsIgnoreCase(STATUS_Completed)){
 
 			//options[newIndex++] = DocumentEngine.ACTION_None;
