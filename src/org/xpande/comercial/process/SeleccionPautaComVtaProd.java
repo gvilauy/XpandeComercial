@@ -54,15 +54,6 @@ public class SeleccionPautaComVtaProd extends SeleccionPautaComVtaProdAbstract
 			MZPautaComVtaProd pautaComVtaProd = new MZPautaComVtaProd(getCtx(), 0, get_TrxName());
 			pautaComVtaProd.setZ_PautaComVtaSeg_ID(this.pautaComVtaSeg.get_ID());
 			pautaComVtaProd.setM_Product_ID(product.get_ID());
-
-			if (product.get_ValueAsInt("Z_ProductoSeccion_ID") > 0){
-				pautaComVtaProd.setZ_ProductoSeccion_ID(product.get_ValueAsInt("Z_ProductoSeccion_ID"));
-			}
-
-			if (product.get_ValueAsInt("Z_ProductoRubro_ID") > 0){
-				pautaComVtaProd.setZ_ProductoRubro_ID(product.get_ValueAsInt("Z_ProductoRubro_ID"));
-			}
-
 			pautaComVtaProd.saveEx();
 
 		});

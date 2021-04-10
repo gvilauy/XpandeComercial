@@ -281,8 +281,6 @@ public class ValidatorComercial implements ModelValidator {
      */
     public String modelChange(MInOut model, int type) throws Exception {
 
-        String mensaje = null, action = "";
-
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
             // Para cualquier comprobante de la tabla inout, me aseguro de que se indique Organización distinta de *.
@@ -292,9 +290,8 @@ public class ValidatorComercial implements ModelValidator {
 
         }
 
-        return mensaje;
+        return null;
     }
-
 
     /***
      * Validaciones para documentos de la tabla C_Invoice en gestión financiera.

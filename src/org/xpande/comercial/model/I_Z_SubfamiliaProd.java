@@ -21,17 +21,17 @@ import java.sql.Timestamp;
 import org.compiere.model.*;
 import org.compiere.util.KeyNamePair;
 
-/** Generated Interface for Z_PautaComVtaProd
+/** Generated Interface for Z_SubfamiliaProd
  *  @author Adempiere (generated) 
  *  @version Release 3.9.1
  */
-public interface I_Z_PautaComVtaProd 
+public interface I_Z_SubfamiliaProd 
 {
 
-    /** TableName=Z_PautaComVtaProd */
-    public static final String Table_Name = "Z_PautaComVtaProd";
+    /** TableName=Z_SubfamiliaProd */
+    public static final String Table_Name = "Z_SubfamiliaProd";
 
-    /** AD_Table_ID=1000224 */
+    /** AD_Table_ID=1000323 */
     public static final int Table_ID = MTable.getTable_ID(Table_Name);
 
     KeyNamePair Model = new KeyNamePair(Table_ID, Table_Name);
@@ -79,6 +79,19 @@ public interface I_Z_PautaComVtaProd
 	  */
 	public int getCreatedBy();
 
+    /** Column name Description */
+    public static final String COLUMNNAME_Description = "Description";
+
+	/** Set Description.
+	  * Optional short description of the record
+	  */
+	public void setDescription (String Description);
+
+	/** Get Description.
+	  * Optional short description of the record
+	  */
+	public String getDescription();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -92,35 +105,18 @@ public interface I_Z_PautaComVtaProd
 	  */
 	public boolean isActive();
 
-    /** Column name M_Product_Category_ID */
-    public static final String COLUMNNAME_M_Product_Category_ID = "M_Product_Category_ID";
+    /** Column name Name */
+    public static final String COLUMNNAME_Name = "Name";
 
-	/** Set Product Category.
-	  * Category of a Product
+	/** Set Name.
+	  * Alphanumeric identifier of the entity
 	  */
-	public void setM_Product_Category_ID (int M_Product_Category_ID);
+	public void setName (String Name);
 
-	/** Get Product Category.
-	  * Category of a Product
+	/** Get Name.
+	  * Alphanumeric identifier of the entity
 	  */
-	public int getM_Product_Category_ID();
-
-	public I_M_Product_Category getM_Product_Category() throws RuntimeException;
-
-    /** Column name M_Product_ID */
-    public static final String COLUMNNAME_M_Product_ID = "M_Product_ID";
-
-	/** Set Product.
-	  * Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID);
-
-	/** Get Product.
-	  * Product, Service, Item
-	  */
-	public int getM_Product_ID();
-
-	public I_M_Product getM_Product() throws RuntimeException;
+	public String getName();
 
     /** Column name Updated */
     public static final String COLUMNNAME_Updated = "Updated";
@@ -151,6 +147,19 @@ public interface I_Z_PautaComVtaProd
 	  */
 	public String getUUID();
 
+    /** Column name Value */
+    public static final String COLUMNNAME_Value = "Value";
+
+	/** Set Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public void setValue (String Value);
+
+	/** Get Search Key.
+	  * Search key for the record in the format required - must be unique
+	  */
+	public String getValue();
+
     /** Column name Z_FamiliaProd_ID */
     public static final String COLUMNNAME_Z_FamiliaProd_ID = "Z_FamiliaProd_ID";
 
@@ -160,27 +169,7 @@ public interface I_Z_PautaComVtaProd
 	/** Get Z_FamiliaProd ID	  */
 	public int getZ_FamiliaProd_ID();
 
-	public org.xpande.comercial.model.I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException;
-
-    /** Column name Z_PautaComVtaProd_ID */
-    public static final String COLUMNNAME_Z_PautaComVtaProd_ID = "Z_PautaComVtaProd_ID";
-
-	/** Set Z_PautaComVtaProd ID	  */
-	public void setZ_PautaComVtaProd_ID (int Z_PautaComVtaProd_ID);
-
-	/** Get Z_PautaComVtaProd ID	  */
-	public int getZ_PautaComVtaProd_ID();
-
-    /** Column name Z_PautaComVtaSeg_ID */
-    public static final String COLUMNNAME_Z_PautaComVtaSeg_ID = "Z_PautaComVtaSeg_ID";
-
-	/** Set Z_PautaComVtaSeg ID	  */
-	public void setZ_PautaComVtaSeg_ID (int Z_PautaComVtaSeg_ID);
-
-	/** Get Z_PautaComVtaSeg ID	  */
-	public int getZ_PautaComVtaSeg_ID();
-
-	public I_Z_PautaComVtaSeg getZ_PautaComVtaSeg() throws RuntimeException;
+	public I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException;
 
     /** Column name Z_SubfamiliaProd_ID */
     public static final String COLUMNNAME_Z_SubfamiliaProd_ID = "Z_SubfamiliaProd_ID";
@@ -190,6 +179,4 @@ public interface I_Z_PautaComVtaProd
 
 	/** Get Z_SubfamiliaProd ID	  */
 	public int getZ_SubfamiliaProd_ID();
-
-	public org.xpande.comercial.model.I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException;
 }

@@ -1,5 +1,7 @@
 package org.xpande.comercial.model;
 
+import org.compiere.model.MBPartner;
+
 import java.sql.ResultSet;
 import java.util.Properties;
 
@@ -16,5 +18,20 @@ public class MZPautaComVtaBP extends X_Z_PautaComVtaBP {
 
     public MZPautaComVtaBP(Properties ctx, ResultSet rs, String trxName) {
         super(ctx, rs, trxName);
+    }
+
+    @Override
+    protected boolean beforeSave(boolean newRecord) {
+
+        // Seteo ingformacion del socio de negocio
+        MBPartner partner = (MBPartner) this.getC_BPartner();
+        if (partner.get_ValueAsInt("Z_CanalVenta_ID") > 0){
+            this.setZ_CanalVenta_ID(partner.get_ValueAsInt("Z_CanalVenta_ID"));
+        }
+        if (partner.getSalesRep_ID() > 0){
+            this.setSalesRep_ID(partner.getSalesRep_ID());
+        }
+
+        return true;
     }
 }

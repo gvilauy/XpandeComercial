@@ -23,14 +23,14 @@ import org.compiere.model.*;
 
 /** Generated Model for Z_PautaComVtaProd
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20191024L;
+	private static final long serialVersionUID = 20210410L;
 
     /** Standard Constructor */
     public X_Z_PautaComVtaProd (Properties ctx, int Z_PautaComVtaProd_ID, String trxName)
@@ -71,6 +71,34 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	public I_M_Product_Category getM_Product_Category() throws RuntimeException
+    {
+		return (I_M_Product_Category)MTable.get(getCtx(), I_M_Product_Category.Table_Name)
+			.getPO(getM_Product_Category_ID(), get_TrxName());	}
+
+	/** Set Product Category.
+		@param M_Product_Category_ID 
+		Category of a Product
+	  */
+	public void setM_Product_Category_ID (int M_Product_Category_ID)
+	{
+		if (M_Product_Category_ID < 1) 
+			set_Value (COLUMNNAME_M_Product_Category_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Product_Category_ID, Integer.valueOf(M_Product_Category_ID));
+	}
+
+	/** Get Product Category.
+		@return Category of a Product
+	  */
+	public int getM_Product_Category_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_Category_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
 
 	public I_M_Product getM_Product() throws RuntimeException
     {
@@ -115,6 +143,31 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
 	public String getUUID () 
 	{
 		return (String)get_Value(COLUMNNAME_UUID);
+	}
+
+	public org.xpande.comercial.model.I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException
+    {
+		return (org.xpande.comercial.model.I_Z_FamiliaProd)MTable.get(getCtx(), org.xpande.comercial.model.I_Z_FamiliaProd.Table_Name)
+			.getPO(getZ_FamiliaProd_ID(), get_TrxName());	}
+
+	/** Set Z_FamiliaProd ID.
+		@param Z_FamiliaProd_ID Z_FamiliaProd ID	  */
+	public void setZ_FamiliaProd_ID (int Z_FamiliaProd_ID)
+	{
+		if (Z_FamiliaProd_ID < 1) 
+			set_Value (COLUMNNAME_Z_FamiliaProd_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_FamiliaProd_ID, Integer.valueOf(Z_FamiliaProd_ID));
+	}
+
+	/** Get Z_FamiliaProd ID.
+		@return Z_FamiliaProd ID	  */
+	public int getZ_FamiliaProd_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_FamiliaProd_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
 	}
 
 	/** Set Z_PautaComVtaProd ID.
@@ -162,41 +215,26 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
 		return ii.intValue();
 	}
 
-	/** Set Z_ProductoRubro ID.
-		@param Z_ProductoRubro_ID Z_ProductoRubro ID	  */
-	public void setZ_ProductoRubro_ID (int Z_ProductoRubro_ID)
+	public org.xpande.comercial.model.I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException
+    {
+		return (org.xpande.comercial.model.I_Z_SubfamiliaProd)MTable.get(getCtx(), org.xpande.comercial.model.I_Z_SubfamiliaProd.Table_Name)
+			.getPO(getZ_SubfamiliaProd_ID(), get_TrxName());	}
+
+	/** Set Z_SubfamiliaProd ID.
+		@param Z_SubfamiliaProd_ID Z_SubfamiliaProd ID	  */
+	public void setZ_SubfamiliaProd_ID (int Z_SubfamiliaProd_ID)
 	{
-		if (Z_ProductoRubro_ID < 1) 
-			set_Value (COLUMNNAME_Z_ProductoRubro_ID, null);
+		if (Z_SubfamiliaProd_ID < 1) 
+			set_Value (COLUMNNAME_Z_SubfamiliaProd_ID, null);
 		else 
-			set_Value (COLUMNNAME_Z_ProductoRubro_ID, Integer.valueOf(Z_ProductoRubro_ID));
+			set_Value (COLUMNNAME_Z_SubfamiliaProd_ID, Integer.valueOf(Z_SubfamiliaProd_ID));
 	}
 
-	/** Get Z_ProductoRubro ID.
-		@return Z_ProductoRubro ID	  */
-	public int getZ_ProductoRubro_ID () 
+	/** Get Z_SubfamiliaProd ID.
+		@return Z_SubfamiliaProd ID	  */
+	public int getZ_SubfamiliaProd_ID () 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoRubro_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Z_ProductoSeccion ID.
-		@param Z_ProductoSeccion_ID Z_ProductoSeccion ID	  */
-	public void setZ_ProductoSeccion_ID (int Z_ProductoSeccion_ID)
-	{
-		if (Z_ProductoSeccion_ID < 1) 
-			set_Value (COLUMNNAME_Z_ProductoSeccion_ID, null);
-		else 
-			set_Value (COLUMNNAME_Z_ProductoSeccion_ID, Integer.valueOf(Z_ProductoSeccion_ID));
-	}
-
-	/** Get Z_ProductoSeccion ID.
-		@return Z_ProductoSeccion ID	  */
-	public int getZ_ProductoSeccion_ID () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Z_ProductoSeccion_ID);
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_SubfamiliaProd_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();
