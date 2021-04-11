@@ -22,19 +22,19 @@ public class MZPautaComVtaProd extends X_Z_PautaComVtaProd {
     @Override
     protected boolean beforeSave(boolean newRecord) {
 
-        MProduct product = (MProduct) this.getM_Product();
-        if (product.getM_Product_Category_ID() > 0){
+        if ((newRecord) || (is_ValueChanged(X_Z_PautaComVtaProd.COLUMNNAME_M_Product_ID))){
+            MProduct product = (MProduct) this.getM_Product();
             this.setM_Product_Category_ID(product.getM_Product_Category_ID());
+
+            if (product.get_ValueAsInt("Z_FamiliaProd_ID") > 0){
+                this.setZ_FamiliaProd_ID (product.get_ValueAsInt("Z_FamiliaProd_ID"));
+            }
+
+            if (product.get_ValueAsInt("Z_SubfamiliaProd_ID") > 0){
+                this.setZ_SubfamiliaProd_ID(product.get_ValueAsInt("Z_SubfamiliaProd_ID"));
+            }
         }
 
-        if (product.get_ValueAsInt("Z_FamiliaProd_ID") > 0){
-            this.setZ_FamiliaProd_ID (product.get_ValueAsInt("Z_FamiliaProd_ID"));
-        }
-
-        if (product.get_ValueAsInt("Z_SubfamiliaProd_ID") > 0){
-            this.setZ_SubfamiliaProd_ID(product.get_ValueAsInt("Z_SubfamiliaProd_ID"));
-        }
-
-        return super.beforeSave(newRecord);
+        return true;
     }
 }

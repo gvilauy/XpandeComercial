@@ -427,16 +427,21 @@ public class ValidatorComercial implements ModelValidator {
                 invoiceTax.saveEx();
             }
 
-            // Si en la configuración comercial se indica que en las ventas se debe generar entrega de manera automática, lo hago ahora.
+            // Si es comprobante de venta
             if (model.isSOTrx()){
+                // Si en la configuración comercial se indica que en las ventas se debe generar entrega de manera automática, lo hago ahora.
                 if (comercialConfig.isVtaGeneraInOut()){
                     message = model.generateInOutFromInvoice(false, true);
                     if (message != null){
                         return message;
                     }
                 }
+
+                // Actualizo limite de crédito utilizado por el socio de negocio
+
             }
             else{
+                // Es comprobante de compra
                 // Si en la configuración comercial se indica que en las compras se debe generar recepcoón de manera automática, lo hago ahora.
                 if (comercialConfig.isCpraGeneraInOut()){
                     message = model.generateInOutFromInvoice(false, true);
@@ -445,20 +450,6 @@ public class ValidatorComercial implements ModelValidator {
                     }
                 }
             }
-
-            // Proceso comprobantes marcados con Asiento Manual Contable
-            if (model.get_ValueAsBoolean("AsientoManualInvoice")){
-
-                /*
-                // Elimino impuestos y genero los mismos según datos ingresados en la grilla de Asiento Manual.
-                message = this.setInvoiceTaxAsientoManual(model);
-                if (message != null){
-                    return message;
-                }
-                */
-            }
-
-
         }
         else if (timing == TIMING_BEFORE_REACTIVATE){
 
@@ -588,6 +579,16 @@ public class ValidatorComercial implements ModelValidator {
 
             // Si es una orden de venta
             if (model.isSOTrx()){
+                // Para ordenes de venta, la verificación de credito se hace en el prepareIt.
+                // Si llegue aquí es porque el crédito esta verificado y por lo tanto seteo el flag en true.
+                model.setIsCreditApproved(true);
+            }
+
+        }
+        else if (timing == TIMING_AFTER_COMPLETE){
+
+            // Si es una orden de venta
+            if (model.isSOTrx()){
                 // Si tengo indicado un numero de remito manual
                 String nroRemitoManual = model.get_ValueAsString("NroRemito");
                 if ((nroRemitoManual != null) && (!nroRemitoManual.trim().equalsIgnoreCase(""))){
@@ -608,7 +609,8 @@ public class ValidatorComercial implements ModelValidator {
 
             // Si es una orden de venta
             if (model.isSOTrx()){
-
+                // Al reactivar el pedido seteo el flag de credito aprobado en false.
+                model.setIsCreditApproved(false);
             }
         }
 

@@ -79,6 +79,19 @@ public interface I_Z_PautaComVtaProd
 	  */
 	public int getCreatedBy();
 
+    /** Column name Discount */
+    public static final String COLUMNNAME_Discount = "Discount";
+
+	/** Set Discount %.
+	  * Discount in percent
+	  */
+	public void setDiscount (BigDecimal Discount);
+
+	/** Get Discount %.
+	  * Discount in percent
+	  */
+	public BigDecimal getDiscount();
+
     /** Column name IsActive */
     public static final String COLUMNNAME_IsActive = "IsActive";
 
@@ -160,7 +173,7 @@ public interface I_Z_PautaComVtaProd
 	/** Get Z_FamiliaProd ID	  */
 	public int getZ_FamiliaProd_ID();
 
-	public org.xpande.comercial.model.I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException;
+	public I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException;
 
     /** Column name Z_PautaComVtaProd_ID */
     public static final String COLUMNNAME_Z_PautaComVtaProd_ID = "Z_PautaComVtaProd_ID";
@@ -191,5 +204,5 @@ public interface I_Z_PautaComVtaProd
 	/** Get Z_SubfamiliaProd ID	  */
 	public int getZ_SubfamiliaProd_ID();
 
-	public org.xpande.comercial.model.I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException;
+	public I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException;
 }

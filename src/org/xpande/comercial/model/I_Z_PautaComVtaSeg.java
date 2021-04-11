@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_PautaComVtaSeg
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_PautaComVtaSeg 
 {
@@ -56,7 +56,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Organization.
 	  * Organizational entity within client
 	  */
-	public void setAD_Org_ID(int AD_Org_ID);
+	public void setAD_Org_ID (int AD_Org_ID);
 
 	/** Get Organization.
 	  * Organizational entity within client
@@ -85,7 +85,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Description.
 	  * Optional short description of the record
 	  */
-	public void setDescription(String Description);
+	public void setDescription (String Description);
 
 	/** Get Description.
 	  * Optional short description of the record
@@ -98,7 +98,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set End Date.
 	  * Last effective date (inclusive)
 	  */
-	public void setEndDate(Timestamp EndDate);
+	public void setEndDate (Timestamp EndDate);
 
 	/** Get End Date.
 	  * Last effective date (inclusive)
@@ -111,7 +111,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Active.
 	  * The record is active in the system
 	  */
-	public void setIsActive(boolean IsActive);
+	public void setIsActive (boolean IsActive);
 
 	/** Get Active.
 	  * The record is active in the system
@@ -122,7 +122,7 @@ public interface I_Z_PautaComVtaSeg
     public static final String COLUMNNAME_IsGeneral = "IsGeneral";
 
 	/** Set IsGeneral	  */
-	public void setIsGeneral(boolean IsGeneral);
+	public void setIsGeneral (boolean IsGeneral);
 
 	/** Get IsGeneral	  */
 	public boolean isGeneral();
@@ -133,7 +133,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Name.
 	  * Alphanumeric identifier of the entity
 	  */
-	public void setName(String Name);
+	public void setName (String Name);
 
 	/** Get Name.
 	  * Alphanumeric identifier of the entity
@@ -144,7 +144,7 @@ public interface I_Z_PautaComVtaSeg
     public static final String COLUMNNAME_ProcessButton = "ProcessButton";
 
 	/** Set ProcessButton	  */
-	public void setProcessButton(String ProcessButton);
+	public void setProcessButton (String ProcessButton);
 
 	/** Get ProcessButton	  */
 	public String getProcessButton();
@@ -155,7 +155,7 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Start Date.
 	  * First effective day (inclusive)
 	  */
-	public void setStartDate(Timestamp StartDate);
+	public void setStartDate (Timestamp StartDate);
 
 	/** Get Start Date.
 	  * First effective day (inclusive)
@@ -184,18 +184,29 @@ public interface I_Z_PautaComVtaSeg
 	/** Set Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
-	public void setUUID(String UUID);
+	public void setUUID (String UUID);
 
 	/** Get Immutable Universally Unique Identifier.
 	  * Immutable Universally Unique Identifier
 	  */
 	public String getUUID();
 
+    /** Column name Z_FamiliaProd_ID */
+    public static final String COLUMNNAME_Z_FamiliaProd_ID = "Z_FamiliaProd_ID";
+
+	/** Set Z_FamiliaProd ID	  */
+	public void setZ_FamiliaProd_ID (int Z_FamiliaProd_ID);
+
+	/** Get Z_FamiliaProd ID	  */
+	public int getZ_FamiliaProd_ID();
+
+	public I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException;
+
     /** Column name Z_PautaComVta_ID */
     public static final String COLUMNNAME_Z_PautaComVta_ID = "Z_PautaComVta_ID";
 
 	/** Set Z_PautaComVta ID	  */
-	public void setZ_PautaComVta_ID(int Z_PautaComVta_ID);
+	public void setZ_PautaComVta_ID (int Z_PautaComVta_ID);
 
 	/** Get Z_PautaComVta ID	  */
 	public int getZ_PautaComVta_ID();
@@ -206,26 +217,19 @@ public interface I_Z_PautaComVtaSeg
     public static final String COLUMNNAME_Z_PautaComVtaSeg_ID = "Z_PautaComVtaSeg_ID";
 
 	/** Set Z_PautaComVtaSeg ID	  */
-	public void setZ_PautaComVtaSeg_ID(int Z_PautaComVtaSeg_ID);
+	public void setZ_PautaComVtaSeg_ID (int Z_PautaComVtaSeg_ID);
 
 	/** Get Z_PautaComVtaSeg ID	  */
 	public int getZ_PautaComVtaSeg_ID();
 
-    /** Column name Z_ProductoRubro_ID */
-    public static final String COLUMNNAME_Z_ProductoRubro_ID = "Z_ProductoRubro_ID";
+    /** Column name Z_SubfamiliaProd_ID */
+    public static final String COLUMNNAME_Z_SubfamiliaProd_ID = "Z_SubfamiliaProd_ID";
 
-	/** Set Z_ProductoRubro ID	  */
-	public void setZ_ProductoRubro_ID(int Z_ProductoRubro_ID);
+	/** Set Z_SubfamiliaProd ID	  */
+	public void setZ_SubfamiliaProd_ID (int Z_SubfamiliaProd_ID);
 
-	/** Get Z_ProductoRubro ID	  */
-	public int getZ_ProductoRubro_ID();
+	/** Get Z_SubfamiliaProd ID	  */
+	public int getZ_SubfamiliaProd_ID();
 
-    /** Column name Z_ProductoSeccion_ID */
-    public static final String COLUMNNAME_Z_ProductoSeccion_ID = "Z_ProductoSeccion_ID";
-
-	/** Set Z_ProductoSeccion ID	  */
-	public void setZ_ProductoSeccion_ID(int Z_ProductoSeccion_ID);
-
-	/** Get Z_ProductoSeccion ID	  */
-	public int getZ_ProductoSeccion_ID();
+	public I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException;
 }

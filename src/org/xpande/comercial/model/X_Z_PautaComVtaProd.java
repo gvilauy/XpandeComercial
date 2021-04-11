@@ -17,9 +17,11 @@
 /** Generated Model - DO NOT CHANGE */
 package org.xpande.comercial.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import org.compiere.model.*;
+import org.compiere.util.Env;
 
 /** Generated Model for Z_PautaComVtaProd
  *  @author Adempiere (generated) 
@@ -30,7 +32,7 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20210410L;
+	private static final long serialVersionUID = 20210411L;
 
     /** Standard Constructor */
     public X_Z_PautaComVtaProd (Properties ctx, int Z_PautaComVtaProd_ID, String trxName)
@@ -71,6 +73,26 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
         .append(get_ID()).append("]");
       return sb.toString();
     }
+
+	/** Set Discount %.
+		@param Discount 
+		Discount in percent
+	  */
+	public void setDiscount (BigDecimal Discount)
+	{
+		set_Value (COLUMNNAME_Discount, Discount);
+	}
+
+	/** Get Discount %.
+		@return Discount in percent
+	  */
+	public BigDecimal getDiscount () 
+	{
+		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Discount);
+		if (bd == null)
+			 return Env.ZERO;
+		return bd;
+	}
 
 	public I_M_Product_Category getM_Product_Category() throws RuntimeException
     {
@@ -145,9 +167,9 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
 		return (String)get_Value(COLUMNNAME_UUID);
 	}
 
-	public org.xpande.comercial.model.I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException
+	public I_Z_FamiliaProd getZ_FamiliaProd() throws RuntimeException
     {
-		return (org.xpande.comercial.model.I_Z_FamiliaProd)MTable.get(getCtx(), org.xpande.comercial.model.I_Z_FamiliaProd.Table_Name)
+		return (I_Z_FamiliaProd)MTable.get(getCtx(), I_Z_FamiliaProd.Table_Name)
 			.getPO(getZ_FamiliaProd_ID(), get_TrxName());	}
 
 	/** Set Z_FamiliaProd ID.
@@ -215,9 +237,9 @@ public class X_Z_PautaComVtaProd extends PO implements I_Z_PautaComVtaProd, I_Pe
 		return ii.intValue();
 	}
 
-	public org.xpande.comercial.model.I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException
+	public I_Z_SubfamiliaProd getZ_SubfamiliaProd() throws RuntimeException
     {
-		return (org.xpande.comercial.model.I_Z_SubfamiliaProd)MTable.get(getCtx(), org.xpande.comercial.model.I_Z_SubfamiliaProd.Table_Name)
+		return (I_Z_SubfamiliaProd)MTable.get(getCtx(), I_Z_SubfamiliaProd.Table_Name)
 			.getPO(getZ_SubfamiliaProd_ID(), get_TrxName());	}
 
 	/** Set Z_SubfamiliaProd ID.

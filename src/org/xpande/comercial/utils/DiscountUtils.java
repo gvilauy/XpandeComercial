@@ -5,6 +5,7 @@ import org.compiere.model.MBPartner;
 import org.compiere.util.Env;
 import org.xpande.comercial.model.MZPautaComVta;
 import org.xpande.comercial.model.MZPautaComVtaDtos;
+import org.xpande.comercial.model.MZPautaComVtaProd;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -70,6 +71,15 @@ public final class DiscountUtils {
 
                 ppi.setTotalPautaDiscounts(ppi.getTotalPautaDiscounts().add(dto.getDiscount()));
                 ppi.setTotalDiscounts(ppi.getTotalDiscounts().add(dto.getDiscount()));
+            }
+
+            // Obtengo lista de descuentos directo en producto, vigentes en factura en pautas comerciales para este socio de negocio - producto.
+            List<MZPautaComVtaProd> dtosProdList = MZPautaComVta.getInvoiceProdDiscounts(ctx, fechaDoc, adClientID, adOrgID, cBpartnerID, mProductID, trxName);
+            for (MZPautaComVtaProd dtoProd: dtosProdList){
+                priceFinal = priceFinal.multiply(Env.ONE.subtract(dtoProd.getDiscount().divide(Env.ONEHUNDRED, 6, BigDecimal.ROUND_HALF_UP))).setScale(ppi.getPrecisionDecimal(), BigDecimal.ROUND_HALF_UP);
+
+                ppi.setTotalPautaDiscounts(ppi.getTotalPautaDiscounts().add(dtoProd.getDiscount()));
+                ppi.setTotalDiscounts(ppi.getTotalDiscounts().add(dtoProd.getDiscount()));
             }
 
             // Si tengo descuento manual lo aplico

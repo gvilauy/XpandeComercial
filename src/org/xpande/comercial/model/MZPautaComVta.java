@@ -435,9 +435,8 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
 
 			// Modelo del producto
 			MProduct product = new MProduct(ctx, mProductID, null);
-			int zProductoSeccionID = product.get_ValueAsInt("Z_ProductoSeccion_ID");
-			int zProductoRubroID = product.get_ValueAsInt("Z_ProductoRubro_ID");
-
+			int zFamiliaProdID = product.get_ValueAsInt("Z_FamiliaProd_ID");
+			int zSubfamiliaProdID = product.get_ValueAsInt("Z_SubfamiliaProd_ID");
 
 			// Descuentos que aplican para la jerarquia de este producto
 		    sql = " select pdto.z_pautacomvtadtos_id " +
@@ -447,13 +446,14 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
 					" where pvta.ad_client_id =" + adClientID +
 					" and pvta.ad_org_id =" + adOrgID +
 					" and pvta.docstatus='CO' " +
+					" and pvta.z_pautacomvta_id in (select z_pautacomvta_id from z_pautacomvtabp where c_bpartner_id =" + cBpartnerID + ") " +
 					" and coalesce(pseg.startdate, '" + fechaDoc + "') <= '" + fechaDoc + "'" +
 					" and coalesce(pseg.enddate, '" + fechaDoc + "') >= '" + fechaDoc + "'" +
 					" and pseg.isgeneral='Y' " +
-					" and case when pseg.z_productoseccion_id > 0 then " +
-					" coalesce(pseg.z_productoseccion_id, " + zProductoSeccionID + ") =" + zProductoSeccionID + " else 1=1 end " +
-					" and case when pseg.z_productorubro_id > 0 then " +
-					" coalesce(pseg.z_productorubro_id, " + zProductoRubroID + ") =" + zProductoRubroID + " else 1=1 end " +
+					" and case when pseg.z_familiaprod_id > 0 then " +
+					" coalesce(pseg.z_familiaprod_id, " + zFamiliaProdID + ") =" + zFamiliaProdID + " else 1=1 end " +
+					" and case when pseg.z_subfamiliaprod_id > 0 then " +
+					" coalesce(pseg.z_subfamiliaprod_id, " + zSubfamiliaProdID + ") =" + zSubfamiliaProdID + " else 1=1 end " +
 					" and pdto.discounttype in ('" + X_Z_PautaComVtaDtos.DISCOUNTTYPE_OPERATIVOENFACTURA + "','" +
 					X_Z_PautaComVtaDtos.DISCOUNTTYPE_FINANCIEROENFACTURA + "')";
 
@@ -477,6 +477,7 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
 					" where pvta.ad_client_id =" + adClientID +
 					" and pvta.ad_org_id =" + adOrgID +
 					" and pvta.docstatus='CO' " +
+					" and pvta.z_pautacomvta_id in (select z_pautacomvta_id from z_pautacomvtabp where c_bpartner_id =" + cBpartnerID + ") " +
 					" and coalesce(pseg.startdate, '" + fechaDoc + "') <= '" + fechaDoc + "'" +
 					" and coalesce(pseg.enddate, '" + fechaDoc + "') >= '" + fechaDoc + "'" +
 					" and pseg.isgeneral='N' " +
@@ -498,6 +499,66 @@ public class MZPautaComVta extends X_Z_PautaComVta implements DocAction, DocOpti
 		}
 		finally {
 		    DB.close(rs, pstmt);
+			rs = null; pstmt = null;
+		}
+
+		return dtosList;
+	}
+
+	/***
+	 * Obtiene y retorna lista de productos con descuento directo en factura para un determinada
+	 * fecha - socio de negocio - producto.
+	 * Esta variante es cuando no se usa la tabla de descuentos, sino que directamnente se pone el descuento
+	 * en la tabla del producto en la pauta.
+	 * Xpande. Created by Gabriel Vila on 4/11/21.
+	 * @param ctx
+	 * @param fechaDoc
+	 * @param adClientID
+	 * @param adOrgID
+	 * @param cBpartnerID
+	 * @param mProductID
+	 * @param trxName
+	 * @return
+	 */
+	public static List<MZPautaComVtaProd> getInvoiceProdDiscounts(Properties ctx, Timestamp fechaDoc, int adClientID, int adOrgID, int cBpartnerID, int mProductID, String trxName) {
+
+		List<MZPautaComVtaProd> dtosList = new ArrayList<MZPautaComVtaProd>();
+
+		String sql = "";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+
+		try{
+
+			// Descuentos que aplican para la jerarquia de este producto
+			sql = " select pdto.z_pautacomvtaprod_id " +
+					" from z_pautacomvtaprod pdto " +
+					" inner join z_pautacomvtaseg pseg on pdto.z_pautacomvtaseg_id = pseg.z_pautacomvtaseg_id " +
+					" inner join z_pautacomvta pvta on pseg.z_pautacomvta_id = pvta.z_pautacomvta_id " +
+					" where pvta.ad_client_id =" + adClientID +
+					" and pvta.ad_org_id =" + adOrgID +
+					" and pvta.docstatus='CO' " +
+					" and pvta.z_pautacomvta_id in (select z_pautacomvta_id from z_pautacomvtabp " +
+					" where c_bpartner_id =" + cBpartnerID + " and isactive='Y') " +
+					" and coalesce(pseg.startdate, '" + fechaDoc + "') <= '" + fechaDoc + "'" +
+					" and coalesce(pseg.enddate, '" + fechaDoc + "') >= '" + fechaDoc + "' " +
+					" and pseg.isactive='Y' " +
+					" and pdto.m_product_id =" + mProductID +
+					" and pdto.isactive ='Y' ";
+
+			pstmt = DB.prepareStatement(sql, trxName);
+			rs = pstmt.executeQuery();
+
+			while(rs.next()){
+				MZPautaComVtaProd pautaComVtaProd = new MZPautaComVtaProd(ctx, rs.getInt("z_pautacomvtaprod_id"), trxName);
+				dtosList.add(pautaComVtaProd);
+			}
+		}
+		catch (Exception e){
+			throw new AdempiereException(e);
+		}
+		finally {
+			DB.close(rs, pstmt);
 			rs = null; pstmt = null;
 		}
 
