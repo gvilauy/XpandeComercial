@@ -167,7 +167,7 @@ public class CalloutOrder extends CalloutEngine {
         Env.setContext(ctx, WindowNo, "EnforcePriceLimit", pp.isEnforcePriceLimit() ? "Y" : "N");
         Env.setContext(ctx, WindowNo, "DiscountSchema", pp.isDiscountSchema() ? "Y" : "N");
 
-        // Xpande. Gabriel Vila. 02/01/2010.
+        // Xpande. Gabriel Vila. 02/01/2020.
         // Calculo descuentos para esta fecha documento - socio de negocio - producto.
         ProductPricesInfo ppi = DiscountUtils.setDiscountPrices(ctx, orderDate, order.getAD_Client_ID(), order.getAD_Org_ID(), C_BPartner_ID, M_Product_ID,
                 manualDiscount, (BigDecimal) mTab.getValue("PriceList"), (BigDecimal) mTab.getValue("PriceActual"), StdPrecision, null);
