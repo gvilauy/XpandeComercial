@@ -575,7 +575,7 @@ public class ValidatorComercial implements ModelValidator {
 
         String message = null, sql = "";
 
-        if (timing == TIMING_AFTER_COMPLETE){
+        if (timing == TIMING_BEFORE_COMPLETE){
 
             // Si es una orden de venta
             if (model.isSOTrx()){
