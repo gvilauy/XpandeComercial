@@ -95,6 +95,9 @@ public class ValidatorComercial implements ModelValidator {
         else if (po.get_TableName().equalsIgnoreCase(I_C_Order.Table_Name)){
             return docValidate((MOrder) po, timing);
         }
+        else if (po.get_TableName().equalsIgnoreCase(I_M_InOut.Table_Name)){
+            return docValidate((MInOut) po, timing);
+        }
 
         return null;
     }
@@ -280,6 +283,8 @@ public class ValidatorComercial implements ModelValidator {
      * @throws Exception
      */
     public String modelChange(MInOut model, int type) throws Exception {
+
+        String action;
 
         if ((type == ModelValidator.TYPE_BEFORE_NEW) || (type == ModelValidator.TYPE_BEFORE_CHANGE)){
 
@@ -496,66 +501,24 @@ public class ValidatorComercial implements ModelValidator {
         String message = null;
         String action = "";
 
-        if (timing == TIMING_BEFORE_COMPLETE){
+        if (timing == TIMING_BEFORE_REACTIVATE){
 
             // En recepciones de productos
             if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
 
-                // Obtengo y recorro lineas
-                MInOutLine[] mInOutLines = model.getLines();
-                for (int i = 0; i < mInOutLines.length; i++){
-                    MInOutLine mInOutLine = mInOutLines[i];
-
-                    // Asocio posibles nuevos códigos de barra a los productos del socio de negocio
-                    if (mInOutLine.get_Value("UPC") != null){
-                        String upc = mInOutLine.get_ValueAsString("UPC").toString().trim();
-                        if (!upc.equalsIgnoreCase("")){
-                            MZProductoUPC pupc = MZProductoUPC.getByUPC(model.getCtx(), upc, model.get_TrxName());
-                            if ((pupc == null) || (pupc.get_ID() <= 0)){
-                                // Asocio nuevo UPC a este producto
-                                pupc = new MZProductoUPC(model.getCtx(), 0, model.get_TrxName());
-                                pupc.setUPC(upc);
-                                pupc.setM_Product_ID(mInOutLine.getM_Product_ID());
-                                pupc.saveEx();
-                            }
-                            else{
-                                if (pupc.getM_Product_ID() != mInOutLine.getM_Product_ID()){
-                                    MProduct prod = (MProduct)pupc.getM_Product();
-                                    return "El Código de Barras ingresado (" + upc + ") esta asociado a otro Producto : " + prod.getValue() + " - " + prod.getName();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        else if (timing == TIMING_BEFORE_REACTIVATE){
-
-            // En recepciones de productos
-            if (model.getMovementType().equalsIgnoreCase(X_M_InOut.MOVEMENTTYPE_VendorReceipts)){
-
-                // Valido que esta recepcion no tenga facturas asociadas que NO esten completas o cerradas.
-                // Obtengo lista de facturas que pueden estar asociadas
-                List<MInvoice> invoiceList = ComercialUtils.getInvoicesByInOut(model.getCtx(), model.get_ID(), false, model.get_TrxName());
-                if (invoiceList.size() > 0){
-
-                    message = "No se puede reactivar este documento ya que tiene las siguientes facturas NO COMPLETAS y asociadas : ";
-                    for (MInvoice invoice: invoiceList){
-                        message += invoice.getDocumentNo() + ", ";
-                    }
-                    message += " debe eliminarlas para poder continuar.";
-                    return message;
-                }
-
-                // Refreso estado de marca de invoiced en lineas de esta recepcion, esto es para no permitir editar lineas que estan facturadas
-                action = " update m_inoutline set isinvoiced ='N', processed='N' where m_inout_id =" + model.get_ID();
+                // Me aseguro de eliminar referencias en tabla M_CostDetails y M_MatchPO
+                action = " delete from m_costdetail where m_inoutline_id in " +
+                        "(select m_inoutline_id from m_inoutline where m_inout_id =" + model.get_ID() + ") ";
                 DB.executeUpdateEx(action, model.get_TrxName());
 
-                action = " update m_inoutline set isinvoiced ='Y' where m_inout_id =" + model.get_ID() +
-                        " and m_inoutline_id in (select m_inoutline_id from c_invoiceline where c_invoice_id in " +
-                        " (select a.c_invoice_id from z_recepcionprodfact a " +
-                        " inner join c_invoice b on a.c_invoice_id = b.c_invoice_id " +
-                        " where a.m_inout_id =" + model.get_ID() + " and b.docstatus='CO')) ";
+                action = " delete from m_matchpo where m_inoutline_id in " +
+                        "(select m_inoutline_id from m_inoutline where m_inout_id =" + model.get_ID() + ") ";
+                DB.executeUpdateEx(action, model.get_TrxName());
+
+                action = " update c_orderline set qtydelivered = qtydelivered - a.movementqty " +
+                        " from m_inoutline a where c_orderline.c_orderline_id = a.c_orderline_id " +
+                        " and a.m_inoutline_id in " +
+                        "(select m_inoutline_id from m_inoutline where m_inout_id =" + model.get_ID() + ") ";
                 DB.executeUpdateEx(action, model.get_TrxName());
             }
         }
@@ -858,7 +821,6 @@ public class ValidatorComercial implements ModelValidator {
      */
     public String modelChange(MInOutLine model, int type) throws Exception {
 
-        String mensaje = null;
         String action = "";
 
         if (type == ModelValidator.TYPE_BEFORE_DELETE){
@@ -871,10 +833,18 @@ public class ValidatorComercial implements ModelValidator {
             // Me aseguro de eliminar referencias en tabla M_CostDetails
             action = " delete from m_costdetail where m_inoutline_id =" + model.get_ID();
             DB.executeUpdateEx(action, model.get_TrxName());
+
+            // Me aseguro de eliminar referencias en tabla M_MatchPO
+            action = " delete from m_matchpo where m_inoutline_id =" + model.get_ID();
+            DB.executeUpdateEx(action, model.get_TrxName());
         }
-
-
-        return mensaje;
+        else if (type == ModelValidator.TYPE_AFTER_NEW){
+            if (model.getC_OrderLine_ID() > 0){
+                action = " update m_inoutline set QtyEnteredInvoice=0 where m_inoutline_id =" + model.get_ID();
+                DB.executeUpdateEx(action, model.get_TrxName());
+            }
+        }
+        return null;
     }
 
     /***
