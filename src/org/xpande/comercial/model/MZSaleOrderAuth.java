@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Properties;
 
 import org.adempiere.exceptions.AdempiereException;
@@ -29,6 +30,7 @@ import org.compiere.process.DocAction;
 import org.compiere.process.DocOptions;
 import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 import sun.misc.MessageUtils;
 
@@ -227,7 +229,28 @@ public class MZSaleOrderAuth extends X_Z_SaleOrderAuth implements DocAction, Doc
 		m_processMsg = ModelValidationEngine.get().fireDocValidate(this, ModelValidator.TIMING_BEFORE_COMPLETE);
 		if (m_processMsg != null)
 			return DocAction.STATUS_Invalid;
-		
+
+		// Obtengo y recorro lineas con las ordenes de venta seleccionadas para aprobación
+		List<MZSaleOrderAuthLin> authLinList = this.getSelectedLines();
+		for (MZSaleOrderAuthLin authLin: authLinList){
+			// Seteo orden como aprobada y la completo
+			MOrder order = (MOrder) authLin.getC_Order();
+			order.setIsCreditApproved(true);
+			order.set_ValueOfColumn("CreditMessage", "Crédito Aprobado Manualmente. Número de Aprobación : " + this.getDocumentNo());
+			order.set_ValueOfColumn("IsManualApproved", true);
+			order.setDocStatus(X_C_Order.DOCSTATUS_Drafted);
+			if (!order.processIt(DOCACTION_Complete)){
+				if (order.getProcessMsg() != null){
+					m_processMsg = "No se pudo completar la Aprobación. Falla al completar Orden de Venta: " + order.getDocumentNo() + "\n" + order.getProcessMsg();
+				}
+				else{
+					m_processMsg = "No se pudo completar la Aprobación por errores al completar la Orden de Venta: " + order.getDocumentNo();
+				}
+				return DocAction.STATUS_Invalid;
+			}
+			order.saveEx();
+		}
+
 		//	Implicit Approval
 		if (!isApproved())
 			approveIt();
@@ -248,7 +271,22 @@ public class MZSaleOrderAuth extends X_Z_SaleOrderAuth implements DocAction, Doc
 		setDocAction(DOCACTION_Close);
 		return DocAction.STATUS_Completed;
 	}	//	completeIt
-	
+
+	/**
+	 * Obtiene  y retorna lineas con ordenes de venta seleccionadas para aprobación.
+	 * Xpande. Created by Gabriel Vila on 6/9/21.
+	 * @return
+	 */
+	private List<MZSaleOrderAuthLin> getSelectedLines() {
+
+		String whereClause = X_Z_SaleOrderAuthLin.COLUMNNAME_Z_SaleOrderAuth_ID + " =" + this.get_ID() +
+				" AND " + X_Z_SaleOrderAuthLin.COLUMNNAME_IsSelected + " ='Y'";
+
+		List<MZSaleOrderAuthLin> lines = new Query(getCtx(), I_Z_SaleOrderAuthLin.Table_Name, whereClause, get_TrxName()).list();
+
+		return lines;
+	}
+
 	/**
 	 * 	Set the definite document number after completed
 	 */
@@ -393,25 +431,84 @@ public class MZSaleOrderAuth extends X_Z_SaleOrderAuth implements DocAction, Doc
       return sb.toString();
     }
 
+	/**
+	 * Carga información de pedidos a considerar en este proceso de aprobacion.
+	 * Xpande. Created by Gabriel Vila on 6/9/21.
+	 * @return
+	 */
 	public String getOrders(){
 
-		String sql;
+		String sql, action;
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 
 		try{
+			// Elimino datos existenes antes de cargar nuevamente pedidos
+			action = " delete from " + X_Z_SaleOrderAuthLin.Table_Name + " where z_saleorderauth_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+			action = " delete from " + X_Z_SaleOrderAuthBP.Table_Name + " where z_saleorderauth_id =" + this.get_ID();
+			DB.executeUpdateEx(action, get_TrxName());
+
 			String whereClause = this.getWhereDocuments();
 
-		    sql = " select hdr.c_order_id " +
+		    sql = " select hdr.c_order_id, hdr.c_bpartner_id, " +
+					" coalesce(bp.SO_CreditLimit,0) as SO_CreditLimit, coalesce(bp.SO_CreditUsed,0) as SO_CreditUsed " +
 					" from c_order hdr " +
-					" where ad_client_id =" + this.getAD_Client_ID();
+					" inner join c_bpartner bp on hdr.c_bpartner_id = bp.c_bpartner_id " +
+					" where hdr.ad_client_id =" + this.getAD_Client_ID() +
+					" and hdr.issotrx='Y' " +
+					" and hdr.docstatus <>'CO' " +
+					" and iscreditapproved ='N' " + whereClause +
+					" order by hdr.c_bpartner_id, hdr.dateordered, hdr.c_order_id ";
 
-			//pstmt = DB.prepareStatement(sql, get_TrxName());
-			//rs = pstmt.executeQuery();
+			int cBpartnerIDAux = 0;
+			BigDecimal amtApproval = Env.ZERO;
+			MZSaleOrderAuthBP authBP = null;
 
+			pstmt = DB.prepareStatement(sql, get_TrxName());
+			rs = pstmt.executeQuery();
 			while(rs.next()){
+				// Corte por socio de negocio
+				if (rs.getInt("c_bpartner_id") != cBpartnerIDAux){
+					if (authBP != null){
+						authBP.setAmtApproval(amtApproval);
+						authBP.saveEx();
+					}
+					amtApproval = Env.ZERO;
+					authBP =  new MZSaleOrderAuthBP(getCtx(), 0, get_TrxName());
+					authBP.setZ_SaleOrderAuth_ID(this.get_ID());
+					authBP.setC_BPartner_ID(rs.getInt("c_bpartner_id"));
+					authBP.setDueAmt(Env.ZERO);
+					authBP.setSO_CreditLimit(rs.getBigDecimal("so_creditlimit"));
+					authBP.setSO_CreditUsed(rs.getBigDecimal("so_creditused"));
+					authBP.setStatusApprovalSO(X_Z_SaleOrderAuthBP.STATUSAPPROVALSO_SINAPROBACION);
+					authBP.saveEx();
 
+					cBpartnerIDAux = rs.getInt("c_bpartner_id");
+				}
+
+				// Guardo detalle del pedido
+				MOrder order = new MOrder(getCtx(), rs.getInt("c_order_id"), get_TrxName());
+				MZSaleOrderAuthLin authLin = new MZSaleOrderAuthLin(getCtx(), 0, get_TrxName());
+				authLin.setZ_SaleOrderAuth_ID(this.get_ID());
+				authLin.setZ_SaleOrderAuthBP_ID(authBP.get_ID());
+				authLin.setC_BPartner_ID(order.getC_BPartner_ID());
+				authLin.setC_Order_ID(order.get_ID());
+				authLin.setDateOrdered(order.getDateOrdered());
+				authLin.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
+				authLin.setDatePromised(order.getDatePromised());
+				authLin.setIsSelected(false);
+				authLin.setSalesRep_ID(order.getSalesRep_ID());
+				authLin.setTotalAmt(order.getGrandTotal());
+				authLin.saveEx();
+
+				amtApproval = amtApproval.add(authLin.getTotalAmt());
 			}
+			if (authBP != null){
+				authBP.setAmtApproval(amtApproval);
+				authBP.saveEx();
+			}
+
 		}
 		catch (Exception e){
 		    throw new AdempiereException(e);

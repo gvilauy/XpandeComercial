@@ -62,12 +62,14 @@ public class SeleccionCreateFromInvoice extends SeleccionCreateFromInvoiceAbstra
 				int uomId = getSelectionAsInt(key, "PP_C_UOM_ID");
 				BigDecimal qtyEntered = getSelectionAsBigDecimal(key, "PP_QtyEntered"); // Qty
 
+				if (qtyEntered == null) qtyEntered = Env.ZERO;
+
 				MInvoiceLine invoiceLine = new MInvoiceLine(invoice);
 				BigDecimal qtyInvoiced = null;
 
 				//	Precision of Qty UOM
 				int precision = 2;
-				if (productId > 0) {
+ 				if (productId > 0) {
 					MProduct product = MProduct.get(Env.getCtx(), productId);
 					if (product != null) {
 						invoiceLine.setM_Product_ID(product.getM_Product_ID(), uomId);

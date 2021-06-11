@@ -572,8 +572,11 @@ public class ValidatorComercial implements ModelValidator {
 
             // Si es una orden de venta
             if (model.isSOTrx()){
-                // Al reactivar el pedido seteo el flag de credito aprobado en false.
-                model.setIsCreditApproved(false);
+                // Al reactivar el pedido seteo el flag de credito aprobado en true par que no se considere
+                // por el proceso de aprobación. Este flga volvera a estar en False si al completar la orden de venta
+                // quedo no aprobada.
+                model.set_ValueOfColumn("IsManualApproved", false);
+                model.setIsCreditApproved(true);
             }
         }
 
