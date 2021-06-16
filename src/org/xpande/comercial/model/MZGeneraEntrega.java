@@ -239,7 +239,7 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 		//
 
 		// Obtiene lineas y productos a considerar
-		List<MZGeneraEntregaLin> entregaLinList = this.getLinesByOrder();
+		List<MZGeneraEntregaLin> entregaLinList = this.getReservedLinesByOrder();
 		List<MZGeneraEntProd> entProdList = this.getLinesEntProd();
 
 		// Valido condiciones para completar este documento
@@ -545,13 +545,13 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 
 			// Filtro de Regiones de Venta
 			String filtroRegiones = this.getFiltroRegiones();
-			if (filtroSocios != null){
+			if (filtroRegiones != null){
 				whereClause += " AND " + filtroRegiones;
 			}
 
 			// Filtro de productos
 			String filtroProductos = this.getFiltroProductos();
-			if (filtroSocios != null){
+			if (filtroProductos != null){
 				whereClause += " AND " + filtroProductos;
 			}
 		}
@@ -1061,9 +1061,10 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	 * Xpande. Created by Gabriel Vila on 8/2/20.
 	 * @return
 	 */
-	public List<MZGeneraEntregaLin> getLinesByOrder() {
+	public List<MZGeneraEntregaLin> getReservedLinesByOrder() {
 
-		String whereClause = X_Z_GeneraEntregaLin.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID();
+		String whereClause = X_Z_GeneraEntregaLin.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID() +
+				" AND " + X_Z_GeneraEntregaLin.COLUMNNAME_QtyReserved + " > 0";
 
 		List<MZGeneraEntregaLin> lines = new Query(getCtx(), I_Z_GeneraEntregaLin.Table_Name, whereClause, get_TrxName())
 				.setOrderBy(" c_order_id, c_orderline_id ").list();
