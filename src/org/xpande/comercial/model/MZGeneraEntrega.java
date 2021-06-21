@@ -1063,8 +1063,8 @@ public class MZGeneraEntrega extends X_Z_GeneraEntrega implements DocAction, Doc
 	 */
 	public List<MZGeneraEntregaLin> getReservedLinesByOrder() {
 
-		String whereClause = X_Z_GeneraEntregaLin.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID() +
-				" AND " + X_Z_GeneraEntregaLin.COLUMNNAME_QtyReserved + " > 0";
+		String whereClause = X_Z_GeneraEntregaLin.COLUMNNAME_Z_GeneraEntrega_ID + " =" + this.get_ID();
+				//" AND " + X_Z_GeneraEntregaLin.COLUMNNAME_QtyReserved + " > 0";
 
 		List<MZGeneraEntregaLin> lines = new Query(getCtx(), I_Z_GeneraEntregaLin.Table_Name, whereClause, get_TrxName())
 				.setOrderBy(" c_order_id, c_orderline_id ").list();
