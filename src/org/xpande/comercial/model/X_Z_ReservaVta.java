@@ -26,14 +26,14 @@ import org.compiere.util.Env;
 
 /** Generated Model for Z_ReservaVta
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0 - $Id$ */
+ *  @version Release 3.9.1 - $Id$ */
 public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent 
 {
 
 	/**
 	 *
 	 */
-	private static final long serialVersionUID = 20200806L;
+	private static final long serialVersionUID = 20210622L;
 
     /** Standard Constructor */
     public X_Z_ReservaVta (Properties ctx, int Z_ReservaVta_ID, String trxName)
@@ -624,6 +624,26 @@ public class X_Z_ReservaVta extends PO implements I_Z_ReservaVta, I_Persistent
 	public int getZ_GeneraEntrega_ID () 
 	{
 		Integer ii = (Integer)get_Value(COLUMNNAME_Z_GeneraEntrega_ID);
+		if (ii == null)
+			 return 0;
+		return ii.intValue();
+	}
+
+	/** Set Z_Picking ID.
+		@param Z_Picking_ID Z_Picking ID	  */
+	public void setZ_Picking_ID (int Z_Picking_ID)
+	{
+		if (Z_Picking_ID < 1) 
+			set_Value (COLUMNNAME_Z_Picking_ID, null);
+		else 
+			set_Value (COLUMNNAME_Z_Picking_ID, Integer.valueOf(Z_Picking_ID));
+	}
+
+	/** Get Z_Picking ID.
+		@return Z_Picking ID	  */
+	public int getZ_Picking_ID () 
+	{
+		Integer ii = (Integer)get_Value(COLUMNNAME_Z_Picking_ID);
 		if (ii == null)
 			 return 0;
 		return ii.intValue();

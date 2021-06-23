@@ -23,7 +23,7 @@ import org.compiere.util.KeyNamePair;
 
 /** Generated Interface for Z_ReservaVta
  *  @author Adempiere (generated) 
- *  @version Release 3.9.0
+ *  @version Release 3.9.1
  */
 public interface I_Z_ReservaVta 
 {
@@ -386,6 +386,15 @@ public interface I_Z_ReservaVta
 	public int getZ_GeneraEntrega_ID();
 
 	public I_Z_GeneraEntrega getZ_GeneraEntrega() throws RuntimeException;
+
+    /** Column name Z_Picking_ID */
+    public static final String COLUMNNAME_Z_Picking_ID = "Z_Picking_ID";
+
+	/** Set Z_Picking ID	  */
+	public void setZ_Picking_ID (int Z_Picking_ID);
+
+	/** Get Z_Picking ID	  */
+	public int getZ_Picking_ID();
 
     /** Column name Z_ReservaVta_ID */
     public static final String COLUMNNAME_Z_ReservaVta_ID = "Z_ReservaVta_ID";
