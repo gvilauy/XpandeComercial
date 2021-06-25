@@ -3,6 +3,7 @@ package org.xpande.comercial.model;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.acct.Doc;
 import org.compiere.model.*;
+import org.compiere.process.DocumentEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -483,8 +484,56 @@ public class ValidatorComercial implements ModelValidator {
             String action = " delete from c_invoicetax where c_invoice_id =" + model.get_ID() + " and ismanual ='Y'";
             DB.executeUpdateEx(action, model.get_TrxName());
 
-        }
 
+            // Si es comprobante de venta
+            if (model.isSOTrx()){
+                // Si genere entrega de manera automática, la debo ahora eliminar
+                if (comercialConfig.isVtaGeneraInOut()){
+                    sql = " select m_inout_id from m_inout where c_invoice_id =" + model.get_ID();
+                    int mInOutID = DB.getSQLValueEx(model.get_TrxName(), sql);
+                    // Si tengo inout generada
+                    if (mInOutID > 0){
+                        // La reactivo y la elimino
+                        MInOut inOut = new MInOut(model.getCtx(), mInOutID, model.get_TrxName());
+                        if (inOut.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
+                            if (!inOut.reActivateIt()){
+                                message = inOut.getProcessMsg();
+                                if (message == null){
+                                    message = "No se pudo elminiar entrega asociada a esta documento: " + inOut.getDocumentNo();
+                                    return message;
+                                }
+                            }
+                            inOut.saveEx();
+                        }
+                        inOut.deleteEx(true);
+                    }
+                }
+            }
+            else{
+                // Es comprobante de compra
+                // Si genere recepción de manera automática, la debo ahora eliminar
+                if (comercialConfig.isCpraGeneraInOut()){
+                    sql = " select m_inout_id from m_inout where c_invoice_id =" + model.get_ID();
+                    int mInOutID = DB.getSQLValueEx(model.get_TrxName(), sql);
+                    // Si tengo inout generada
+                    if (mInOutID > 0){
+                        // La reactivo y la elimino
+                        MInOut inOut = new MInOut(model.getCtx(), mInOutID, model.get_TrxName());
+                        if (inOut.getDocStatus().equalsIgnoreCase(DocumentEngine.STATUS_Completed)){
+                            if (!inOut.reActivateIt()){
+                                message = inOut.getProcessMsg();
+                                if (message == null){
+                                    message = "No se pudo elminiar entrega asociada a esta documento: " + inOut.getDocumentNo();
+                                    return message;
+                                }
+                            }
+                            inOut.saveEx();
+                        }
+                        inOut.deleteEx(true);
+                    }
+                }
+            }
+        }
         return null;
     }
 
