@@ -506,6 +506,15 @@ public class ValidatorComercial implements ModelValidator {
                             inOut.saveEx();
                         }
                         inOut.deleteEx(true);
+
+                        // Actualizo lineas de esta invoice
+                        action = " update c_invoiceline set m_inoutline_id =null where c_invoice_id =" + model.get_ID();
+                        DB.executeUpdateEx(action, model.get_TrxName());
+
+                        // Elimino matchinv
+                        action = " delete from m_matchinv where c_invoiceline_id in " +
+                                "(select c_invoiceline_id from c_invoiceline where c_invoice_id =" + model.get_ID() + ") ";
+                        DB.executeUpdateEx(action, model.get_TrxName());
                     }
                 }
             }
@@ -530,6 +539,15 @@ public class ValidatorComercial implements ModelValidator {
                             inOut.saveEx();
                         }
                         inOut.deleteEx(true);
+
+                        // Actualizo lineas de esta invoice
+                        action = " update c_invoiceline set m_inoutline_id =null where c_invoice_id =" + model.get_ID();
+                        DB.executeUpdateEx(action, model.get_TrxName());
+
+                        // Elimino matchinv
+                        action = " delete from m_matchinv where c_invoiceline_id in " +
+                                "(select c_invoiceline_id from c_invoiceline where c_invoice_id =" + model.get_ID() + ") ";
+                        DB.executeUpdateEx(action, model.get_TrxName());
                     }
                 }
             }
